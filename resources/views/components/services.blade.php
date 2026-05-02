@@ -9,8 +9,7 @@
             <div class="absolute -top-6 -left-6 w-64 h-64 rounded-full opacity-20 blur-2xl"
                 style="background: var(--color-primary);"></div>
 
-            <img src="{{ asset('images/dr-kundan.png') }}"
-                class="relative rounded-2xl shadow-2xl w-full object-cover z-10">
+            <img src="{{ asset('images/why.jpg') }}" class="relative rounded-2xl shadow-2xl w-full object-cover z-10">
 
             <!-- Floating Badge -->
             <div class="absolute bottom-5 left-5 z-20 flex items-center gap-2 px-4 py-2 rounded-xl shadow-xl text-sm font-semibold"
@@ -38,8 +37,7 @@
 
             <!-- Name + Qualification -->
             <div>
-                <h2 class="text-4xl font-extrabold leading-tight mb-2"
-                    style="color: var(--color-dark);">
+                <h2 class="text-4xl font-extrabold leading-tight mb-2" style="color: var(--color-dark);">
                     Dr. Kundan Kumar
                 </h2>
                 <p class="text-base font-semibold" style="color: var(--color-primary);">
@@ -63,11 +61,13 @@
                     <div class="w-6 h-6 rounded-full flex items-center justify-center shrink-0 mt-0.5"
                         style="background: var(--color-soft);">
                         <svg class="w-3.5 h-3.5" fill="none" stroke="#028694" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7" />
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5"
+                                d="M5 13l4 4L19 7" />
                         </svg>
                     </div>
                     <div>
-                        <p class="text-xs font-bold uppercase tracking-wide" style="color: var(--color-primary);">Experience</p>
+                        <p class="text-xs font-bold uppercase tracking-wide" style="color: var(--color-primary);">
+                            Experience</p>
                         <p class="text-sm mt-0.5" style="color: var(--color-dark);">10+ Years in Neurosurgery</p>
                     </div>
                 </div>
@@ -77,11 +77,13 @@
                     <div class="w-6 h-6 rounded-full flex items-center justify-center shrink-0 mt-0.5"
                         style="background: var(--color-soft);">
                         <svg class="w-3.5 h-3.5" fill="none" stroke="#028694" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7" />
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5"
+                                d="M5 13l4 4L19 7" />
                         </svg>
                     </div>
                     <div>
-                        <p class="text-xs font-bold uppercase tracking-wide" style="color: var(--color-primary);">Qualification</p>
+                        <p class="text-xs font-bold uppercase tracking-wide" style="color: var(--color-primary);">
+                            Qualification</p>
                         <p class="text-sm mt-0.5" style="color: var(--color-dark);">MCh Neurosurgery, GRMC Gwalior</p>
                     </div>
                 </div>
@@ -91,11 +93,13 @@
                     <div class="w-6 h-6 rounded-full flex items-center justify-center shrink-0 mt-0.5"
                         style="background: var(--color-soft);">
                         <svg class="w-3.5 h-3.5" fill="none" stroke="#028694" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7" />
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5"
+                                d="M5 13l4 4L19 7" />
                         </svg>
                     </div>
                     <div>
-                        <p class="text-xs font-bold uppercase tracking-wide" style="color: var(--color-primary);">Training</p>
+                        <p class="text-xs font-bold uppercase tracking-wide" style="color: var(--color-primary);">
+                            Training</p>
                         <p class="text-sm mt-0.5" style="color: var(--color-dark);">LBS Hospital, New Delhi</p>
                     </div>
                 </div>
@@ -105,12 +109,15 @@
                     <div class="w-6 h-6 rounded-full flex items-center justify-center shrink-0 mt-0.5"
                         style="background: var(--color-soft);">
                         <svg class="w-3.5 h-3.5" fill="none" stroke="#028694" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7" />
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5"
+                                d="M5 13l4 4L19 7" />
                         </svg>
                     </div>
                     <div>
-                        <p class="text-xs font-bold uppercase tracking-wide" style="color: var(--color-primary);">Current Role</p>
-                        <p class="text-sm mt-0.5" style="color: var(--color-dark);">Consultant Neurosurgeon, NSMCH Patna</p>
+                        <p class="text-xs font-bold uppercase tracking-wide" style="color: var(--color-primary);">
+                            Current Role</p>
+                        <p class="text-sm mt-0.5" style="color: var(--color-dark);">Consultant Neurosurgeon, NSMCH Patna
+                        </p>
                     </div>
                 </div>
 
@@ -146,7 +153,8 @@
                     style="background: var(--color-primary);">
                     Book Consultation
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3" />
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M17 8l4 4m0 0l-4 4m4-4H3" />
                     </svg>
                 </a>
                 <a href="https://wa.me/918088152289"

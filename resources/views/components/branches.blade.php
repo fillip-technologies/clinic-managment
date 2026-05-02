@@ -24,7 +24,8 @@
                 style="background: white; border: 1px solid rgba(2,134,148,0.12);">
 
                 <!-- Top accent -->
-                <div class="h-1.5 w-full" style="background: linear-gradient(to right, var(--color-primary), var(--color-secondary));"></div>
+                <div class="h-1.5 w-full"
+                    style="background: linear-gradient(to right, var(--color-primary), var(--color-secondary));"></div>
 
                 <div class="p-8 space-y-6">
 
@@ -40,7 +41,8 @@
                             </div>
                             <div>
                                 <p class="text-lg font-extrabold" style="color: var(--color-dark);">Patna</p>
-                                <p class="text-xs font-semibold uppercase tracking-wide" style="color: var(--color-primary);">Main Branch</p>
+                                <p class="text-xs font-semibold uppercase tracking-wide"
+                                    style="color: var(--color-primary);">Main Branch</p>
                             </div>
                         </div>
                         <span class="flex items-center gap-1.5 text-xs font-semibold px-3 py-1 rounded-full"
@@ -65,8 +67,10 @@
                                 </svg>
                             </div>
                             <div>
-                                <p class="text-xs font-bold uppercase tracking-wide mb-0.5" style="color: var(--color-primary);">Address</p>
-                                <p class="text-sm" style="color: var(--color-dark);">NSMCH, Sheikhpura, Patna, Bihar – 800014</p>
+                                <p class="text-xs font-bold uppercase tracking-wide mb-0.5"
+                                    style="color: var(--color-primary);">Address</p>
+                                <p class="text-sm" style="color: var(--color-dark);">NSMCH, Bihta, Patna, Bihar – 800014
+                                </p>
                             </div>
                         </div>
 
@@ -79,8 +83,9 @@
                                 </svg>
                             </div>
                             <div>
-                                <p class="text-xs font-bold uppercase tracking-wide mb-0.5" style="color: var(--color-primary);">Timing</p>
-                                <p class="text-sm" style="color: var(--color-dark);">Mon – Sat: 10:00 AM – 6:00 PM</p>
+                                <p class="text-xs font-bold uppercase tracking-wide mb-0.5"
+                                    style="color: var(--color-primary);">Timing</p>
+                                <p class="text-sm" style="color: var(--color-dark);">Mon – Fri: 9:00 AM – 2:00 PM</p>
                             </div>
                         </div>
 
@@ -93,7 +98,8 @@
                                 </svg>
                             </div>
                             <div>
-                                <p class="text-xs font-bold uppercase tracking-wide mb-0.5" style="color: var(--color-primary);">Contact</p>
+                                <p class="text-xs font-bold uppercase tracking-wide mb-0.5"
+                                    style="color: var(--color-primary);">Contact</p>
                                 <p class="text-sm" style="color: var(--color-dark);">+91 80881 52289</p>
                             </div>
                         </div>
@@ -111,8 +117,7 @@
                             </svg>
                             Call Now
                         </a>
-                        <a href="https://maps.google.com/?q=NSMCH+Sheikhpura+Patna"
-                            target="_blank"
+                        <a href="https://maps.google.com/?q=NSMCH+Sheikhpura+Patna" target="_blank"
                             class="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl text-sm font-semibold transition hover:-translate-y-0.5"
                             style="background: var(--color-soft); color: var(--color-primary); border: 1px solid rgba(2,134,148,0.15);">
                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -132,7 +137,8 @@
                 style="background: var(--color-dark); border: 1px solid rgba(255,255,255,0.06);">
 
                 <!-- Top accent -->
-                <div class="h-1.5 w-full" style="background: linear-gradient(to right, var(--color-secondary), var(--color-primary));"></div>
+                <div class="h-1.5 w-full"
+                    style="background: linear-gradient(to right, var(--color-secondary), var(--color-primary));"></div>
 
                 <!-- Decorative orb -->
                 <div class="absolute -bottom-12 -right-12 w-48 h-48 rounded-full opacity-5"
@@ -152,7 +158,8 @@
                             </div>
                             <div>
                                 <p class="text-lg font-extrabold text-white">Siwan</p>
-                                <p class="text-xs font-semibold uppercase tracking-wide" style="color: var(--color-secondary);">Branch Clinic</p>
+                                <p class="text-xs font-semibold uppercase tracking-wide"
+                                    style="color: var(--color-secondary);">Branch Clinic</p>
                             </div>
                         </div>
                         <span class="flex items-center gap-1.5 text-xs font-semibold px-3 py-1 rounded-full"
@@ -177,8 +184,11 @@
                                 </svg>
                             </div>
                             <div>
-                                <p class="text-xs font-bold uppercase tracking-wide mb-0.5" style="color: var(--color-secondary);">Address</p>
-                                <p class="text-sm" style="color: rgba(240,249,250,0.8);">Main Road, Siwan, Bihar – 841226</p>
+                                <p class="text-xs font-bold uppercase tracking-wide mb-0.5"
+                                    style="color: var(--color-secondary);">Address</p>
+                                <p class="text-sm" style="color: rgba(240,249,250,0.8);">Near Dr. Shahnwaz Alam,
+                                    Bindusar Road, Siwan Bihar –
+                                    841226</p>
                             </div>
                         </div>
 
@@ -191,8 +201,10 @@
                                 </svg>
                             </div>
                             <div>
-                                <p class="text-xs font-bold uppercase tracking-wide mb-0.5" style="color: var(--color-secondary);">Timing</p>
-                                <p class="text-sm" style="color: rgba(240,249,250,0.8);">Mon – Sat: 10:00 AM – 6:00 PM</p>
+                                <p class="text-xs font-bold uppercase tracking-wide mb-0.5"
+                                    style="color: var(--color-secondary);">Timing</p>
+                                <p class="text-sm" style="color: rgba(240,249,250,0.8);">Saturday: 10:00 AM – 3:00 PM
+                                </p>
                             </div>
                         </div>
 
@@ -205,7 +217,8 @@
                                 </svg>
                             </div>
                             <div>
-                                <p class="text-xs font-bold uppercase tracking-wide mb-0.5" style="color: var(--color-secondary);">Contact</p>
+                                <p class="text-xs font-bold uppercase tracking-wide mb-0.5"
+                                    style="color: var(--color-secondary);">Contact</p>
                                 <p class="text-sm" style="color: rgba(240,249,250,0.8);">+91 80881 52289</p>
                             </div>
                         </div>
@@ -223,8 +236,7 @@
                             </svg>
                             Call Now
                         </a>
-                        <a href="https://maps.google.com/?q=Siwan+Bihar"
-                            target="_blank"
+                        <a href="https://maps.google.com/?q=Siwan+Bihar" target="_blank"
                             class="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl text-sm font-semibold transition hover:-translate-y-0.5"
                             style="background: rgba(93,202,212,0.12); color: var(--color-secondary); border: 1px solid rgba(93,202,212,0.2);">
                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">

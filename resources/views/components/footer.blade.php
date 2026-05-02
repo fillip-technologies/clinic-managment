@@ -1,9 +1,8 @@
-<footer class="relative overflow-hidden mt-20">
+<footer class="relative overflow-hidden">
 
     <!-- Background same as HERO -->
     <div class="absolute inset-0">
-        <img src="{{ asset('images/neurology-bg.jpg') }}"
-            class="w-full h-full object-cover">
+        <img src="{{ asset('images/neurology-bg.jpg') }}" class="w-full h-full object-cover">
         <div class="absolute inset-0 bg-gradient-to-r from-teal-900/95 via-teal-800/90 to-teal-700/80"></div>
     </div>
 
@@ -47,12 +46,11 @@
             <div>
                 <h3 class="font-semibold text-orange-400 mb-4">Quick Links</h3>
 
-                <ul class="space-y-2 text-white/80 text-sm">
-                    <li>About Doctor</li>
-                    <li>Services</li>
-                    <li>Appointments</li>
-                    <li>Testimonials</li>
-                    <li>Contact</li>
+                <ul class="space-y-2 text-white/80 text-sm flex flex-col items-start">
+                    <li><a href="{{ url('/about') }}" class="hover:text-orange-400 transition inline-block">About</a></li>
+                    <li><a href="{{ url('/services') }}" class="hover:text-orange-400 transition inline-block">Services</a></li>
+                    <li><a href="{{ url('/clinics') }}" class="hover:text-orange-400 transition inline-block">Clinics</a></li>
+                    <li><a href="{{ url('/contact') }}" class="hover:text-orange-400 transition inline-block">Contact</a></li>
                 </ul>
             </div>
 

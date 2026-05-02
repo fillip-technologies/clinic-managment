@@ -1,10 +1,10 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" class="overflow-x-hidden">
 
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>DR KUNDAN @yield('title', 'Welcome')</title>
+    <title>Dr. Kundan Kumar</title>
 
     {{-- Tailwind CSS CDN --}}
     <script src="https://cdn.tailwindcss.com"></script>
@@ -46,7 +46,7 @@
 
 </head>
 
-<body class="font-sans text-black-800">
+<body class="font-sans text-gray-800 bg-gray-50 overflow-x-hidden w-full">
 
     {{-- Include Header --}}
     @include('components.header')

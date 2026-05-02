@@ -17,14 +17,10 @@
 
             <!-- LEFT - Google Map -->
             <div class="rounded-2xl overflow-hidden shadow-xl" data-aos="fade-up" data-aos-delay="0">
-                <iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3631.2519076947615!2d85.1275!3d25.5941!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x39ed57f12345678%3A0x1234567890abcdef!2sPatna%2C%20Bihar%2C%20India!5e0!3m2!1sen!2sin!4v1234567890"
-                    width="100%"
-                    height="450"
-                    style="border:0;"
-                    allowfullscreen=""
-                    loading="lazy"
-                    referrerpolicy="no-referrer-when-downgrade"
-                    class="w-full">
+                <iframe
+                    src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3631.2519076947615!2d85.1275!3d25.5941!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x39ed57f12345678%3A0x1234567890abcdef!2sPatna%2C%20Bihar%2C%20India!5e0!3m2!1sen!2sin!4v1234567890"
+                    width="100%" height="450" style="border:0;" allowfullscreen="" loading="lazy"
+                    referrerpolicy="no-referrer-when-downgrade" class="w-full">
                 </iframe>
             </div>
 
@@ -34,7 +30,8 @@
                 <!-- Address Section -->
                 <div class="bg-gradient-to-br from-teal-50 to-blue-50 p-8 rounded-2xl border border-teal-200">
                     <div class="flex items-start gap-4">
-                        <div class="w-12 h-12 bg-teal-600 text-white rounded-xl flex items-center justify-center flex-shrink-0 text-xl">
+                        <div
+                            class="w-12 h-12 bg-teal-600 text-white rounded-xl flex items-center justify-center flex-shrink-0 text-xl">
                             📍
                         </div>
                         <div>
@@ -44,7 +41,8 @@
                                 Near Kumhrar, Patna - 800020 <br>
                                 Bihar, India
                             </p>
-                            <a href="tel:+919876543210" class="inline-block mt-4 text-teal-600 font-medium hover:text-teal-700">
+                            <a href="tel:+919876543210"
+                                class="inline-block mt-4 text-teal-600 font-medium hover:text-teal-700">
                                 📞 +91 98765 43210
                             </a>
                         </div>
@@ -54,7 +52,8 @@
                 <!-- OPD Timings -->
                 <div class="bg-gradient-to-br from-orange-50 to-yellow-50 p-8 rounded-2xl border border-orange-200">
                     <div class="flex items-start gap-4">
-                        <div class="w-12 h-12 bg-orange-600 text-white rounded-xl flex items-center justify-center flex-shrink-0 text-xl">
+                        <div
+                            class="w-12 h-12 bg-orange-600 text-white rounded-xl flex items-center justify-center flex-shrink-0 text-xl">
                             🕐
                         </div>
                         <div class="w-full">
@@ -96,10 +95,12 @@
                 <div class="bg-gray-900 text-white p-6 rounded-2xl">
                     <p class="text-lg font-semibold mb-4">Need Immediate Assistance?</p>
                     <div class="flex flex-wrap gap-3">
-                        <a href="tel:+919876543210" class="flex-1 px-4 py-3 bg-orange-600 hover:bg-orange-700 rounded-lg text-center font-medium transition">
+                        <a href="tel:+918088152289"
+                            class="flex-1 px-4 py-3 bg-orange-600 hover:bg-orange-700 rounded-lg text-center font-medium transition">
                             Call Now
                         </a>
-                        <a href="mailto:info@drkundan.com" class="flex-1 px-4 py-3 bg-teal-600 hover:bg-teal-700 rounded-lg text-center font-medium transition">
+                        <a href="mailto:kundankumar911@gmail.com"
+                            class="flex-1 px-4 py-3 bg-teal-600 hover:bg-teal-700 rounded-lg text-center font-medium transition">
                             Email Us
                         </a>
                     </div>
