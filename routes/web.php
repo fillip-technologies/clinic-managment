@@ -21,3 +21,15 @@ Route::get('/contact', function () {
 Route::get('/services', function () {
     return view('services');
 });
+
+Route::get('/services/neurology', function () {
+    return view('neurology');
+});
+
+Route::get('/services/orthopedics', function () {
+    return view('orthopedics');
+});
+
+Route::get('/services/general-surgery', function () {
+    return view('general-surgery');
+});
