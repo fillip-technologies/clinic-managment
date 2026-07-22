@@ -22,14 +22,14 @@ Route::get('/services', function () {
     return view('services');
 });
 
-Route::get('/services/neurology', function () {
-    return view('neurology');
+Route::get('/services/diabetes-care', function () {
+    return view('diabetes-care');
 });
 
-Route::get('/services/orthopedics', function () {
-    return view('orthopedics');
+Route::get('/services/hypertension-obesity', function () {
+    return view('hypertension-obesity');
 });
 
-Route::get('/services/general-surgery', function () {
-    return view('general-surgery');
+Route::get('/services/ultrasonology-investigations', function () {
+    return view('ultrasonology-investigations');
 });
