@@ -37,8 +37,13 @@
             </div>
         </div>
 
-        <div class="border-t border-white/15 mt-10 pt-6 text-center text-sm text-white/60">
-            © 2026 RCDHO. All rights reserved.
+        <div class="border-t border-white/15 mt-10 pt-6 flex flex-col md:flex-row items-center justify-between gap-4 text-sm text-white/60">
+            <div>&copy; 2026 RCDHO. All rights reserved.</div>
+            <a href="https://filliptechnologies.com/" target="_blank" rel="noopener noreferrer"
+                class="inline-flex items-center gap-3 text-white/70 hover:text-white transition">
+                <span>Designed and Developed by</span>
+                <img src="{{ asset('images/Fillip-logo-white.webp') }}" alt="Fillip Technologies" class="h-7 w-auto">
+            </a>
         </div>
     </div>
 </footer>
