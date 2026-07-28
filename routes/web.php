@@ -33,3 +33,7 @@ Route::get('/services/hypertension-obesity', function () {
 Route::get('/services/ultrasonology-investigations', function () {
     return view('ultrasonology-investigations');
 });
+
+Route::get('/dashboard',function(){
+return view('admin.backend.dashboard');
+});
