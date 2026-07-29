@@ -7,6 +7,9 @@
     <title>Admin Login · Clean White</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Inter:opsz@14..32&display=swap" rel="stylesheet" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" />
@@ -206,6 +209,13 @@
 </head>
 
 <body>
+    @if ($errors->any())
+        @foreach ($errors->all() as $error)
+            <script>
+                toastr.error("{{ $error }}")
+            </script>
+        @endforeach
+    @endif
 
     <div class="w-full max-w-md">
         <div class="card-clean rounded-3xl p-8 sm:p-10 border border-black">
@@ -282,6 +292,13 @@ border-red-600
     </div>
 
     <script>
+        toastr.options = {
+            "closeButton": true,
+            "progressBar": true,
+            "positionClass": "toast-top-right",
+            "timeOut": "3000",
+            "preventDuplicates": true,
+        };
         (function() {
             const form = document.getElementById('loginForm');
             const email = document.getElementById('email');

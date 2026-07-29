@@ -1,5 +1,18 @@
 @extends('admin.loyout.master')
 @section('content')
+    @if (session('success'))
+        <script>
+            toastr.success("{{ session('success') }}");
+        </script>
+    @endif
+
+    @if ($errors->any())
+    <script>
+        @foreach ($errors->all() as $error)
+            toastr.error(@json($error));
+        @endforeach
+    </script>
+@endif
     <div class="w-full max-w-3xl bg-white rounded-2xl shadow-lg border border-slate-200 p-6 md:p-8 m-auto">
 
         <!-- Header -->
@@ -44,7 +57,7 @@
 border-red-600
                         @enderror "
                         placeholder="+91 98765 43210" />
-                        @error('phone')
+                    @error('phone')
                         <span class="text-sm text-red-600">{{ $message }}</span>
                     @enderror
                 </div>
@@ -60,8 +73,8 @@ border-red-600
                         class="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent @error('city')
 border-red-600
                         @enderror"
-                        placeholder="Mumbai"  />
-                          @error('city')
+                        placeholder="Mumbai" />
+                    @error('city')
                         <span class="text-sm text-red-600">{{ $message }}</span>
                     @enderror
                 </div>
@@ -71,8 +84,8 @@ border-red-600
                     </label>
                     <input type="text" id="state" name="state"
                         class="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
-                        placeholder="Maharashtra"  />
-                        @error('state')
+                        placeholder="Maharashtra" />
+                    @error('state')
                         <span class="text-sm text-red-600">{{ $message }}</span>
                     @enderror
                 </div>
@@ -88,8 +101,8 @@ border-red-600
                         class="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent @error('country')
 border-red-600
                         @enderror"
-                        placeholder="India"  />
-                        @error('country')
+                        placeholder="India" />
+                    @error('country')
                         <span class="text-sm text-red-600">{{ $message }}</span>
                     @enderror
                 </div>
@@ -101,8 +114,8 @@ border-red-600
                         class="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent @error('pin_code')
 border-red-600
                         @enderror"
-                        placeholder="400001"  />
-                         @error('pin_code')
+                        placeholder="400001" />
+                    @error('pin_code')
                         <span class="text-sm text-red-600">{{ $message }}</span>
                     @enderror
                 </div>
@@ -117,15 +130,14 @@ border-red-600
                     <select id="role" name="role"
                         class="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent @error('role')
 border-red-600
-                        @enderror"
-                        >
+                        @enderror">
                         <option value="">Select role</option>
                         <option value="super_admin">Super Admin</option>
                         <option value="doctor">Doctor</option>
 
                     </select>
 
-                     @error('role')
+                    @error('role')
                         <span class="text-sm text-red-600">{{ $message }}</span>
                     @enderror
                 </div>
@@ -138,7 +150,7 @@ border-red-600
 border-red-600
                         @enderror"
                         placeholder="e.g. Interventional Cardiology" />
-                           @error('doctor_strime')
+                    @error('doctor_strime')
                         <span class="text-sm text-red-600">{{ $message }}</span>
                     @enderror
                 </div>
@@ -152,8 +164,8 @@ border-red-600
                     </label>
                     <input type="email" id="email" name="email"
                         class="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
-                        placeholder="doctor@hospital.com"  />
-                         @error('email')
+                        placeholder="doctor@hospital.com" />
+                    @error('email')
                         <span class="text-sm text-red-600">{{ $message }}</span>
                     @enderror
                 </div>
@@ -167,9 +179,9 @@ border-red-600
 border-red-600
                             @enderror border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent pr-12 "
                             placeholder="Min 8 characters" />
-                            @error('password')
-                        <span class="text-sm text-red-600">{{ $message }}</span>
-                    @enderror
+                        @error('password')
+                            <span class="text-sm text-red-600">{{ $message }}</span>
+                        @enderror
                         <button type="button" id="togglePassword"
                             class="absolute inset-y-0 right-0 pr-4 flex items-center text-slate-400 hover:text-indigo-600 transition-colors">
                             <i class="fas fa-eye" id="eyeIcon"></i>

@@ -1,5 +1,19 @@
 @extends('admin.loyout.master')
 @section('content')
+
+@if (session('success'))
+<script>
+    toastr.success("{{ session('success') }}");
+</script>
+@endif
+
+@if ($errors->any())
+<script>
+@foreach ($errors->all() as $error )
+toastr.error("{{ $error }}")
+@endforeach
+</script>
+@endif
     <div class="w-full max-w-3xl bg-white rounded-2xl shadow-lg border border-slate-200 p-6 md:p-8 m-auto">
 
         <!-- Header -->
@@ -8,7 +22,7 @@
                 <i class="fas fa-user-md text-2xl text-indigo-600"></i>
             </div>
             <div>
-                <h2 class="text-2xl font-bold text-slate-800">Doctor Registration</h2>
+                <h2 class="text-2xl font-bold text-slate-800">Doctor Edite</h2>
                 <p class="text-sm text-slate-500">Create a new doctor profile</p>
             </div>
         </div>
@@ -17,7 +31,7 @@
         <div id="messageContainer" class="mb-4"></div>
 
         <!-- Form -->
-        <form action="{{ route('AddDoctor') }}" class="space-y-4" method="POST">
+        <form action="{{ route('doctor.update',$doctor->id) }}" class="space-y-4" method="POST">
             @csrf
 
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -25,7 +39,7 @@
                     <label class="block text-xs font-semibold text-slate-600 uppercase tracking-wider mb-1.5">
                         <i class="fas fa-user mr-2 text-indigo-400"></i>Full Name
                     </label>
-                    <input type="text" id="name"
+                    <input type="text" id="name" value="{{ old('name',$doctor->name ?? "") }}" name="name"
                         class="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent @error('name')
            border-red-600
                         @enderror"
@@ -39,7 +53,7 @@
                     <label class="block text-xs font-semibold text-slate-600 uppercase tracking-wider mb-1.5">
                         <i class="fas fa-phone mr-2 text-indigo-400"></i>Phone
                     </label>
-                    <input type="tel" id="phone"
+                    <input type="tel" id="phone" value="{{ old('phone',$doctor->phone ?? "") }}" name="phone"
                         class="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent @error('phone')
 border-red-600
                         @enderror "
@@ -56,7 +70,7 @@ border-red-600
                     <label class="block text-xs font-semibold text-slate-600 uppercase tracking-wider mb-1.5">
                         <i class="fas fa-city mr-2 text-indigo-400"></i>City
                     </label>
-                    <input type="text" id="city"
+                    <input type="text" id="city" value="{{ old('city',$doctor->phone ?? "") }}" name="city"
                         class="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent @error('city')
 border-red-600
                         @enderror"
@@ -69,7 +83,7 @@ border-red-600
                     <label class="block text-xs font-semibold text-slate-600 uppercase tracking-wider mb-1.5">
                         <i class="fas fa-map-pin mr-2 text-indigo-400"></i>State
                     </label>
-                    <input type="text" id="state"
+                    <input type="text" id="state" value="{{ old('state',$doctor->state ?? "") }}" name="state"
                         class="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
                         placeholder="Maharashtra"  />
                         @error('state')
@@ -84,7 +98,7 @@ border-red-600
                     <label class="block text-xs font-semibold text-slate-600 uppercase tracking-wider mb-1.5">
                         <i class="fas fa-globe mr-2 text-indigo-400"></i>Country
                     </label>
-                    <input type="text" id="country"
+                    <input type="text" id="country" value="{{ old('country',$doctor->country ?? "") }}" name="country"
                         class="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent @error('country')
 border-red-600
                         @enderror"
@@ -97,7 +111,7 @@ border-red-600
                     <label class="block text-xs font-semibold text-slate-600 uppercase tracking-wider mb-1.5">
                         <i class="fas fa-mailbox mr-2 text-indigo-400"></i>PIN Code
                     </label>
-                    <input type="text" id="pin_code"
+                    <input type="text" id="pin_code" value="{{ old('pin_code',$doctor->pin_code ?? "") }}" name="pin_code"
                         class="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent @error('pin_code')
 border-red-600
                         @enderror"
@@ -114,14 +128,14 @@ border-red-600
                     <label class="block text-xs font-semibold text-slate-600 uppercase tracking-wider mb-1.5">
                         <i class="fas fa-briefcase mr-2 text-indigo-400"></i>Role
                     </label>
-                    <select id="role"
+                    <select id="role" name="role"
                         class="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent @error('role')
 border-red-600
                         @enderror"
                         >
                         <option value="">Select role</option>
-                        <option value="super_admin">Super Admin</option>
-                        <option value="doctor">Doctor</option>
+                        <option value="super_admin" @selected($doctor->role == "super_admin")>Super Admin</option>
+                        <option value="doctor" @selected($doctor->role == 'doctor')>Doctor</option>
 
                     </select>
 
@@ -133,7 +147,7 @@ border-red-600
                     <label class="block text-xs font-semibold text-slate-600 uppercase tracking-wider mb-1.5">
                         <i class="fas fa-stethoscope mr-2 text-indigo-400"></i>Speciality / Strime
                     </label>
-                    <input type="text" id="doctor_strime"
+                    <input type="text" id="doctor_strime" value="{{ old('doctor_strime',$doctor->doctor_strime ?? "") }}" name="doctor_strime"
                         class="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent @error('doctor_strime')
 border-red-600
                         @enderror"
@@ -150,7 +164,7 @@ border-red-600
                     <label class="block text-xs font-semibold text-slate-600 uppercase tracking-wider mb-1.5">
                         <i class="fas fa-envelope mr-2 text-indigo-400"></i>Email
                     </label>
-                    <input type="email" id="email"
+                    <input type="email" id="email" value="{{ old('email',$doctor->email ?? "") }}" name="email"
                         class="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
                         placeholder="doctor@hospital.com"  />
                          @error('email')
@@ -162,7 +176,7 @@ border-red-600
                         <i class="fas fa-lock mr-2 text-indigo-400"></i>Password
                     </label>
                     <div class="relative">
-                        <input type="password" id="password"
+                        <input type="password" id="password" name="password" disabled value="{{ old('password',$doctor->password ?? "") }}"
                             class="w-full px-4 py-2.5 bg-slate-50 border @error('password')
 border-red-600
                             @enderror border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent pr-12 "
