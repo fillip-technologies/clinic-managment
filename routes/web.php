@@ -1,11 +1,13 @@
 <?php
 
+use App\Http\Controllers\Backend\DoctorManageController;
 use Illuminate\Support\Facades\Route;
+
 
 Route::get('/', function () {
     return view('welcome');
 });
-
+ Route::post('/appoinmentstore',[DoctorManageController::class, 'appoinmentstore'])->name('appoinmentstore');
 Route::get('/clinics', function () {
     return view('clinics');
 });
