@@ -46,7 +46,7 @@
             </a>
 
             <!-- Patients -->
-            <a href="#"
+            <a href="{{ route('list.patient') }}"
                 class="sidebar-item flex items-center gap-4 px-4 py-3 rounded-lg text-slate-300 hover:bg-slate-700 hover:text-white transition">
                 <i class="fas fa-hospital-user w-5"></i>
                 <span class="font-medium">Patients</span>
