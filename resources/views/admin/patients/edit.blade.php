@@ -219,12 +219,6 @@
                                placeholder="+91 98765 43210"
                                class="w-full rounded-xl border border-[#d3dfea] px-4 py-2.5 text-sm bg-[#fafdff] input-focus">
                     </div>
-
-
-
-
-
-                    
                     <!-- New Registration No. -->
                     <div class="col-span-1">
                         <label class="block text-xs font-semibold uppercase tracking-wide text-[#2f5a77] mb-1">
