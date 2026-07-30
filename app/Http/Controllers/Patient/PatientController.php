@@ -334,28 +334,14 @@ class PatientController extends Controller
 
     public function destroy($id)
     {
-        try{
-         $record = PatientClinicalRecord::findOrFail($id);
-         print_r($record);
+        $record = PatientClinicalRecord::findOrFail($id);
         if ($record->attachment) {
             Storage::disk('public')->delete($record->attachment);
         }
 
-        return response()->json([
-            'status'=>true,
-            'message'=>"Deletion SuccessFul",
-            'data'=>$record
-        ],200);
-
-        }catch(\Exception $e){
-          return response()->json([
-            'status'=>true,
-            'message'=>"Something went wrong",
-            'data'=>$e->getMessage()
-        ],500);
-        }
-
-
+        $record->delete();
+        return redirect()->route('list.patient')
+            ->with('success', 'Patient clinical record deleted successfully!');
     }
 
 
@@ -383,6 +369,156 @@ class PatientController extends Controller
 
         return view('admin.patients.listing', compact('records'));
     }
+
+
+
+        public function addnewReport($id){
+            $data = PatientClinicalRecord::with(['patient'])->findOrFail($id);
+            return view('admin.patients.secreport',compact('data'));
+        }
+
+        public function createNewRecord(Request $request,$id){
+
+            $request->validate([
+            'newly_detected' => 'nullable|in:Yes,No',
+            'duration_of_diabetes' => 'nullable|string|max:50',
+            'start_insulin_date' => 'nullable|date',
+            'stop_insulin_date' => 'nullable|date|after_or_equal:start_insulin_date',
+            'attachment' => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:5120',
+
+
+            'height_cm' => 'nullable|numeric|min:0|max:300',
+            'weight_kg' => 'nullable|numeric|min:0|max:500',
+            'bmi' => 'nullable|numeric|min:0|max:100',
+            'waist_height_ratio' => 'nullable|numeric|min:0|max:5',
+            'bmi_group' => 'nullable|in:Normal,Overweight,Obese',
+            'waist_cm' => 'nullable|numeric|min:0|max:300',
+            'hip_cm' => 'nullable|numeric|min:0|max:300',
+            'waist_hip_ratio' => 'nullable|numeric|min:0|max:5',
+            'social_class' => 'nullable|in:Upper,Middle,Lower',
+            'income_class' => 'nullable|in:High,Medium,Low',
+            'education' => 'nullable|in:Graduate,Post-grad,School',
+            'physical_activity' => 'nullable|in:Sedentary,Moderate,Active',
+            'veg_nonveg' => 'nullable|in:Vegetarian,Non-vegetarian,Vegan',
+
+
+            'htn' => 'nullable|in:Yes,No',
+            'sbp' => 'nullable|numeric|min:0|max:300',
+            'dbp' => 'nullable|numeric|min:0|max:200',
+            'hb_percent' => 'nullable|string|max:20',
+            'plt' => 'nullable|string|max:20',
+            'mcv' => 'nullable|string|max:20',
+            'creatinine' => 'nullable|string|max:20',
+            'egfr' => 'nullable|string|max:20',
+            'acr' => 'nullable|string|max:20',
+            'uric_acid' => 'nullable|string|max:20',
+            'urine_cast_cell' => 'nullable|string|max:20',
+            'na_plus' => 'nullable|string|max:20',
+            'k_plus' => 'nullable|string|max:20',
+            'i_calcium' => 'nullable|string|max:20',
+            'phosphorus' => 'nullable|string|max:20',
+            'sgpt' => 'nullable|string|max:20',
+            'sgot' => 'nullable|string|max:20',
+            'alkp' => 'nullable|string|max:20',
+            'hiv' => 'nullable|in:Negative,Positive',
+            'hbsag' => 'nullable|in:Negative,Positive',
+            'hcv' => 'nullable|in:Negative,Positive',
+            'fib_score' => 'nullable|string|max:20',
+            'fib_scan' => 'nullable|string|max:20',
+            'usg' => 'nullable|string|max:255',
+            'chol' => 'nullable|string|max:20',
+            'tg' => 'nullable|string|max:20',
+            'hdl' => 'nullable|string|max:20',
+            'ldl' => 'nullable|string|max:20',
+            'bsf' => 'nullable|string|max:20',
+            'bspp' => 'nullable|string|max:20',
+            'hba1c' => 'nullable|string|max:20',
+            'tsh' => 'nullable|string|max:20',
+            't3' => 'nullable|string|max:20',
+            't4' => 'nullable|string|max:20',
+            'vitamin_d25' => 'nullable|string|max:20',
+            'vitamin_b12' => 'nullable|string|max:20',
+            's_cortisol' => 'nullable|string|max:20',
+            'dex_skip_test' => 'nullable|string|max:50',
+            'ophthalmic_ex' => 'nullable|string|max:500',
+            'foot_ev' => 'nullable|string|max:500',
+            'car_echo_ev' => 'nullable|string|max:500',
+            ]);
+
+
+            $creation = PatientClinicalRecord::find($id);
+
+            $attachmentPath = null;
+        if ($request->hasFile('attachment')) {
+            $file = $request->file('attachment');
+            $filename = time() . '_' . $file->getClientOriginalName();
+            $attachmentPath = $file->storeAs('patient-attachments', $filename, 'public');
+        }
+            $creation::create([
+            "patient_id"=>$request->patient_id,
+            'newly_detected' => $request->newly_detected,
+            'duration_of_diabetes' => $request->duration_of_diabetes,
+            'start_insulin_date' => $request->start_insulin_date,
+            'stop_insulin_date' => $request->stop_insulin_date,
+            'attachment' => $attachmentPath,
+            'height_cm' => $request->height_cm,
+            'weight_kg' => $request->weight_kg,
+            'bmi' => $request->bmi,
+            'waist_height_ratio' => $request->waist_height_ratio,
+            'bmi_group' => $request->bmi_group,
+            'waist_cm' => $request->waist_cm,
+            'hip_cm' => $request->hip_cm,
+            'waist_hip_ratio' => $request->waist_hip_ratio,
+
+            'social_class' => $request->social_class,
+            'income_class' => $request->income_class,
+            'education' => $request->education,
+            'physical_activity' => $request->physical_activity,
+            'veg_nonveg' => $request->veg_nonveg,
+
+            'htn' => $request->htn,
+            'sbp' => $request->sbp,
+            'dbp' => $request->dbp,
+            'hb_percent' => $request->hb_percent,
+            'plt' => $request->plt,
+            'mcv' => $request->mcv,
+            'creatinine' => $request->creatinine,
+            'egfr' => $request->egfr,
+            'acr' => $request->acr,
+            'uric_acid' => $request->uric_acid,
+            'urine_cast_cell' => $request->urine_cast_cell,
+            'na_plus' => $request->na_plus,
+            'k_plus' => $request->k_plus,
+            'i_calcium' => $request->i_calcium,
+            'phosphorus' => $request->phosphorus,
+            'sgpt' => $request->sgpt,
+            'sgot' => $request->sgot,
+            'alkp' => $request->alkp,
+            'hiv' => $request->hiv,
+            'hbsag' => $request->hbsag,
+            'hcv' => $request->hcv,
+            'fib_score' => $request->fib_score,
+            'fib_scan' => $request->fib_scan,
+            'usg' => $request->usg,
+            'chol' => $request->chol,
+            'tg' => $request->tg,
+            'hdl' => $request->hdl,
+            'ldl' => $request->ldl,
+            'bsf' => $request->bsf,
+            'bspp' => $request->bspp,
+            'hba1c' => $request->hba1c,
+            'tsh' => $request->tsh,
+            't3' => $request->t3,
+            't4' => $request->t4,
+            'vitamin_d25' => $request->vitamin_d25,
+            'vitamin_b12' => $request->vitamin_b12,
+            's_cortisol' => $request->s_cortisol,
+            'dex_skip_test' => $request->dex_skip_test,
+            'ophthalmic_ex' => $request->ophthalmic_ex,
+            'foot_ev' => $request->foot_ev,
+            'car_echo_ev' => $request->car_echo_ev,
+            ]);
+        }
 
 
 

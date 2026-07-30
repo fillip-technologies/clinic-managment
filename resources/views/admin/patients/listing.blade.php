@@ -653,15 +653,25 @@
                                             class="action-btn bg-blue-50 text-blue-600 hover:bg-blue-100" title="View">
                                             <i class="fas fa-eye"></i>
                                         </button>
-                                        <button onclick="editRecord({{ $record->id }})"
+
+                                        <a href="{{ route('addnewReport',$record->id) }}"
+                                            class="action-btn bg-blue-50 text-blue-600 hover:bg-blue-100" title="Add New">
+                                            <i class="fas fa-add"></i>
+                                        </a>
+                                        <a href="{{ route('patient.edit',$record->id) }}"
                                             class="action-btn bg-yellow-50 text-yellow-600 hover:bg-yellow-100"
                                             title="Edit">
                                             <i class="fas fa-edit"></i>
-                                        </button>
-                                        <button onclick="openDeleteModal({{ $record->id }})"
-                                            class="action-btn bg-red-50 text-red-600 hover:bg-red-100" title="Delete">
-                                            <i class="fas fa-trash"></i>
-                                        </button>
+                                        </a>
+                                        <form action="{{ route('patient.delete', $record->id) }}" method="POST">
+                                            @csrf
+                                            @method('DELETE')
+                                            <button type="submit" onclick="return confirm('Are you sure delete data')"
+                                                class="action-btn bg-red-50 text-red-600 hover:bg-red-100" title="Delete">
+                                                <i class="fas fa-trash"></i>
+                                                </button>
+                                        </form>
+
                                     </div>
                                 </td>
                             </tr>
@@ -1123,9 +1133,7 @@
                 },
                 success: function(res) {
                     closeDeleteModal();
-
                     toastr.success(res.message || "Record deleted successfully.");
-
                     location.reload();
                 },
                 error: function(xhr) {

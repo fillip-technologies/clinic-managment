@@ -27,7 +27,8 @@ Route::prefix('admin')->middleware(['super_admin'])->group(function(){
         Route::get('/patient/form','createPatient')->name('patient.form');
         Route::post('/store/patient','store')->name('store.patient');
         Route::post('/patient/update/{id}','update')->name('patient.update');
-
+        Route::get('/addnewReport/{id}','addnewReport')->name('addnewReport');
+        Route::post('/createNewRecord/{id}','createNewRecord')->name('createNewRecord');
         Route::get('/single/patient/{id}','edit')->name('patient.edit');
         Route::delete('/delete/patient/{id}','destroy')->name('patient.delete');
     });
