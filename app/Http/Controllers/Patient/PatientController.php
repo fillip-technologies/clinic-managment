@@ -187,7 +187,7 @@ class PatientController extends Controller
             't4' => $request->t4,
             'vitamin_d25' => $request->vitamin_d25,
             'vitamin_b12' => $request->vitamin_b12,
-            's_cortisol' => $request->s_cortisol,
+            's_cortisol' => $request->cortisol,
             'dex_skip_test' => $request->dex_skip_test,
             'ophthalmic_ex' => $request->ophthalmic_ex,
             'foot_ev' => $request->foot_ev,
@@ -201,7 +201,7 @@ class PatientController extends Controller
 
     public function show($id)
     {
-        $record = PatientClinicalRecord::findOrFail($id);
+        $record = PatientClinicalRecord::with(['patient'])->findOrFail($id);
         return view('admin.patient-records.show', compact('record'));
     }
 
@@ -215,8 +215,7 @@ class PatientController extends Controller
 
     public function update(Request $request, $id)
     {
-        $record = PatientClinicalRecord::findOrFail($id);
-        $patient = Patient::findOrFail($record->patient_id);
+        $record = PatientClinicalRecord::with(['patient'])->findOrFail($id);
 
         $validator = Validator::make($request->all(), [
             'record_date' => 'required|date',
@@ -227,7 +226,7 @@ class PatientController extends Controller
             'rcdho_grade' => 'nullable|string|max:50',
             'address' => 'nullable|string|max:500',
             'mobile_no' => 'nullable|string|max:20',
-            'registration_no' => 'nullable|string|max:50|unique:patients,registration_no,' . $id,
+            // 'registration_no' => 'nullable|string|max:50',
 
             'newly_detected' => 'nullable|in:Yes,No',
             'duration_of_diabetes' => 'nullable|string|max:50',
@@ -314,7 +313,8 @@ class PatientController extends Controller
             $attachmentPath = $file->storeAs('patient-attachments', $filename, 'public');
             $record->attachment = $attachmentPath;
         }
-        $patient->update([
+
+           $record->patient->update([
             'patient_name'         => $request->patient_name,
             'age'                  => $request->age,
             'gender'               => $request->gender,
@@ -322,7 +322,7 @@ class PatientController extends Controller
             'mobile_no'            => $request->mobile,
             'father_husband_name'  => $request->guardian_name,
             'record_date'          => $request->record_date,
-            'registration_no'  => $request->registration_no,
+         
             'rcdho_grade'          => $request->rcdho_grade,
         ]);
 
@@ -518,6 +518,9 @@ class PatientController extends Controller
             'foot_ev' => $request->foot_ev,
             'car_echo_ev' => $request->car_echo_ev,
             ]);
+
+             return redirect()->route('list.patient')
+            ->with('success', 'New Report Added SuccessFuly');
         }
 
 

@@ -196,7 +196,7 @@
                     </div>
                     <div><label class="block text-xs font-semibold uppercase text-[#2f5a77] mb-1"><i
                                 class="far fa-clock"></i> Duration of Diabetes</label>
-                        <input type="text" name="diabetes_duration" value="{{ old('diabetes_duration') }}" placeholder="e.g. 5 yrs"
+                        <input type="text" name="duration_of_diabetes" value="{{ old('duration_of_diabetes') }}" placeholder="e.g. 5 yrs"
                             class="w-full rounded-xl border border-[#d3dfea] px-4 py-2.5 text-sm bg-[#fafdff] input-focus">
                     </div>
                     <div><label class="block text-xs font-semibold uppercase text-[#2f5a77] mb-1"><i
@@ -436,7 +436,7 @@
                         <input type="text" name="cortisol" value="{{ old('cortisol') }}" placeholder="µg/dL"
                             class="w-full rounded-xl border border-[#d3dfea] px-3 py-2 text-sm input-focus"></div>
                     <div><label class="block text-xs font-semibold text-[#2f5a77]">Dex Skp.. TEst</label>
-                        <input type="text" name="dex_suppression_test" value="{{ old('dex_suppression_test') }}" placeholder="result"
+                        <input type="text" name="dex_skip_test" value="{{ old('dex_skip_test') }}" placeholder="result"
                             class="w-full rounded-xl border border-[#d3dfea] px-3 py-2 text-sm input-focus"></div>
                 </div>
             </div>
