@@ -49,12 +49,13 @@ class AdminController extends Controller
     public function dashboard(){
         $doctors = User::where('role','doctor')->count();
         $patients = Patient::count();
+        $allPatient = Patient::paginate(10);
         $diabetes = PatientClinicalRecord::where('diabetes','Diabetes')->count();
         $hypertension = PatientClinicalRecord::where('hypertension','Hypertension')->count();
 
         //patient
 
-        return view('admin.backend.dashboard',compact('doctors','patients','diabetes','hypertension'));
+        return view('admin.backend.dashboard',compact('doctors','patients','diabetes','hypertension','allPatient'));
      }
 
     public function AdminLogout(Request $request)
