@@ -3,6 +3,8 @@
 namespace App\Http\Controllers\Backend;
 
 use App\Http\Controllers\Controller;
+use App\Models\Patient;
+use App\Models\PatientClinicalRecord;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -45,7 +47,14 @@ class AdminController extends Controller
 
 
     public function dashboard(){
-        return view('admin.backend.dashboard');
+        $doctors = User::where('role','doctor')->count();
+        $patients = Patient::count();
+        $diabetes = PatientClinicalRecord::where('diabetes','Diabetes')->count();
+        $hypertension = PatientClinicalRecord::where('hypertension','Hypertension')->count();
+
+        //patient
+
+        return view('admin.backend.dashboard',compact('doctors','patients','diabetes','hypertension'));
      }
 
     public function AdminLogout(Request $request)
