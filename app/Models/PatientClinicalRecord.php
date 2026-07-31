@@ -3,9 +3,12 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class PatientClinicalRecord extends Model
 {
+    use SoftDeletes;
+    
       protected $table = 'patient_clinical_records';
       protected $fillable = [
         'patient_id',
