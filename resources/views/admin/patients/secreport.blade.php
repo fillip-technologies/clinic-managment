@@ -70,7 +70,6 @@
     </style>
 
 
-
     <div class="w-full max-w-7xl bg-white rounded-3xl card-shadow p-6 md:p-9 transition-all m-auto">
 
         <div class="flex flex-wrap items-center justify-between border-b border-[#e2ebf3] pb-5 mb-7">
@@ -88,7 +87,6 @@
             </div>
         </div>
 
-        <!-- ====== FORM with name & value attributes (Laravel friendly) ====== -->
         <form action="{{ route('createNewRecord', $data->id) }}" class="space-y-7" method="POST" action="/patient-records"
             enctype="multipart/form-data">
             @csrf
@@ -527,6 +525,11 @@
                             placeholder="result"
                             class="w-full rounded-xl border border-[#d3dfea] px-3 py-2 text-sm input-focus">
                     </div>
+                     <div><label class="block text-xs font-semibold text-[#2f5a77]">Temparature</label>
+                            <input type="number" name="temprature" value="{{ old('temprature') }}"
+                                placeholder="number"
+                                class="w-full rounded-xl border border-[#d3dfea] px-3 py-2 text-sm input-focus">
+                        </div>
                 </div>
             </div>
 

@@ -50,6 +50,7 @@ class PatientClinicalRecord extends Model
         'hcv',
         'fib_score',
         'fib_scan',
+        'temprature',
         'usg',
         'chol',
         'tg',
@@ -68,6 +69,10 @@ class PatientClinicalRecord extends Model
         'ophthalmic_ex',
         'foot_ev',
         'car_echo_ev',
+        'diabetes',
+        'hypertension',
+        'obesity',
+        'infection'
     ];
 
     public function patient(){

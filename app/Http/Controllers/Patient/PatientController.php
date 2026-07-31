@@ -8,22 +8,24 @@ use App\Models\PatientClinicalRecord;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Validation\Rule;
 
 class PatientController extends Controller
 {
-    public function patientList(){
+    public function patientList()
+    {
         $records = PatientClinicalRecord::with(['patient'])->latest()->get();
 
-        return view('admin.patients.listing',compact('records'));
+        return view('admin.patients.listing', compact('records'));
     }
 
-    public function createPatient(){
+    public function createPatient()
+    {
         return view('admin.patients.patient');
     }
 
     public function store(Request $request)
     {
-        // dd($request->all());
 
         $validator = Validator::make($request->all(), [
             'record_date' => 'required|date',
@@ -98,17 +100,59 @@ class PatientController extends Controller
             'vitamin_b12' => 'nullable|string|max:20',
             's_cortisol' => 'nullable|string|max:20',
             'dex_skip_test' => 'nullable|string|max:50',
-
+            'temprature' => 'nullable|string',
             'ophthalmic_ex' => 'nullable|string|max:500',
             'foot_ev' => 'nullable|string|max:500',
             'car_echo_ev' => 'nullable|string|max:500',
         ]);
+
+
 
         if ($validator->fails()) {
             return redirect()->back()
                 ->withErrors($validator)
                 ->withInput();
         }
+
+        $diabetes = "Normal";
+        $hypertension = "Normal";
+        $infection = "Normal";
+        $obesity = "Normal";
+
+        if (
+            $request->hba1c >= 6.5 ||
+            $request->fbs >= 126 ||
+            $request->rbs >= 200
+        ) {
+            $diabetes = "Diabetes";
+        }
+
+
+        if (
+            $request->sbp >= 130 ||
+            $request->dbp >= 90
+        ) {
+            $hypertension = "Hypertension";
+        }
+
+        if (
+            $request->temprature >= 99.4 ||
+            $request->wbc > 11000 ||
+            $request->crp > 10
+        ) {
+            $infection = "Infection";
+        }
+
+        if (
+            $request->bmi >= 25 ||
+            ($request->gender == 'Male' && $request->waist > 90) ||
+            ($request->gender == 'Female' && $request->waist > 80)
+        ) {
+            $obesity = "Obesity";
+        }
+
+
+
 
         $attachmentPath = null;
         if ($request->hasFile('attachment')) {
@@ -129,32 +173,31 @@ class PatientController extends Controller
             'registration_no' => $request->registration_no,
         ]);
 
-        $record = PatientClinicalRecord::create([
-            "patient_id"=>$patient->id,
+        PatientClinicalRecord::create([
+            "patient_id" => $patient->id,
             'newly_detected' => $request->newly_detected,
-            'duration_of_diabetes' => $request->duration_of_diabetes,
-            'start_insulin_date' => $request->start_insulin_date,
-            'stop_insulin_date' => $request->stop_insulin_date,
+            'duration_of_diabetes' => $request->diabetes_duration,
+            'start_insulin_date' => $request->insulin_start_date,
+            'stop_insulin_date' => $request->insulin_stop_date,
             'attachment' => $attachmentPath,
-            'height_cm' => $request->height_cm,
-            'weight_kg' => $request->weight_kg,
+            'height_cm' => $request->height,
+            'weight_kg' => $request->weight,
             'bmi' => $request->bmi,
+            'temprature' => $request->temprature,
             'waist_height_ratio' => $request->waist_height_ratio,
             'bmi_group' => $request->bmi_group,
-            'waist_cm' => $request->waist_cm,
-            'hip_cm' => $request->hip_cm,
+            'waist_cm' => $request->waist,
+            'hip_cm' => $request->hip,
             'waist_hip_ratio' => $request->waist_hip_ratio,
-
             'social_class' => $request->social_class,
             'income_class' => $request->income_class,
             'education' => $request->education,
             'physical_activity' => $request->physical_activity,
             'veg_nonveg' => $request->veg_nonveg,
-
             'htn' => $request->htn,
             'sbp' => $request->sbp,
             'dbp' => $request->dbp,
-            'hb_percent' => $request->hb_percent,
+            'hb_percent' => $request->hb,
             'plt' => $request->plt,
             'mcv' => $request->mcv,
             'creatinine' => $request->creatinine,
@@ -162,9 +205,9 @@ class PatientController extends Controller
             'acr' => $request->acr,
             'uric_acid' => $request->uric_acid,
             'urine_cast_cell' => $request->urine_cast_cell,
-            'na_plus' => $request->na_plus,
-            'k_plus' => $request->k_plus,
-            'i_calcium' => $request->i_calcium,
+            'na_plus' => $request->sodium,
+            'k_plus' => $request->potassium,
+            'i_calcium' => $request->ionized_calcium,
             'phosphorus' => $request->phosphorus,
             'sgpt' => $request->sgpt,
             'sgot' => $request->sgot,
@@ -175,7 +218,7 @@ class PatientController extends Controller
             'fib_score' => $request->fib_score,
             'fib_scan' => $request->fib_scan,
             'usg' => $request->usg,
-            'chol' => $request->chol,
+            'chol' => $request->cholesterol,
             'tg' => $request->tg,
             'hdl' => $request->hdl,
             'ldl' => $request->ldl,
@@ -188,10 +231,14 @@ class PatientController extends Controller
             'vitamin_d25' => $request->vitamin_d25,
             'vitamin_b12' => $request->vitamin_b12,
             's_cortisol' => $request->cortisol,
-            'dex_skip_test' => $request->dex_skip_test,
-            'ophthalmic_ex' => $request->ophthalmic_ex,
-            'foot_ev' => $request->foot_ev,
-            'car_echo_ev' => $request->car_echo_ev,
+            'dex_skip_test' => $request->dex_suppression_test,
+            'ophthalmic_ex' => $request->ophthalmic_exam,
+            'foot_ev' => $request->foot_exam,
+            'car_echo_ev' => $request->echo_exam,
+            'diabetes' => $diabetes,
+            'hypertension' => $hypertension,
+            'obesity' => $obesity,
+            'infection' => $infection,
         ]);
 
         return redirect()->route("list.patient")
@@ -212,10 +259,11 @@ class PatientController extends Controller
         return view('admin.patients.edit', compact('record'));
     }
 
-
     public function update(Request $request, $id)
     {
-        $record = PatientClinicalRecord::with(['patient'])->findOrFail($id);
+        $patient = Patient::findOrFail($id);
+
+        $record = PatientClinicalRecord::where('patient_id', $patient->id)->first();
 
         $validator = Validator::make($request->all(), [
             'record_date' => 'required|date',
@@ -226,14 +274,19 @@ class PatientController extends Controller
             'rcdho_grade' => 'nullable|string|max:50',
             'address' => 'nullable|string|max:500',
             'mobile_no' => 'nullable|string|max:20',
-            // 'registration_no' => 'nullable|string|max:50',
+
+            'registration_no' => [
+                'nullable',
+                'string',
+                'max:50',
+                Rule::unique('patients', 'registration_no')->ignore($patient->id),
+            ],
 
             'newly_detected' => 'nullable|in:Yes,No',
             'duration_of_diabetes' => 'nullable|string|max:50',
             'start_insulin_date' => 'nullable|date',
             'stop_insulin_date' => 'nullable|date|after_or_equal:start_insulin_date',
-            'attachment' => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:5120',
-
+            'attachment' => 'nullable|file',
 
             'height_cm' => 'nullable|numeric|min:0|max:300',
             'weight_kg' => 'nullable|numeric|min:0|max:500',
@@ -244,13 +297,11 @@ class PatientController extends Controller
             'hip_cm' => 'nullable|numeric|min:0|max:300',
             'waist_hip_ratio' => 'nullable|numeric|min:0|max:5',
 
-
             'social_class' => 'nullable|in:Upper,Middle,Lower',
             'income_class' => 'nullable|in:High,Medium,Low',
             'education' => 'nullable|in:Graduate,Post-grad,School',
             'physical_activity' => 'nullable|in:Sedentary,Moderate,Active',
             'veg_nonveg' => 'nullable|in:Vegetarian,Non-vegetarian,Vegan',
-
 
             'htn' => 'nullable|in:Yes,No',
             'sbp' => 'nullable|numeric|min:0|max:300',
@@ -290,48 +341,143 @@ class PatientController extends Controller
             'vitamin_b12' => 'nullable|string|max:20',
             's_cortisol' => 'nullable|string|max:20',
             'dex_skip_test' => 'nullable|string|max:50',
+            'temprature' => 'nullable|string',
             'ophthalmic_ex' => 'nullable|string|max:500',
             'foot_ev' => 'nullable|string|max:500',
             'car_echo_ev' => 'nullable|string|max:500',
         ]);
 
         if ($validator->fails()) {
-            return redirect()->back()
-                ->withErrors($validator)
-                ->withInput();
+            return back()->withErrors($validator)->withInput();
         }
 
 
+        $diabetes = "Normal";
+        $hypertension = "Normal";
+        $infection = "Normal";
+        $obesity = "Normal";
+
+        if ($request->hba1c >= 6.5 || $request->fbs >= 126 || $request->rbs >= 200) {
+            $diabetes = "Diabetes";
+        }
+
+        if ($request->sbp >= 130 || $request->dbp >= 90) {
+            $hypertension = "Hypertension";
+        }
+
+        if ($request->temprature >= 99.4 || $request->wbc > 11000 || $request->crp > 10) {
+            $infection = "Infection";
+        }
+
+        if (
+            $request->bmi >= 25 ||
+            ($request->gender == 'Male' && $request->waist_cm > 90) ||
+            ($request->gender == 'Female' && $request->waist_cm > 80)
+        ) {
+            $obesity = "Obesity";
+        }
+
+
+        $attachmentPath = $record?->attachment;
+
         if ($request->hasFile('attachment')) {
 
-            if ($record->attachment) {
-                Storage::disk('public')->delete($record->attachment);
+            if ($attachmentPath && Storage::disk('public')->exists($attachmentPath)) {
+                Storage::disk('public')->delete($attachmentPath);
             }
 
             $file = $request->file('attachment');
             $filename = time() . '_' . $file->getClientOriginalName();
             $attachmentPath = $file->storeAs('patient-attachments', $filename, 'public');
-            $record->attachment = $attachmentPath;
         }
 
-           $record->patient->update([
-            'patient_name'         => $request->patient_name,
-            'age'                  => $request->age,
-            'gender'               => $request->gender,
-            'address'              => $request->address,
-            'mobile_no'            => $request->mobile,
-            'father_husband_name'  => $request->guardian_name,
-            'record_date'          => $request->record_date,
-         
-            'rcdho_grade'          => $request->rcdho_grade,
+
+        $patient->update([
+            'record_date' => $request->record_date,
+            'patient_name' => $request->patient_name,
+            'age' => $request->age,
+            'gender' => $request->gender,
+            'father_husband_name' => $request->guardian_name,
+            'rcdho_grade' => $request->rcdho_grade,
+            'address' => $request->address,
+            'mobile_no' => $request->mobile,
+            'registration_no' => $request->registration_no,
         ]);
 
-        $record->update($request->except(['_token', '_method', 'attachment']));
+
+        PatientClinicalRecord::updateOrCreate(
+            ['patient_id' => $patient->id],
+            [
+                'newly_detected' => $request->newly_detected,
+                'duration_of_diabetes' => $request->diabetes_duration,
+                'start_insulin_date' => $request->insulin_start_date,
+                'stop_insulin_date' => $request->insulin_stop_date,
+                'attachment' => $attachmentPath,
+                'height_cm' => $request->height,
+                'weight_kg' => $request->weight,
+                'bmi' => $request->bmi,
+                'temprature' => $request->temprature,
+                'waist_height_ratio' => $request->waist_height_ratio,
+                'bmi_group' => $request->bmi_group,
+                'waist_cm' => $request->waist,
+                'hip_cm' => $request->hip,
+                'waist_hip_ratio' => $request->waist_hip_ratio,
+                'social_class' => $request->social_class,
+                'income_class' => $request->income_class,
+                'education' => $request->education,
+                'physical_activity' => $request->physical_activity,
+                'veg_nonveg' => $request->veg_nonveg,
+                'htn' => $request->htn,
+                'sbp' => $request->sbp,
+                'dbp' => $request->dbp,
+                'hb_percent' => $request->hb,
+                'plt' => $request->plt,
+                'mcv' => $request->mcv,
+                'creatinine' => $request->creatinine,
+                'egfr' => $request->egfr,
+                'acr' => $request->acr,
+                'uric_acid' => $request->uric_acid,
+                'urine_cast_cell' => $request->urine_cast_cell,
+                'na_plus' => $request->sodium,
+                'k_plus' => $request->potassium,
+                'i_calcium' => $request->ionized_calcium,
+                'phosphorus' => $request->phosphorus,
+                'sgpt' => $request->sgpt,
+                'sgot' => $request->sgot,
+                'alkp' => $request->alkp,
+                'hiv' => $request->hiv,
+                'hbsag' => $request->hbsag,
+                'hcv' => $request->hcv,
+                'fib_score' => $request->fib_score,
+                'fib_scan' => $request->fib_scan,
+                'usg' => $request->usg,
+                'chol' => $request->cholesterol,
+                'tg' => $request->tg,
+                'hdl' => $request->hdl,
+                'ldl' => $request->ldl,
+                'bsf' => $request->bsf,
+                'bspp' => $request->bspp,
+                'hba1c' => $request->hba1c,
+                'tsh' => $request->tsh,
+                't3' => $request->t3,
+                't4' => $request->t4,
+                'vitamin_d25' => $request->vitamin_d25,
+                'vitamin_b12' => $request->vitamin_b12,
+                's_cortisol' => $request->cortisol,
+                'dex_skip_test' => $request->dex_suppression_test,
+                'ophthalmic_ex' => $request->ophthalmic_exam,
+                'foot_ev' => $request->foot_exam,
+                'car_echo_ev' => $request->echo_exam,
+                'diabetes' => $diabetes,
+                'hypertension' => $hypertension,
+                'obesity' => $obesity,
+                'infection' => $infection,
+            ]
+        );
+
         return redirect()->route('list.patient')
-            ->with('success', 'Patient clinical record updated successfully!');
+            ->with('success', 'Patient clinical record updated successfully.');
     }
-
-
     public function destroy($id)
     {
         $record = PatientClinicalRecord::findOrFail($id);
@@ -372,14 +518,16 @@ class PatientController extends Controller
 
 
 
-        public function addnewReport($id){
-            $data = PatientClinicalRecord::with(['patient'])->findOrFail($id);
-            return view('admin.patients.secreport',compact('data'));
-        }
+    public function addnewReport($id)
+    {
+        $data = PatientClinicalRecord::with(['patient'])->findOrFail($id);
+        return view('admin.patients.secreport', compact('data'));
+    }
 
-        public function createNewRecord(Request $request,$id){
+    public function createNewRecord(Request $request, $id)
+    {
 
-            $request->validate([
+        $request->validate([
             'newly_detected' => 'nullable|in:Yes,No',
             'duration_of_diabetes' => 'nullable|string|max:50',
             'start_insulin_date' => 'nullable|date',
@@ -400,7 +548,6 @@ class PatientController extends Controller
             'education' => 'nullable|in:Graduate,Post-grad,School',
             'physical_activity' => 'nullable|in:Sedentary,Moderate,Active',
             'veg_nonveg' => 'nullable|in:Vegetarian,Non-vegetarian,Vegan',
-
 
             'htn' => 'nullable|in:Yes,No',
             'sbp' => 'nullable|numeric|min:0|max:300',
@@ -443,19 +590,25 @@ class PatientController extends Controller
             'ophthalmic_ex' => 'nullable|string|max:500',
             'foot_ev' => 'nullable|string|max:500',
             'car_echo_ev' => 'nullable|string|max:500',
-            ]);
+        ]);
+        $results = [
+            'HbA1c'       => checkReport('hba1c', $request->hba1c),
+            'SBP'         => checkReport('sbp', $request->sbp),
+            'DBP'         => checkReport('dbp', $request->dbp),
+            'BMI'         => checkReport('bmi', $request->bmi),
+            'Temperature' => checkReport('temperature', $request->temperature),
+        ];
 
+        $creation = PatientClinicalRecord::find($id);
 
-            $creation = PatientClinicalRecord::find($id);
-
-            $attachmentPath = null;
+        $attachmentPath = null;
         if ($request->hasFile('attachment')) {
             $file = $request->file('attachment');
             $filename = time() . '_' . $file->getClientOriginalName();
             $attachmentPath = $file->storeAs('patient-attachments', $filename, 'public');
         }
-            $creation::create([
-            "patient_id"=>$request->patient_id,
+        $creation::create([
+            "patient_id" => $request->patient_id,
             'newly_detected' => $request->newly_detected,
             'duration_of_diabetes' => $request->duration_of_diabetes,
             'start_insulin_date' => $request->start_insulin_date,
@@ -479,7 +632,7 @@ class PatientController extends Controller
             'htn' => $request->htn,
             'sbp' => $request->sbp,
             'dbp' => $request->dbp,
-            'hb_percent' => $request->hb_percent,
+            'hb_percent' => $request->hb,
             'plt' => $request->plt,
             'mcv' => $request->mcv,
             'creatinine' => $request->creatinine,
@@ -487,9 +640,9 @@ class PatientController extends Controller
             'acr' => $request->acr,
             'uric_acid' => $request->uric_acid,
             'urine_cast_cell' => $request->urine_cast_cell,
-            'na_plus' => $request->na_plus,
-            'k_plus' => $request->k_plus,
-            'i_calcium' => $request->i_calcium,
+            'na_plus' => $request->sodium,
+            'k_plus' => $request->potassium,
+            'i_calcium' => $request->ionized_calcium,
             'phosphorus' => $request->phosphorus,
             'sgpt' => $request->sgpt,
             'sgot' => $request->sgot,
@@ -500,7 +653,7 @@ class PatientController extends Controller
             'fib_score' => $request->fib_score,
             'fib_scan' => $request->fib_scan,
             'usg' => $request->usg,
-            'chol' => $request->chol,
+            'chol' => $request->cholesterol,
             'tg' => $request->tg,
             'hdl' => $request->hdl,
             'ldl' => $request->ldl,
@@ -512,21 +665,14 @@ class PatientController extends Controller
             't4' => $request->t4,
             'vitamin_d25' => $request->vitamin_d25,
             'vitamin_b12' => $request->vitamin_b12,
-            's_cortisol' => $request->s_cortisol,
-            'dex_skip_test' => $request->dex_skip_test,
-            'ophthalmic_ex' => $request->ophthalmic_ex,
-            'foot_ev' => $request->foot_ev,
-            'car_echo_ev' => $request->car_echo_ev,
-            ]);
+            's_cortisol' => $request->cortisol,
+            'dex_skip_test' => $request->dex_suppression_test,
+            'ophthalmic_ex' => $request->ophthalmic_exam,
+            'foot_ev' => $request->foot_exam,
+            'car_echo_ev' => $request->echo_exam,
+        ]);
 
-             return redirect()->route('list.patient')
+        return redirect()->route('list.patient')
             ->with('success', 'New Report Added SuccessFuly');
-        }
-
-
-
-
-
+    }
 }
-
-

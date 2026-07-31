@@ -25,3 +25,43 @@ if(!function_exists('DoctorLogin')){
         }
     }
 }
+
+if(!function_exists('report_category')){
+    function report_category(){
+        return
+        [
+            'Diabetise',
+            'Hypertension',
+            'Obesity',
+            'Infection'
+        ];
+    }
+}
+
+if (!function_exists('checkReport')) {
+
+    function checkReport($parameter, $value)
+    {
+        $parameter = trim($parameter);
+        switch ($parameter) {
+
+            case 'hba1c':
+                return $value >= 6.5 ? 'Diabetes' : 'Normal';
+
+            case 'sbp':
+                return $value >= 140 ? 'Hypertension' : 'Normal';
+
+            case 'dbp':
+                return $value >= 90 ? 'Hypertension' : 'Normal';
+
+            case 'bmi':
+                return $value > 25 ? 'Obesity' : 'Normal';
+
+            case 'temperature':
+                return $value > 99.4 ? 'Infection' : 'Normal';
+
+            default:
+                return 'Unknown Parameter';
+        }
+    }
+}
