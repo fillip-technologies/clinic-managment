@@ -2,7 +2,7 @@
     @php
         $dashboardRoute = null;
         $name = null;
-        if (Auth::guard("super_admin")->check()) {
+        if (Auth::guard('super_admin')->check()) {
             $dashboardRoute = route('admin.dashboard');
             $name = 'Admin';
         }
@@ -60,11 +60,44 @@
             </a>
 
             <!-- Reports -->
-            <a href="#"
-                class="sidebar-item flex items-center gap-4 px-4 py-3 rounded-lg text-slate-300 hover:bg-slate-700 hover:text-white transition">
-                <i class="fas fa-chart-line w-5"></i>
-                <span class="font-medium">Reports</span>
-            </a>
+            <div x-data="{ open: false }">
+                <!-- Parent Menu -->
+                <button @click="open = !open"
+                    class="w-full sidebar-item flex items-center justify-between gap-4 px-4 py-3 rounded-lg text-slate-300 hover:bg-slate-700 hover:text-white transition">
+
+                    <div class="flex items-center gap-4">
+                        <i class="fas fa-chart-line w-5"></i>
+                        <span class="font-medium">Reports</span>
+                    </div>
+
+                    <i class="fas fa-chevron-down text-xs transition-transform" :class="{ 'rotate-180': open }"></i>
+                </button>
+
+                <!-- Dropdown -->
+                <div x-show="open" x-transition class="ml-9 mt-2 space-y-1">
+
+                    <a href="{{ route('report.diabetesReport') }}"
+                        class="block px-4 py-2 rounded-lg text-slate-300 hover:bg-slate-700 hover:text-white">
+                        Diabetes
+                    </a>
+
+                    <a href="{{ route('report.hypertensioReport') }}"
+                        class="block px-4 py-2 rounded-lg text-slate-300 hover:bg-slate-700 hover:text-white">
+                        Hypertension
+                    </a>
+
+                    <a href="{{route('report.obesityReport') }}"
+                        class="block px-4 py-2 rounded-lg text-slate-300 hover:bg-slate-700 hover:text-white">
+                        Obesity
+                    </a>
+
+                    <a href="{{route('report.InfectionReport') }}"
+                        class="block px-4 py-2 rounded-lg text-slate-300 hover:bg-slate-700 hover:text-white">
+                        Infection
+                    </a>
+
+                </div>
+            </div>
 
             <!-- Settings -->
             <a href="#"

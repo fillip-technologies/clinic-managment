@@ -3,6 +3,7 @@
 use App\Http\Controllers\Backend\AdminController;
 use App\Http\Controllers\Backend\DoctorManageController;
 use App\Http\Controllers\Patient\PatientController;
+use App\Http\Controllers\Patient\ReportController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/login',[AdminController::class, 'login'])->name('login');
@@ -31,5 +32,12 @@ Route::prefix('admin')->middleware(['super_admin'])->group(function(){
         Route::post('/createNewRecord/{id}','createNewRecord')->name('createNewRecord');
         Route::get('/single/patient/{id}','edit')->name('patient.edit');
         Route::delete('/delete/patient/{id}','destroy')->name('patient.delete');
+    });
+
+    Route::controller(ReportController::class)->group(function(){
+        Route::get('/obesity/report','obesityReport')->name('report.obesityReport');
+        Route::get('/diabetes/report','diabetesReport')->name('report.diabetesReport');
+        Route::get('/hypertensio/report','hypertensioReport')->name('report.hypertensioReport');
+        Route::get('/Infection/report','InfectionReport')->name('report.InfectionReport');
     });
 });
