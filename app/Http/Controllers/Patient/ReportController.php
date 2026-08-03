@@ -175,7 +175,6 @@ class ReportController extends Controller
         }
 
         $report->delete();
-
         return back()->with('success', 'Report Deleted Successfully.');
     }
 }

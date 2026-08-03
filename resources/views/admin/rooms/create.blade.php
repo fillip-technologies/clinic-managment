@@ -103,9 +103,9 @@
             <span class="ml-auto text-xs bg-slate-200 text-slate-600 px-3 py-1 rounded-full font-medium">data table</span>
         </div>
 
-        <!-- Main form + table side by side (flex) -->
-        <form action="{{ route('room.store') }}" method="POST" enctype="multipart/form-data"
-            class="flex flex-col lg:flex-row gap-6">
+
+        <form action="{{ isset($editroom) ? route('room.update', $editroom->id) : route('room.store') }}" method="POST"
+            enctype="multipart/form-data" class="flex flex-col lg:flex-row gap-6">
             @csrf
 
             <!-- LEFT: main form fields (room name, type, actions) -->
@@ -116,6 +116,7 @@
                         <i class="fas fa-tag text-indigo-400 mr-1.5"></i> Room name
                     </label>
                     <input type="text" id="roomName" placeholder="e.g. Design Sprint, Gaming Lobby..." name="room_name"
+                        value="{{ old('room_name', isset($editroom) ? $editroom->room_name : '') }}"
                         class="w-full px-4 py-2.5 border border-slate-300 rounded-xl focus:ring-2 focus:ring-indigo-400 focus:border-indigo-400 outline-none transition bg-slate-50/50 text-slate-800 placeholder:text-slate-400">
                     @error('room_name')
                         <span class="text-sm text-red-600">{{ $message }}</span>
@@ -129,10 +130,10 @@
                     </label>
                     <select id="roomType" name="room_type"
                         class="w-full px-4 py-2.5 border border-slate-300 rounded-xl focus:ring-2 focus:ring-indigo-400 focus:border-indigo-400 outline-none transition bg-slate-50/50 text-slate-800">
-                        <option value="public">🌐 Public</option>
-                        <option value="private" selected>🔒 Private</option>
-                        <option value="team">👥 Team</option>
-                        <option value="channel">📢 Channel</option>
+                        <option value="public" @selected(isset($editroom) ? $editroom->room_type == 'public' : '')>🌐 Public</option>
+                        <option value="private" @selected(isset($editroom) ? $editroom->room_type == 'private' : '')>🔒 Private</option>
+                        <option value="team" @selected(isset($editroom) ? $editroom->room_type == 'team' : '')>👥 Team</option>
+                        <option value="channel" @selected(isset($editroom) ? $editroom->room_type == 'channel' : '')>📢 Channel</option>
                     </select>
                     @error('room_type')
                         <span class="text-sm text-red-600">{{ $message }}</span>
@@ -150,6 +151,10 @@
                         @error('file')
                             <span class="text-sm text-red-600">{{ $message }}</span>
                         @enderror
+                        <div>
+                            <img src="{{ isset($editroom) ? asset($editroom->file) : 'defailt.jpg' }}" alt=""
+                                width="100" height="100" class="">
+                        </div>
                         <div
                             class="w-full px-4 py-2.5 border border-slate-300 rounded-xl bg-slate-50/50 text-slate-600 flex items-center gap-2 pointer-events-none">
                             <i class="fas fa-upload text-indigo-400"></i>
@@ -165,32 +170,56 @@
                         <i class="fas fa-user-plus text-indigo-400 mr-1.5"></i> Add Members
                     </label>
 
-                    <!-- Container for dynamic member inputs -->
                     <div id="memberInputsContainer" class="space-y-2">
-                        <!-- Default input row -->
-                        <div class="input-row flex items-center gap-2">
-                            <input type="text" placeholder="Member name..." name="members[]"
-                                class="flex-1 px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-300 focus:border-indigo-300 outline-none text-sm bg-white member-input">
-                            <button type="button" class="remove-input-btn text-red-400 hover:text-red-600 transition p-1"
-                                title="Remove this input">
-                                <i class="fas fa-times"></i>
-                            </button>
-                        </div>
+
+                        @if (isset($editroom) && !empty($editroom->members))
+                            @foreach (json_decode($editroom->members, true) ?? [] as $key => $member)
+                                <div class="input-row flex items-center gap-2">
+                                    <input type="text" name="members[]" value="{{ $member }}"
+                                        placeholder="Member name..."
+                                        class="flex-1 px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-300 focus:border-indigo-300 outline-none text-sm bg-white member-input">
+
+                                    <button type="button"
+                                        onclick="deleteMember('{{ $key }}','{{ $editroom->id }}')"
+                                        class="remove-input-btn text-red-400 hover:text-red-600 transition p-1"
+                                        title="Remove">
+                                        <i class="fas fa-times"></i>
+                                    </button>
+                                </div>
+                            @endforeach
+                        @else
+                            <div class="input-row flex items-center gap-2">
+                                <input type="text" name="members[]" placeholder="Member name..."
+                                    class="flex-1 px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-300 focus:border-indigo-300 outline-none text-sm bg-white member-input">
+
+                                <button type="button"
+                                    class="remove-input-btn text-red-400 hover:text-red-600 transition p-1" title="Remove">
+                                    <i class="fas fa-times"></i>
+                                </button>
+                            </div>
+                        @endif
+
                     </div>
 
-                    <!-- Add more input button -->
+                    <!-- Add More -->
                     <button type="button" id="addMoreInputBtn"
                         class="mt-2 w-full bg-white hover:bg-slate-100 text-indigo-600 font-medium py-2 px-4 rounded-lg border border-dashed border-indigo-300 transition text-sm flex items-center justify-center gap-2">
-                        <i class="fas fa-plus-circle"></i> Add more member fields
+
+                        <i class="fas fa-plus-circle"></i>
+                        Add more member fields
+
                     </button>
 
-                    <!-- Add all members to table button -->
+                    <!-- Add Members -->
                     <button type="button" id="addMembersToListBtn"
                         class="mt-2 w-full bg-indigo-600 hover:bg-indigo-700 text-white font-medium py-2 px-4 rounded-lg transition text-sm flex items-center justify-center gap-2">
-                        <i class="fas fa-users"></i> Add all members to list
-                    </button>
-                </div>
 
+                        <i class="fas fa-users"></i>
+                        Add all members to list
+
+                    </button>
+
+                </div>
                 <!-- Submit & reset -->
                 <div class="flex flex-col sm:flex-row gap-3 pt-1">
                     <button type="submit"
@@ -217,8 +246,8 @@
                         <span id="memberCounter"
                             class="bg-indigo-100 text-indigo-700 text-xs px-2.5 py-0.5 rounded-full font-bold">0</span>
                     </div>
-                    <button type="button" id="clearMembersBtn" class="text-xs text-slate-400 hover:text-red-500 transition"
-                        title="Clear all members">
+                    <button type="button" id="clearMembersBtn"
+                        class="text-xs text-slate-400 hover:text-red-500 transition" title="Clear all members">
                         <i class="fas fa-trash-alt"></i> Clear
                     </button>
                 </div>
@@ -309,12 +338,12 @@
                                         <td class="px-5 py-4">
                                             <div class="flex items-center justify-center gap-2">
 
-                                                <a href="{{ url('admin/room/edit/' . $item->id) }}"
+                                                <a href="{{ route('room.edit', $item->id) }}"
                                                     class="h-9 w-9 flex items-center justify-center rounded-lg bg-indigo-100 text-indigo-600 hover:bg-indigo-600 hover:text-white transition">
                                                     <i class="fas fa-edit"></i>
                                                 </a>
 
-                                                <button onclick="deleteRoom({{ $item->id }})"
+                                                <button onclick="roomdelete({{ $item->id }})" type="button"
                                                     class="h-9 w-9 flex items-center justify-center rounded-lg bg-red-100 text-red-600 hover:bg-red-600 hover:text-white transition">
                                                     <i class="fas fa-trash"></i>
                                                 </button>
@@ -362,6 +391,48 @@
     </div>
 
     <script>
+        function roomdelete(id) {
+            var id = id;
+            $.ajax({
+                type: "GET",
+                url: "{{ url('admin/delete/room/') }}/" + id,
+                data: {
+                    id: id
+                },
+                success: function(res) {
+                    window.location.reload();
+
+                },
+                error: function(error) {
+                    console.log(error);
+
+                }
+            });
+
+        }
+
+        function deleteMember(id, index) {
+            var index = index;
+            var id = id;
+            $.ajax({
+                type: "GET",
+                url: "{{ url('admin/member/index/') }}/" + index + "/" + id,
+                data: {
+                    id: id,
+                    index: index
+                },
+                success: function(res) {
+                    window.location.reload();
+                },
+                error: function(error) {
+                    console.log(error);
+
+                }
+            });
+
+        }
+
+
         (function() {
             "use strict";
 

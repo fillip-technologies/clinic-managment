@@ -12,14 +12,12 @@ class RoomCreateController extends Controller
 {
     public function roomListing()
     {
-          $rooms = RoomCreate::paginate(10) ?? [];
-        return view('admin.rooms.create',compact('rooms'));
+        $rooms = RoomCreate::paginate(10) ?? [];
+        return view('admin.rooms.create', compact('rooms'));
     }
 
     public function roomStore(Request $request)
     {
-
-
         $request->validate([
             'room_name' => 'required|string|max:255',
             'room_type' => 'required|string|in:public,private,team,channel',
@@ -37,13 +35,13 @@ class RoomCreateController extends Controller
         }
 
 
-            RoomCreate::create([
-                'room_name'       => $request->room_name,
-                'room_type'       => $request->room_type,
-                'members'    => json_encode($request->members),
-                'file'      => $imagePath,
-                'created_by' => Auth::guard('super_admin')->id(),
-            ]);
+        RoomCreate::create([
+            'room_name'       => $request->room_name,
+            'room_type'       => $request->room_type,
+            'members'    => json_encode($request->members),
+            'file'      => $imagePath,
+            'created_by' => Auth::guard('super_admin')->id(),
+        ]);
 
 
 
@@ -52,6 +50,7 @@ class RoomCreateController extends Controller
 
     public function roomUpdated(Request $request, $id)
     {
+
         $room = RoomCreate::findOrFail($id);
 
         $request->validate([
@@ -80,9 +79,9 @@ class RoomCreateController extends Controller
                 ->store('rooms', 'public');
         }
 
-        $room->name = $request->room_name;
-        $room->type = $request->room_type;
-        $room->members = $request->members;
+        $room->room_name = $request->room_name;
+        $room->room_type = $request->room_type;
+        $room->members = json_encode($request->members);
         $room->save();
 
         return redirect()->back()->with('success', 'Room updated successfully.');
@@ -93,13 +92,44 @@ class RoomCreateController extends Controller
         if ($room->image && Storage::disk('public')->exists($room->image)) {
             Storage::disk('public')->delete($room->image);
         }
-        RoomCreate::where('name', $room->name)->delete();
-        return redirect()->back()->with('success', 'Room deleted successfully.');
+        RoomCreate::where('room_name', $room->room_name)->delete();
+
+        return response()->json([
+            "message"=>"Room deleted successFully",
+            "datas"=>$room
+        ],200);
+
     }
 
     public function roomEdit($id)
     {
-        $room = RoomCreate::find($id);
-        return view('admin.room.edit', compact('room'));
+        $editroom = RoomCreate::find($id);
+        $rooms = RoomCreate::paginate(10) ?? [];
+        return view('admin.rooms.create', compact('editroom', 'rooms'));
+    }
+
+    public function indexmember($id, $index)
+    {
+        $room = RoomCreate::findOrFail(trim($id));
+
+        $members = json_decode($room->members, true);
+
+        if (!isset($members[$index])) {
+            return response()->json([
+                'message' => 'Member not found'
+            ], 404);
+        }
+
+        $deletedMember = $members[$index];
+        unset($members[$index]);
+        $members = array_values($members);
+        $room->members = json_encode($members);
+        $room->save();
+
+        return response()->json([
+            'message' => 'Member deleted successfully',
+            'data' => $deletedMember,
+            'members' => $members
+        ], 200);
     }
 }

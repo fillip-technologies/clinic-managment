@@ -43,10 +43,11 @@ Route::prefix('admin')->middleware(['super_admin'])->group(function () {
     });
 
     Route::controller(RoomCreateController::class)->group(function () {
-        Route::get('/listing/room/data', 'roomListing')->name('room.list');
         Route::get('/edit/room/{id}', 'roomEdit')->name('room.edit');
+        Route::get('/listing/room/data', 'roomListing')->name('room.list');
         Route::post('/create/room/data', 'roomStore')->name('room.store');
         Route::post('/update/room/{id}', 'roomUpdated')->name('room.update');
-        Route::post('/delete/room/{id}', 'roomDelete')->name('room.delete');
+        Route::get('/delete/room/{id}', 'roomDelete')->name('room.delete');
+        Route::get('/member/index/{id}/{index}','indexmember')->name('indexmember');
     });
 });
