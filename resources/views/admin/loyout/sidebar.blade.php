@@ -112,6 +112,12 @@
                 <span class="font-medium">Settings</span>
             </a>
         @elseif(Auth::guard('doctor')->check())
+
+        <a href="{{ route('doctorReporlist') }}"
+                class="sidebar-item flex items-center gap-4 px-4 py-3 rounded-lg text-slate-300 hover:bg-slate-700 hover:text-white transition">
+                <i class="fas fa-users w-5"></i>
+                <span class="font-medium"> + Report Upload</span>
+            </a>
             <a href="#"
                 class="sidebar-item flex items-center gap-4 px-4 py-3 rounded-lg text-slate-300 hover:bg-slate-700 hover:text-white transition">
                 <i class="fas fa-cog w-5"></i>

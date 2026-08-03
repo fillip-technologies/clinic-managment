@@ -7,7 +7,8 @@ use Illuminate\Database\Eloquent\Model;
 class DoctorData extends Model
 {
     protected $primaryKey = 'id';
-    protected $fillable = ['user_id','file','report_type'];
+    protected $fillable = ['user_id','file','report_type',"fullname",'date'];
     protected $table = "doctor_data";
+     protected $casts = ['array'=>'file'];
 
 }
