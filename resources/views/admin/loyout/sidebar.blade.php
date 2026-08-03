@@ -64,6 +64,12 @@
                 <i class="fas fa-calendar-check w-5"></i>
                 <span class="font-medium">Appointments</span>
             </a>
+            <a href="{{ route('analytics.disease') }}"
+                class="sidebar-item flex items-center gap-4 px-4 py-3 rounded-lg text-slate-300 hover:bg-slate-700 hover:text-white transition">
+                <i class="fas fa-chart-line w-5"></i>
+                <span class="font-medium">Analytics</span>
+            </a>
+
 
             <!-- Reports -->
             <div x-data="{ open: false }">
@@ -92,12 +98,12 @@
                         Hypertension
                     </a>
 
-                    <a href="{{route('report.obesityReport') }}"
+                    <a href="{{ route('report.obesityReport') }}"
                         class="block px-4 py-2 rounded-lg text-slate-300 hover:bg-slate-700 hover:text-white">
                         Obesity
                     </a>
 
-                    <a href="{{route('report.InfectionReport') }}"
+                    <a href="{{ route('report.InfectionReport') }}"
                         class="block px-4 py-2 rounded-lg text-slate-300 hover:bg-slate-700 hover:text-white">
                         Infection
                     </a>
@@ -112,8 +118,7 @@
                 <span class="font-medium">Settings</span>
             </a>
         @elseif(Auth::guard('doctor')->check())
-
-        <a href="{{ route('doctorReporlist') }}"
+            <a href="{{ route('doctorReporlist') }}"
                 class="sidebar-item flex items-center gap-4 px-4 py-3 rounded-lg text-slate-300 hover:bg-slate-700 hover:text-white transition">
                 <i class="fas fa-users w-5"></i>
                 <span class="font-medium"> + Report Upload</span>

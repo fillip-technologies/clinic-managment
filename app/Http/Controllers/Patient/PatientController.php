@@ -9,6 +9,8 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\Rule;
+use Illuminate\Support\Facades\DB;
+
 
 class PatientController extends Controller
 {
@@ -675,4 +677,50 @@ class PatientController extends Controller
         return redirect()->route('list.patient')
             ->with('success', 'New Report Added SuccessFuly');
     }
+
+
+ public function diseaseAnalytics()
+    {
+      
+        $records = PatientClinicalRecord::query();
+
+
+        $totalPatients = $records->count();
+
+
+        $diabetes = (clone $records)->where('diabetes', '!=', 'Normal')->count();
+        $hypertension = (clone $records)->where('hypertension', '!=', 'Normal')->count();
+        $obesity = (clone $records)->where('obesity', '!=', 'Normal')->count();
+        $infection = (clone $records)->where('infection', '!=', 'Normal')->count();
+
+
+        $monthlyTrend = PatientClinicalRecord::selectRaw("
+            MONTH(created_at) as month,
+            COUNT(*) as total,
+            SUM(CASE WHEN diabetes != 'Normal' THEN 1 ELSE 0 END) as diabetes_count,
+            SUM(CASE WHEN hypertension != 'Normal' THEN 1 ELSE 0 END) as hypertension_count,
+            SUM(CASE WHEN obesity != 'Normal' THEN 1 ELSE 0 END) as obesity_count,
+            SUM(CASE WHEN infection != 'Normal' THEN 1 ELSE 0 END) as infection_count
+        ")
+        ->groupBy(DB::raw('MONTH(created_at)'))
+        ->orderBy(DB::raw('MONTH(created_at)'))
+        ->get();
+
+
+        $monthlyTrend->each(function ($item) {
+            $item->prevalence_percentage = $item->total > 0
+                ? round(($item->diabetes_count / $item->total * 100), 1)
+                : 0;
+        });
+
+        return view('admin.analytics.analytics', compact(
+            'totalPatients',
+            'diabetes',
+            'hypertension',
+            'obesity',
+            'infection',
+            'monthlyTrend'
+        ));
+    }
 }
+
