@@ -217,6 +217,12 @@
         @endforeach
     @endif
 
+    @if (session('error'))
+        <script>
+            toastr.error("{{ session('error') }}")
+        </script>
+    @endif
+
     <div class="w-full max-w-md">
         <div class="card-clean rounded-3xl p-8 sm:p-10 border border-black">
 

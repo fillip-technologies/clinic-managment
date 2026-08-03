@@ -504,37 +504,28 @@
 
             // ----- Render table (data table format) -----
             function renderTable() {
-                // remove all .member-row (keep empty row)
                 const rows = memberTableBody.querySelectorAll('.member-row');
                 rows.forEach(row => row.remove());
 
-                // update counter
                 memberCounter.textContent = members.length;
 
-                // Update hidden input
                 membersListInput.value = JSON.stringify(members);
 
-                // toggle empty row
                 if (members.length === 0) {
                     emptyTableRow.style.display = 'table-row';
                 } else {
                     emptyTableRow.style.display = 'none';
                 }
-
-                // render each member as a table row
                 members.forEach((memberName, index) => {
                     const tr = document.createElement('tr');
                     tr.className = 'member-row border-b border-slate-100 hover:bg-slate-50 transition';
 
-                    // index column
                     const tdIndex = document.createElement('td');
                     tdIndex.className = 'px-4 py-2 text-slate-500 text-xs font-mono';
                     tdIndex.textContent = index + 1;
 
-                    // name column
                     const tdName = document.createElement('td');
                     tdName.className = 'px-4 py-2 text-slate-700 font-medium';
-                    // avatar + name
                     const nameWrapper = document.createElement('div');
                     nameWrapper.className = 'flex items-center gap-2';
                     const avatar = document.createElement('span');
@@ -548,7 +539,6 @@
                     nameWrapper.appendChild(nameSpan);
                     tdName.appendChild(nameWrapper);
 
-                    // action column (remove button)
                     const tdAction = document.createElement('td');
                     tdAction.className = 'px-4 py-2 text-right';
                     const removeBtn = document.createElement('button');
@@ -562,7 +552,6 @@
                         e.stopPropagation();
                         members.splice(index, 1);
                         renderTable();
-                        // clear feedback
                         feedback.textContent = '';
                         feedback.className =
                             'mt-3 text-sm font-medium text-center transition-all duration-200 h-6';
@@ -574,12 +563,10 @@
                     tr.appendChild(tdName);
                     tr.appendChild(tdAction);
 
-                    // insert before the empty row (which stays in tbody)
                     memberTableBody.insertBefore(tr, emptyTableRow);
                 });
             }
 
-            // ----- Clear all members -----
             function clearAllMembers() {
                 if (members.length === 0) return;
                 members = [];
