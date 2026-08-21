@@ -67,6 +67,19 @@
             background: #475569;
             border-radius: 12px;
         }
+
+        /* Hide scrollbar completely while maintaining scroll functionality */
+        .no-scrollbar::-webkit-scrollbar {
+            display: none;
+            width: 0px;
+            height: 0px;
+            background: transparent;
+        }
+
+        .no-scrollbar {
+            -ms-overflow-style: none;  /* IE and Edge */
+            scrollbar-width: none;  /* Firefox */
+        }
     </style>
 </head>
 

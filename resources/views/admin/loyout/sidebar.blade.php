@@ -1,4 +1,4 @@
-<aside class="w-72 bg-slate-800 text-slate-200 flex-shrink-0 flex flex-col shadow-2xl">
+<aside class="w-72 bg-slate-800 text-slate-200 flex-shrink-0 flex flex-col shadow-2xl overflow-hidden">
     @php
         $dashboardRoute = null;
         $name = null;
@@ -27,7 +27,7 @@
     </div>
 
     <!-- Menu -->
-    <nav class="flex-1 px-4 py-6 space-y-2 overflow-y-auto">
+    <nav class="flex-1 px-4 py-6 space-y-2 overflow-y-auto no-scrollbar">
         <a href="{{ $dashboardRoute }}"
             class="sidebar-item flex items-center gap-4 px-4 py-3 rounded-lg transition-all duration-300
             {{ request()->routeIs('doctor.dashboard') ? 'bg-indigo-600 text-white shadow-lg' : 'text-slate-300 hover:bg-slate-700 hover:text-white' }}">
@@ -48,7 +48,7 @@
             <a href="{{ route('room.list') }}"
                 class="sidebar-item flex items-center gap-4 px-4 py-3 rounded-lg text-slate-300 hover:bg-slate-700 hover:text-white transition">
                 <i class="fas fa-users w-5"></i>
-                <span class="font-medium"> + Add Room</span>
+                <span class="font-medium">Rooms</span>
             </a>
 
             <!-- Patients -->

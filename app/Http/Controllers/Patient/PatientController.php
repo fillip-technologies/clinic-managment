@@ -251,7 +251,15 @@ class PatientController extends Controller
     public function show($id)
     {
         $record = PatientClinicalRecord::with(['patient'])->findOrFail($id);
-        return view('admin.patient-records.show', compact('record'));
+        $patient = $record->patient;
+
+        // Fetch all clinical records/visits for this patient
+        $allRecords = PatientClinicalRecord::where('patient_id', $record->patient_id)
+            ->orderBy('created_at', 'desc')
+            ->orderBy('id', 'desc')
+            ->get();
+
+        return view('admin.patients.show', compact('record', 'patient', 'allRecords'));
     }
 
 
