@@ -50,5 +50,6 @@ Route::prefix('admin')->middleware(['super_admin'])->group(function () {
         Route::post('/update/room/{id}', 'roomUpdated')->name('room.update');
         Route::get('/delete/room/{id}', 'roomDelete')->name('room.delete');
         Route::get('/member/index/{id}/{index}','indexmember')->name('indexmember');
+        Route::get('/delete/room-file/{id}/{index}', 'deleteRoomFile')->name('room.file.delete');
     });
 });
