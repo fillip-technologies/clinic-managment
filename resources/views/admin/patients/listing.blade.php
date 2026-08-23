@@ -657,10 +657,10 @@
                                 </td>
                                 <td>
                                     <div class="flex gap-1">
-                                        <button onclick="viewRecord({{ $record->id }})"
-                                            class="action-btn bg-blue-50 text-blue-600 hover:bg-blue-100" title="View">
+                                        <a href="{{ route('patient.show', $record->id) }}"
+                                            class="action-btn bg-blue-50 text-blue-600 hover:bg-blue-100 flex items-center justify-center" title="View">
                                             <i class="fas fa-eye"></i>
-                                        </button>
+                                        </a>
 
                                         <a href="{{ route('addnewReport',$record->id) }}"
                                             class="action-btn bg-blue-50 text-blue-600 hover:bg-blue-100" title="Add New">

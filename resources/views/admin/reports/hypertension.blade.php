@@ -169,6 +169,19 @@
             color: white;
         }
 
+        /* Entire row clickable styling */
+        table.dataTable tbody tr td:not(:last-child):not(.dtr-control) {
+            cursor: pointer;
+        }
+
+        table.dataTable tbody tr:hover td {
+            background-color: #f0f7ff !important;
+        }
+
+        table.dataTable tbody tr.parent td {
+            background-color: #e8f3fc !important;
+        }
+
         .fade-in {
             animation: fadeIn 0.5s ease-in;
         }
@@ -438,7 +451,7 @@
                 <table id="patientTable" class="display responsive nowrap" style="width:100%">
                     <thead class="bg-[#f4f9ff] text-[#124263]">
                         <tr>
-                            <th>ID</th>
+                            <th>#</th>
                             <th>Date</th>
                             <th>Patient Name</th>
                             <th>Age/Gender</th>
@@ -537,7 +550,7 @@
                                 }
                             @endphp
                             <tr>
-                                <td>{{ $record->id }}</td>
+                                <td>{{ $loop->iteration }}</td>
                                 <td>{{ $record->patient->record_date ? \Carbon\Carbon::parse($record->record_date)->format('d/m/Y') : '-' }}
                                 </td>
                                 <td>
@@ -649,10 +662,10 @@
                                 </td>
                                 <td>
                                     <div class="flex gap-1">
-                                        <button onclick="viewRecord({{ $record->id }})"
-                                            class="action-btn bg-blue-50 text-blue-600 hover:bg-blue-100" title="View">
+                                        <a href="{{ route('patient.show', $record->id) }}"
+                                            class="action-btn bg-blue-50 text-blue-600 hover:bg-blue-100 flex items-center justify-center" title="View">
                                             <i class="fas fa-eye"></i>
-                                        </button>
+                                        </a>
 
                                         <a href="{{ route('addnewReport',$record->id) }}"
                                             class="action-btn bg-blue-50 text-blue-600 hover:bg-blue-100" title="Add New">
@@ -847,7 +860,12 @@
             document.getElementById('lastUpdated').textContent = new Date().toLocaleString();
 
             dataTable = $('#patientTable').DataTable({
-                responsive: true,
+                responsive: {
+                    details: {
+                        type: 'inline',
+                        target: 0
+                    }
+                },
                 pageLength: 10,
                 lengthMenu: [
                     [10, 25, 50, -1],
@@ -875,12 +893,12 @@
                         className: 'dt-button'
                     }
                 ],
-                order: [
-                    [0, 'desc']
-                ],
+                order: [],
                 columnDefs: [{
                         targets: [0],
-                        width: '60px'
+                        width: '60px',
+                        orderable: false,
+                        searchable: false
                     },
                     {
                         targets: [11],
@@ -892,6 +910,26 @@
                     emptyTable: "No patient records found",
                     zeroRecords: "No matching records found"
                 }
+            });
+
+            // Dynamically assign sequential row numbers starting from 1
+            dataTable.on('order.dt search.dt draw.dt', function() {
+                let info = dataTable.page.info();
+                dataTable.column(0, {
+                    search: 'applied',
+                    order: 'applied',
+                    page: 'current'
+                }).nodes().each(function(cell, i) {
+                    cell.innerHTML = i + 1 + info.start;
+                });
+            });
+
+            // Allow clicking anywhere on the row to toggle expansion, while keeping the icon working
+            $('#patientTable tbody').on('click', 'tr td:not(:last-child):not(.dtr-control)', function(e) {
+                if ($(e.target).closest('.action-btn, a, button, form, input, select').length) {
+                    return;
+                }
+                $(this).closest('tr').find('td.dtr-control').trigger('click');
             });
 
             // Auto-calculate BMI
