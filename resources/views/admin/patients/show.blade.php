@@ -206,7 +206,6 @@
                 class="px-5 py-3 text-sm font-bold flex items-center gap-2 border-b-2 border-transparent text-slate-500 hover:text-slate-700 hover:border-slate-300 transition">
                 <i class="fas fa-chart-line text-indigo-500"></i>
                 <span>Health Trends & Graphs</span>
-                <span class="text-[10px] bg-indigo-100 text-indigo-700 px-2 py-0.5 rounded-full font-bold">Analytics</span>
             </button>
         </div>
 
