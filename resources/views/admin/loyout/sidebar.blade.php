@@ -1,4 +1,19 @@
-<aside class="w-72 bg-slate-800 text-slate-200 flex-shrink-0 flex flex-col shadow-2xl overflow-hidden">
+<!-- Mobile Backdrop Overlay -->
+<div x-show="sidebarOpen"
+    x-cloak
+    @click="sidebarOpen = false"
+    x-transition:enter="transition-opacity ease-linear duration-300"
+    x-transition:enter-start="opacity-0"
+    x-transition:enter-end="opacity-100"
+    x-transition:leave="transition-opacity ease-linear duration-300"
+    x-transition:leave-start="opacity-100"
+    x-transition:leave-end="opacity-0"
+    class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-40 lg:hidden">
+</div>
+
+<!-- Responsive Sidebar Container -->
+<aside :class="sidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'"
+    class="fixed inset-y-0 left-0 z-50 w-72 bg-slate-800 text-slate-200 flex-shrink-0 flex flex-col shadow-2xl overflow-hidden transform transition-transform duration-300 ease-in-out lg:static lg:translate-x-0">
     @php
         $dashboardRoute = null;
         $name = null;
@@ -11,19 +26,26 @@
             $name = 'Doctor';
         }
     @endphp
-    <!-- Logo -->
-    <div class="p-6 flex items-center space-x-3 border-b border-slate-700/60">
-        <div class="w-10 h-10 rounded-xl bg-indigo-500 flex items-center justify-center shadow-lg shadow-indigo-500/30">
-            <i class="fas fa-user-doctor text-white text-xl"></i>
+    <!-- Logo & Mobile Close -->
+    <div class="p-5 sm:p-6 flex items-center justify-between border-b border-slate-700/60">
+        <div class="flex items-center space-x-3">
+            <div class="w-10 h-10 rounded-xl bg-indigo-500 flex items-center justify-center shadow-lg shadow-indigo-500/30">
+                <i class="fas fa-user-doctor text-white text-xl"></i>
+            </div>
+
+            <span class="text-2xl font-bold text-white">
+                {{ $name }}<span class="text-indigo-400">Panel</span>
+            </span>
+
+            <span class="text-[10px] px-2 py-1 rounded-full bg-indigo-500/30 text-indigo-200 font-bold">
+                v2.0
+            </span>
         </div>
 
-        <span class="text-2xl font-bold text-white">
-            {{ $name }}<span class="text-indigo-400">Panel</span>
-        </span>
-
-        <span class="ml-auto text-[10px] px-2 py-1 rounded-full bg-indigo-500/30 text-indigo-200">
-            v2.0
-        </span>
+        <!-- Mobile Close Button -->
+        <button type="button" @click="sidebarOpen = false" class="lg:hidden p-2 rounded-xl text-slate-400 hover:text-white hover:bg-slate-700/60 transition">
+            <i class="fas fa-times text-lg"></i>
+        </button>
     </div>
 
     <!-- Menu -->

@@ -76,18 +76,15 @@
             background: transparent;
         }
 
-        .no-scrollbar {
-            -ms-overflow-style: none;  /* IE and Edge */
-            scrollbar-width: none;  /* Firefox */
-        }
+        [x-cloak] { display: none !important; }
     </style>
 </head>
 
-<body>
+<body x-data="{ sidebarOpen: false }" class="bg-[#f0f4f8] antialiased">
 
-    <div class="flex h-screen overflow-hidden">
+    <div class="flex h-screen overflow-hidden relative">
         @include('admin.loyout.sidebar')
-        <main class="flex-1 overflow-y-auto bg-slate-100/60 p-6 lg:p-8">
+        <main class="flex-1 overflow-y-auto bg-slate-100/60 p-4 sm:p-6 lg:p-8">
             @include('admin.loyout.topbar')
             @yield('content')
             @include('admin.loyout.footer')
