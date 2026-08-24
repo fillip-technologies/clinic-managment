@@ -677,14 +677,21 @@
 
         <!-- Longitudinal Consultation Visit History Table -->
         <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-5 sm:p-6">
-            <div class="flex items-center justify-between mb-4">
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
                 <h3 class="text-base font-bold text-slate-800 flex items-center gap-2">
                     <i class="fas fa-history text-indigo-600"></i>
                     All Consultation & Visit History for {{ $patient->patient_name ?? 'this patient' }}
                 </h3>
-                <span class="text-xs bg-indigo-50 text-indigo-700 px-3 py-1 rounded-full font-bold">
-                    {{ $allRecords->count() }} Visit(s) Recorded
-                </span>
+                <div class="flex items-center gap-2.5">
+                    <a href="{{ route('patient.export', $patient->id) }}"
+                        class="px-3.5 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs transition shadow-sm hover:shadow-md flex items-center gap-1.5">
+                        <i class="fas fa-file-csv text-sm"></i>
+                        <span>Export All Records (CSV)</span>
+                    </a>
+                    <span class="text-xs bg-indigo-50 text-indigo-700 px-3 py-1.5 rounded-xl font-bold">
+                        {{ $allRecords->count() }} Visit(s) Recorded
+                    </span>
+                </div>
             </div>
 
             <div class="overflow-x-auto">
@@ -1401,14 +1408,21 @@
 
             <!-- Consultation Visit Record Log Table -->
             <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-5 sm:p-6">
-                <div class="flex items-center justify-between mb-4 pb-3 border-b border-slate-100">
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4 pb-3 border-b border-slate-100">
                     <h3 class="text-base font-bold text-slate-800 flex items-center gap-2">
                         <i class="fas fa-list-check text-indigo-600"></i>
                         Chronological Consultation Record Log
                     </h3>
-                    <span class="text-xs bg-indigo-50 text-indigo-700 font-bold px-3 py-1 rounded-full">
-                        {{ $totalVisits }} Recorded Data Point(s)
-                    </span>
+                    <div class="flex items-center gap-2.5">
+                        <a href="{{ route('patient.export', $patient->id) }}"
+                            class="px-3 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs transition shadow-sm flex items-center gap-1.5">
+                            <i class="fas fa-file-csv"></i>
+                            <span>Export Patient Data (CSV)</span>
+                        </a>
+                        <span class="text-xs bg-indigo-50 text-indigo-700 font-bold px-3 py-1.5 rounded-xl">
+                            {{ $totalVisits }} Recorded Data Point(s)
+                        </span>
+                    </div>
                 </div>
 
                 <div class="overflow-x-auto">

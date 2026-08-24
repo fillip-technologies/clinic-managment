@@ -5,10 +5,13 @@
     <div class="space-y-7 max-w-7xl mx-auto pb-10">
 
         <!-- Page Header & Diagnostic Matrix Reference Banner -->
-        <div class="bg-gradient-to-r from-slate-900 via-indigo-950 to-slate-900 rounded-3xl p-6 sm:p-8 text-white shadow-xl relative overflow-hidden">
-            <div class="absolute right-0 top-0 w-96 h-96 bg-indigo-500/10 rounded-full blur-3xl -mr-20 -mt-20 pointer-events-none"></div>
+        <div class="bg-gradient-to-r from-slate-900 via-indigo-950 to-slate-900 rounded-3xl p-6 sm:p-8 text-white shadow-xl relative z-30">
+            <!-- Decorative Glow Background (Isolated with its own overflow-hidden) -->
+            <div class="absolute inset-0 rounded-3xl overflow-hidden pointer-events-none">
+                <div class="absolute right-0 top-0 w-96 h-96 bg-indigo-500/10 rounded-full blur-3xl -mr-20 -mt-20"></div>
+            </div>
 
-            <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-6 pb-6 border-b border-white/10 relative z-10">
+            <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-6 pb-6 border-b border-white/10 relative z-20">
                 <div>
                     <div class="flex items-center gap-2 mb-2">
                         <span class="px-3 py-1 rounded-full text-xs font-bold bg-indigo-500/30 text-indigo-200 border border-indigo-400/30 flex items-center gap-1.5">
@@ -40,6 +43,80 @@
                         <span class="text-lg font-black text-amber-300">
                             {{ $totalConsultations > 0 ? round(($multiMorbidity / $totalConsultations) * 100, 1) : 0 }}%
                         </span>
+                    </div>
+
+                    <!-- Disease-Wise Export Dropdown Menu -->
+                    <div class="relative z-50" x-data="{ exportOpen: false }">
+                        <button type="button" @click="exportOpen = !exportOpen"
+                            class="px-4 py-3 rounded-2xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold transition flex items-center gap-2 shadow-lg shadow-indigo-600/30">
+                            <i class="fas fa-file-export text-sm"></i>
+                            <span>Export Data</span>
+                            <i class="fas fa-chevron-down text-[10px] transition-transform" :class="exportOpen ? 'rotate-180' : ''"></i>
+                        </button>
+
+                        <div x-show="exportOpen"
+                            x-cloak
+                            @click.away="exportOpen = false"
+                            x-transition
+                            class="absolute right-0 top-full mt-2 w-72 bg-slate-900 border border-slate-700/80 rounded-2xl shadow-2xl z-50 py-2 divide-y divide-slate-800 text-xs text-left">
+                            <div class="px-3 py-1.5 text-[10px] uppercase font-bold text-slate-400">
+                                Download Clinical Datasets (CSV)
+                            </div>
+                            <div class="py-1">
+                                <a href="{{ route('analytics.disease.export', ['type' => 'all']) }}"
+                                    class="flex items-center gap-2.5 px-3.5 py-2 hover:bg-white/10 text-white font-semibold transition">
+                                    <i class="fas fa-database text-indigo-400 w-4 text-center"></i>
+                                    <div>
+                                        <div class="text-xs">Master Research Dataset</div>
+                                        <div class="text-[10px] text-slate-400">All variables & records</div>
+                                    </div>
+                                </a>
+                            </div>
+                            <div class="py-1">
+                                <a href="{{ route('analytics.disease.export', ['type' => 'diabetes']) }}"
+                                    class="flex items-center gap-2.5 px-3.5 py-2 hover:bg-white/10 text-rose-300 font-semibold transition">
+                                    <i class="fas fa-droplet text-rose-400 w-4 text-center"></i>
+                                    <div>
+                                        <div class="text-xs">Diabetes & Glycemic Cohort</div>
+                                        <div class="text-[10px] text-slate-400">HbA1c, BSF, BSPP, Insulin</div>
+                                    </div>
+                                </a>
+                                <a href="{{ route('analytics.disease.export', ['type' => 'hypertension']) }}"
+                                    class="flex items-center gap-2.5 px-3.5 py-2 hover:bg-white/10 text-amber-300 font-semibold transition">
+                                    <i class="fas fa-heart-pulse text-amber-400 w-4 text-center"></i>
+                                    <div>
+                                        <div class="text-xs">Hypertension & Vascular Cohort</div>
+                                        <div class="text-[10px] text-slate-400">SBP, DBP, MAP, Echo, Renal</div>
+                                    </div>
+                                </a>
+                                <a href="{{ route('analytics.disease.export', ['type' => 'obesity']) }}"
+                                    class="flex items-center gap-2.5 px-3.5 py-2 hover:bg-white/10 text-emerald-300 font-semibold transition">
+                                    <i class="fas fa-weight-scale text-emerald-400 w-4 text-center"></i>
+                                    <div>
+                                        <div class="text-xs">Obesity & Adiposity Cohort</div>
+                                        <div class="text-[10px] text-slate-400">BMI, WHR, WHtR, Liver, USG</div>
+                                    </div>
+                                </a>
+                                <a href="{{ route('analytics.disease.export', ['type' => 'infection']) }}"
+                                    class="flex items-center gap-2.5 px-3.5 py-2 hover:bg-white/10 text-purple-300 font-semibold transition">
+                                    <i class="fas fa-virus text-purple-400 w-4 text-center"></i>
+                                    <div>
+                                        <div class="text-xs">Infection & Febrile Cohort</div>
+                                        <div class="text-[10px] text-slate-400">Temp, Viral Serology, CBC</div>
+                                    </div>
+                                </a>
+                            </div>
+                            <div class="py-1">
+                                <a href="{{ route('analytics.disease.export', ['type' => 'triad']) }}"
+                                    class="flex items-center gap-2.5 px-3.5 py-2 hover:bg-white/10 text-orange-300 font-semibold transition">
+                                    <i class="fas fa-project-diagram text-orange-400 w-4 text-center"></i>
+                                    <div>
+                                        <div class="text-xs">Metabolic Triad Cohort</div>
+                                        <div class="text-[10px] text-slate-400">Diabetes + HTN + Obesity</div>
+                                    </div>
+                                </a>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -91,242 +168,262 @@
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5">
 
             <!-- 1. Glycemic Spectrum (Diabetes & Pre-Diabetes) -->
-            <div class="bg-white rounded-2xl p-5 border border-slate-200 shadow-sm hover:shadow-md transition">
-                <div class="flex items-center justify-between mb-3 pb-3 border-b border-slate-100">
-                    <div class="flex items-center gap-2.5">
-                        <div class="w-10 h-10 rounded-xl bg-rose-100 text-rose-600 flex items-center justify-center font-bold">
-                            <i class="fas fa-droplet text-lg"></i>
+            <div class="bg-white rounded-2xl p-5 border border-slate-200 shadow-sm hover:shadow-md transition flex flex-col justify-between">
+                <div>
+                    <div class="flex items-center justify-between mb-3 pb-3 border-b border-slate-100">
+                        <div class="flex items-center gap-2.5">
+                            <div class="w-10 h-10 rounded-xl bg-rose-100 text-rose-600 flex items-center justify-center font-bold">
+                                <i class="fas fa-droplet text-lg"></i>
+                            </div>
+                            <div>
+                                <h3 class="text-sm font-bold text-slate-800">Glycemic Spectrum</h3>
+                                <span class="text-[11px] text-slate-500">HbA1c & Fasting Glucose</span>
+                            </div>
                         </div>
+                        <span class="text-xs font-black px-2 py-0.5 rounded-full bg-rose-50 text-rose-700">
+                            {{ $diabetes + $preDiabetes }}/{{ $totalConsultations }}
+                        </span>
+                    </div>
+
+                    <div class="space-y-2.5 my-3">
                         <div>
-                            <h3 class="text-sm font-bold text-slate-800">Glycemic Spectrum</h3>
-                            <span class="text-[11px] text-slate-500">HbA1c & Fasting Glucose</span>
+                            <div class="flex justify-between text-xs font-semibold mb-1">
+                                <span class="text-red-600 flex items-center gap-1.5">
+                                    <span class="w-2 h-2 rounded-full bg-red-500"></span> Diabetes (HbA1c &gt; 6.5%)
+                                </span>
+                                <span class="font-bold text-slate-700">{{ $diabetes }} ({{ $totalConsultations > 0 ? round(($diabetes / $totalConsultations) * 100, 1) : 0 }}%)</span>
+                            </div>
+                            <div class="w-full bg-slate-100 rounded-full h-2">
+                                <div class="bg-red-500 h-2 rounded-full" style="width: {{ $totalConsultations > 0 ? ($diabetes / $totalConsultations) * 100 : 0 }}%"></div>
+                            </div>
                         </div>
-                    </div>
-                    <span class="text-xs font-black px-2 py-0.5 rounded-full bg-rose-50 text-rose-700">
-                        {{ $diabetes + $preDiabetes }}/{{ $totalConsultations }}
-                    </span>
-                </div>
 
-                <div class="space-y-2.5 my-3">
-                    <div>
-                        <div class="flex justify-between text-xs font-semibold mb-1">
-                            <span class="text-red-600 flex items-center gap-1.5">
-                                <span class="w-2 h-2 rounded-full bg-red-500"></span> Diabetes (HbA1c &gt; 6.5%)
-                            </span>
-                            <span class="font-bold text-slate-700">{{ $diabetes }} ({{ $totalConsultations > 0 ? round(($diabetes / $totalConsultations) * 100, 1) : 0 }}%)</span>
+                        <div>
+                            <div class="flex justify-between text-xs font-semibold mb-1">
+                                <span class="text-amber-600 flex items-center gap-1.5">
+                                    <span class="w-2 h-2 rounded-full bg-amber-500"></span> Pre-Diabetes (5.7 - 6.4%)
+                                </span>
+                                <span class="font-bold text-slate-700">{{ $preDiabetes }} ({{ $totalConsultations > 0 ? round(($preDiabetes / $totalConsultations) * 100, 1) : 0 }}%)</span>
+                            </div>
+                            <div class="w-full bg-slate-100 rounded-full h-2">
+                                <div class="bg-amber-500 h-2 rounded-full" style="width: {{ $totalConsultations > 0 ? ($preDiabetes / $totalConsultations) * 100 : 0 }}%"></div>
+                            </div>
                         </div>
-                        <div class="w-full bg-slate-100 rounded-full h-2">
-                            <div class="bg-red-500 h-2 rounded-full" style="width: {{ $totalConsultations > 0 ? ($diabetes / $totalConsultations) * 100 : 0 }}%"></div>
-                        </div>
-                    </div>
 
-                    <div>
-                        <div class="flex justify-between text-xs font-semibold mb-1">
-                            <span class="text-amber-600 flex items-center gap-1.5">
-                                <span class="w-2 h-2 rounded-full bg-amber-500"></span> Pre-Diabetes (5.7 - 6.4%)
-                            </span>
-                            <span class="font-bold text-slate-700">{{ $preDiabetes }} ({{ $totalConsultations > 0 ? round(($preDiabetes / $totalConsultations) * 100, 1) : 0 }}%)</span>
-                        </div>
-                        <div class="w-full bg-slate-100 rounded-full h-2">
-                            <div class="bg-amber-500 h-2 rounded-full" style="width: {{ $totalConsultations > 0 ? ($preDiabetes / $totalConsultations) * 100 : 0 }}%"></div>
-                        </div>
-                    </div>
-
-                    <div>
-                        <div class="flex justify-between text-xs font-semibold mb-1">
-                            <span class="text-emerald-600 flex items-center gap-1.5">
-                                <span class="w-2 h-2 rounded-full bg-emerald-500"></span> Normoglycemic (&lt; 5.7%)
-                            </span>
-                            <span class="font-bold text-slate-700">{{ $normalGlycemic }} ({{ $totalConsultations > 0 ? round(($normalGlycemic / $totalConsultations) * 100, 1) : 0 }}%)</span>
-                        </div>
-                        <div class="w-full bg-slate-100 rounded-full h-2">
-                            <div class="bg-emerald-500 h-2 rounded-full" style="width: {{ $totalConsultations > 0 ? ($normalGlycemic / $totalConsultations) * 100 : 0 }}%"></div>
+                        <div>
+                            <div class="flex justify-between text-xs font-semibold mb-1">
+                                <span class="text-emerald-600 flex items-center gap-1.5">
+                                    <span class="w-2 h-2 rounded-full bg-emerald-500"></span> Normoglycemic (&lt; 5.7%)
+                                </span>
+                                <span class="font-bold text-slate-700">{{ $normalGlycemic }} ({{ $totalConsultations > 0 ? round(($normalGlycemic / $totalConsultations) * 100, 1) : 0 }}%)</span>
+                            </div>
+                            <div class="w-full bg-slate-100 rounded-full h-2">
+                                <div class="bg-emerald-500 h-2 rounded-full" style="width: {{ $totalConsultations > 0 ? ($normalGlycemic / $totalConsultations) * 100 : 0 }}%"></div>
+                            </div>
                         </div>
                     </div>
                 </div>
 
-                <div class="mt-3 pt-2.5 border-t border-slate-100 text-[11px] text-slate-500 flex justify-between">
-                    <span>Clinical Risk:</span>
+                <div class="mt-3 pt-2.5 border-t border-slate-100 text-[11px] text-slate-500 flex items-center justify-between">
                     <span class="font-bold {{ $diabetes > 0 ? 'text-red-600' : 'text-emerald-600' }}">
                         {{ $totalConsultations > 0 ? round((($diabetes + $preDiabetes) / $totalConsultations) * 100, 1) : 0 }}% Affected
                     </span>
+                    <a href="{{ route('analytics.disease.export', ['type' => 'diabetes']) }}"
+                        class="px-2 py-1 rounded-lg bg-rose-50 hover:bg-rose-600 text-rose-600 hover:text-white font-bold transition flex items-center gap-1">
+                        <i class="fas fa-download text-[10px]"></i> Export CSV
+                    </a>
                 </div>
             </div>
 
             <!-- 2. Blood Pressure Spectrum (Hypertension & Pre-HTN) -->
-            <div class="bg-white rounded-2xl p-5 border border-slate-200 shadow-sm hover:shadow-md transition">
-                <div class="flex items-center justify-between mb-3 pb-3 border-b border-slate-100">
-                    <div class="flex items-center gap-2.5">
-                        <div class="w-10 h-10 rounded-xl bg-red-100 text-red-600 flex items-center justify-center font-bold">
-                            <i class="fas fa-heart-pulse text-lg"></i>
+            <div class="bg-white rounded-2xl p-5 border border-slate-200 shadow-sm hover:shadow-md transition flex flex-col justify-between">
+                <div>
+                    <div class="flex items-center justify-between mb-3 pb-3 border-b border-slate-100">
+                        <div class="flex items-center gap-2.5">
+                            <div class="w-10 h-10 rounded-xl bg-red-100 text-red-600 flex items-center justify-center font-bold">
+                                <i class="fas fa-heart-pulse text-lg"></i>
+                            </div>
+                            <div>
+                                <h3 class="text-sm font-bold text-slate-800">Blood Pressure</h3>
+                                <span class="text-[11px] text-slate-500">Systolic & Diastolic mmHg</span>
+                            </div>
                         </div>
+                        <span class="text-xs font-black px-2 py-0.5 rounded-full bg-red-50 text-red-700">
+                            {{ $hypertension + $preHypertension }}/{{ $totalConsultations }}
+                        </span>
+                    </div>
+
+                    <div class="space-y-2.5 my-3">
                         <div>
-                            <h3 class="text-sm font-bold text-slate-800">Blood Pressure</h3>
-                            <span class="text-[11px] text-slate-500">Systolic & Diastolic mmHg</span>
+                            <div class="flex justify-between text-xs font-semibold mb-1">
+                                <span class="text-red-600 flex items-center gap-1.5">
+                                    <span class="w-2 h-2 rounded-full bg-red-500"></span> HTN (SBP &gt; 140 / DBP &gt; 90)
+                                </span>
+                                <span class="font-bold text-slate-700">{{ $hypertension }} ({{ $totalConsultations > 0 ? round(($hypertension / $totalConsultations) * 100, 1) : 0 }}%)</span>
+                            </div>
+                            <div class="w-full bg-slate-100 rounded-full h-2">
+                                <div class="bg-red-500 h-2 rounded-full" style="width: {{ $totalConsultations > 0 ? ($hypertension / $totalConsultations) * 100 : 0 }}%"></div>
+                            </div>
                         </div>
-                    </div>
-                    <span class="text-xs font-black px-2 py-0.5 rounded-full bg-red-50 text-red-700">
-                        {{ $hypertension + $preHypertension }}/{{ $totalConsultations }}
-                    </span>
-                </div>
 
-                <div class="space-y-2.5 my-3">
-                    <div>
-                        <div class="flex justify-between text-xs font-semibold mb-1">
-                            <span class="text-red-600 flex items-center gap-1.5">
-                                <span class="w-2 h-2 rounded-full bg-red-500"></span> HTN (SBP &gt; 140 / DBP &gt; 90)
-                            </span>
-                            <span class="font-bold text-slate-700">{{ $hypertension }} ({{ $totalConsultations > 0 ? round(($hypertension / $totalConsultations) * 100, 1) : 0 }}%)</span>
+                        <div>
+                            <div class="flex justify-between text-xs font-semibold mb-1">
+                                <span class="text-amber-600 flex items-center gap-1.5">
+                                    <span class="w-2 h-2 rounded-full bg-amber-500"></span> Pre-HTN (130-139 mmHg)
+                                </span>
+                                <span class="font-bold text-slate-700">{{ $preHypertension }} ({{ $totalConsultations > 0 ? round(($preHypertension / $totalConsultations) * 100, 1) : 0 }}%)</span>
+                            </div>
+                            <div class="w-full bg-slate-100 rounded-full h-2">
+                                <div class="bg-amber-500 h-2 rounded-full" style="width: {{ $totalConsultations > 0 ? ($preHypertension / $totalConsultations) * 100 : 0 }}%"></div>
+                            </div>
                         </div>
-                        <div class="w-full bg-slate-100 rounded-full h-2">
-                            <div class="bg-red-500 h-2 rounded-full" style="width: {{ $totalConsultations > 0 ? ($hypertension / $totalConsultations) * 100 : 0 }}%"></div>
-                        </div>
-                    </div>
 
-                    <div>
-                        <div class="flex justify-between text-xs font-semibold mb-1">
-                            <span class="text-amber-600 flex items-center gap-1.5">
-                                <span class="w-2 h-2 rounded-full bg-amber-500"></span> Pre-HTN (130-139 mmHg)
-                            </span>
-                            <span class="font-bold text-slate-700">{{ $preHypertension }} ({{ $totalConsultations > 0 ? round(($preHypertension / $totalConsultations) * 100, 1) : 0 }}%)</span>
-                        </div>
-                        <div class="w-full bg-slate-100 rounded-full h-2">
-                            <div class="bg-amber-500 h-2 rounded-full" style="width: {{ $totalConsultations > 0 ? ($preHypertension / $totalConsultations) * 100 : 0 }}%"></div>
-                        </div>
-                    </div>
-
-                    <div>
-                        <div class="flex justify-between text-xs font-semibold mb-1">
-                            <span class="text-emerald-600 flex items-center gap-1.5">
-                                <span class="w-2 h-2 rounded-full bg-emerald-500"></span> Normal BP (&le; 120/80)
-                            </span>
-                            <span class="font-bold text-slate-700">{{ $normalBp }} ({{ $totalConsultations > 0 ? round(($normalBp / $totalConsultations) * 100, 1) : 0 }}%)</span>
-                        </div>
-                        <div class="w-full bg-slate-100 rounded-full h-2">
-                            <div class="bg-emerald-500 h-2 rounded-full" style="width: {{ $totalConsultations > 0 ? ($normalBp / $totalConsultations) * 100 : 0 }}%"></div>
+                        <div>
+                            <div class="flex justify-between text-xs font-semibold mb-1">
+                                <span class="text-emerald-600 flex items-center gap-1.5">
+                                    <span class="w-2 h-2 rounded-full bg-emerald-500"></span> Normal BP (&le; 120/80)
+                                </span>
+                                <span class="font-bold text-slate-700">{{ $normalBp }} ({{ $totalConsultations > 0 ? round(($normalBp / $totalConsultations) * 100, 1) : 0 }}%)</span>
+                            </div>
+                            <div class="w-full bg-slate-100 rounded-full h-2">
+                                <div class="bg-emerald-500 h-2 rounded-full" style="width: {{ $totalConsultations > 0 ? ($normalBp / $totalConsultations) * 100 : 0 }}%"></div>
+                            </div>
                         </div>
                     </div>
                 </div>
 
-                <div class="mt-3 pt-2.5 border-t border-slate-100 text-[11px] text-slate-500 flex justify-between">
-                    <span>Vascular Burden:</span>
+                <div class="mt-3 pt-2.5 border-t border-slate-100 text-[11px] text-slate-500 flex items-center justify-between">
                     <span class="font-bold {{ $hypertension > 0 ? 'text-red-600' : 'text-emerald-600' }}">
                         {{ $totalConsultations > 0 ? round((($hypertension + $preHypertension) / $totalConsultations) * 100, 1) : 0 }}% Elevated
                     </span>
+                    <a href="{{ route('analytics.disease.export', ['type' => 'hypertension']) }}"
+                        class="px-2 py-1 rounded-lg bg-red-50 hover:bg-red-600 text-red-600 hover:text-white font-bold transition flex items-center gap-1">
+                        <i class="fas fa-download text-[10px]"></i> Export CSV
+                    </a>
                 </div>
             </div>
 
             <!-- 3. Anthropometric & Obesity Spectrum -->
-            <div class="bg-white rounded-2xl p-5 border border-slate-200 shadow-sm hover:shadow-md transition">
-                <div class="flex items-center justify-between mb-3 pb-3 border-b border-slate-100">
-                    <div class="flex items-center gap-2.5">
-                        <div class="w-10 h-10 rounded-xl bg-amber-100 text-amber-600 flex items-center justify-center font-bold">
-                            <i class="fas fa-weight-scale text-lg"></i>
+            <div class="bg-white rounded-2xl p-5 border border-slate-200 shadow-sm hover:shadow-md transition flex flex-col justify-between">
+                <div>
+                    <div class="flex items-center justify-between mb-3 pb-3 border-b border-slate-100">
+                        <div class="flex items-center gap-2.5">
+                            <div class="w-10 h-10 rounded-xl bg-amber-100 text-amber-600 flex items-center justify-center font-bold">
+                                <i class="fas fa-weight-scale text-lg"></i>
+                            </div>
+                            <div>
+                                <h3 class="text-sm font-bold text-slate-800">Obesity & Adiposity</h3>
+                                <span class="text-[11px] text-slate-500">BMI kg/m² (Asian Standards)</span>
+                            </div>
                         </div>
+                        <span class="text-xs font-black px-2 py-0.5 rounded-full bg-amber-50 text-amber-700">
+                            {{ $obese + $overweight }}/{{ $totalConsultations }}
+                        </span>
+                    </div>
+
+                    <div class="space-y-2.5 my-3">
                         <div>
-                            <h3 class="text-sm font-bold text-slate-800">Obesity & Adiposity</h3>
-                            <span class="text-[11px] text-slate-500">BMI kg/m² (Asian Standards)</span>
+                            <div class="flex justify-between text-xs font-semibold mb-1">
+                                <span class="text-red-600 flex items-center gap-1.5">
+                                    <span class="w-2 h-2 rounded-full bg-red-500"></span> Obese (BMI &gt; 25.0)
+                                </span>
+                                <span class="font-bold text-slate-700">{{ $obese }} ({{ $totalConsultations > 0 ? round(($obese / $totalConsultations) * 100, 1) : 0 }}%)</span>
+                            </div>
+                            <div class="w-full bg-slate-100 rounded-full h-2">
+                                <div class="bg-red-500 h-2 rounded-full" style="width: {{ $totalConsultations > 0 ? ($obese / $totalConsultations) * 100 : 0 }}%"></div>
+                            </div>
                         </div>
-                    </div>
-                    <span class="text-xs font-black px-2 py-0.5 rounded-full bg-amber-50 text-amber-700">
-                        {{ $obese + $overweight }}/{{ $totalConsultations }}
-                    </span>
-                </div>
 
-                <div class="space-y-2.5 my-3">
-                    <div>
-                        <div class="flex justify-between text-xs font-semibold mb-1">
-                            <span class="text-red-600 flex items-center gap-1.5">
-                                <span class="w-2 h-2 rounded-full bg-red-500"></span> Obese (BMI &gt; 25.0)
-                            </span>
-                            <span class="font-bold text-slate-700">{{ $obese }} ({{ $totalConsultations > 0 ? round(($obese / $totalConsultations) * 100, 1) : 0 }}%)</span>
+                        <div>
+                            <div class="flex justify-between text-xs font-semibold mb-1">
+                                <span class="text-amber-600 flex items-center gap-1.5">
+                                    <span class="w-2 h-2 rounded-full bg-amber-500"></span> Overweight (23.0 - 24.9)
+                                </span>
+                                <span class="font-bold text-slate-700">{{ $overweight }} ({{ $totalConsultations > 0 ? round(($overweight / $totalConsultations) * 100, 1) : 0 }}%)</span>
+                            </div>
+                            <div class="w-full bg-slate-100 rounded-full h-2">
+                                <div class="bg-amber-500 h-2 rounded-full" style="width: {{ $totalConsultations > 0 ? ($overweight / $totalConsultations) * 100 : 0 }}%"></div>
+                            </div>
                         </div>
-                        <div class="w-full bg-slate-100 rounded-full h-2">
-                            <div class="bg-red-500 h-2 rounded-full" style="width: {{ $totalConsultations > 0 ? ($obese / $totalConsultations) * 100 : 0 }}%"></div>
-                        </div>
-                    </div>
 
-                    <div>
-                        <div class="flex justify-between text-xs font-semibold mb-1">
-                            <span class="text-amber-600 flex items-center gap-1.5">
-                                <span class="w-2 h-2 rounded-full bg-amber-500"></span> Overweight (23.0 - 24.9)
-                            </span>
-                            <span class="font-bold text-slate-700">{{ $overweight }} ({{ $totalConsultations > 0 ? round(($overweight / $totalConsultations) * 100, 1) : 0 }}%)</span>
-                        </div>
-                        <div class="w-full bg-slate-100 rounded-full h-2">
-                            <div class="bg-amber-500 h-2 rounded-full" style="width: {{ $totalConsultations > 0 ? ($overweight / $totalConsultations) * 100 : 0 }}%"></div>
-                        </div>
-                    </div>
-
-                    <div>
-                        <div class="flex justify-between text-xs font-semibold mb-1">
-                            <span class="text-emerald-600 flex items-center gap-1.5">
-                                <span class="w-2 h-2 rounded-full bg-emerald-500"></span> Normal BMI (18.5 - 22.9)
-                            </span>
-                            <span class="font-bold text-slate-700">{{ $normalBmi }} ({{ $totalConsultations > 0 ? round(($normalBmi / $totalConsultations) * 100, 1) : 0 }}%)</span>
-                        </div>
-                        <div class="w-full bg-slate-100 rounded-full h-2">
-                            <div class="bg-emerald-500 h-2 rounded-full" style="width: {{ $totalConsultations > 0 ? ($normalBmi / $totalConsultations) * 100 : 0 }}%"></div>
+                        <div>
+                            <div class="flex justify-between text-xs font-semibold mb-1">
+                                <span class="text-emerald-600 flex items-center gap-1.5">
+                                    <span class="w-2 h-2 rounded-full bg-emerald-500"></span> Normal BMI (18.5 - 22.9)
+                                </span>
+                                <span class="font-bold text-slate-700">{{ $normalBmi }} ({{ $totalConsultations > 0 ? round(($normalBmi / $totalConsultations) * 100, 1) : 0 }}%)</span>
+                            </div>
+                            <div class="w-full bg-slate-100 rounded-full h-2">
+                                <div class="bg-emerald-500 h-2 rounded-full" style="width: {{ $totalConsultations > 0 ? ($normalBmi / $totalConsultations) * 100 : 0 }}%"></div>
+                            </div>
                         </div>
                     </div>
                 </div>
 
-                <div class="mt-3 pt-2.5 border-t border-slate-100 text-[11px] text-slate-500 flex justify-between">
-                    <span>Adiposity Burden:</span>
+                <div class="mt-3 pt-2.5 border-t border-slate-100 text-[11px] text-slate-500 flex items-center justify-between">
                     <span class="font-bold {{ $obese > 0 ? 'text-red-600' : 'text-emerald-600' }}">
                         {{ $totalConsultations > 0 ? round((($obese + $overweight) / $totalConsultations) * 100, 1) : 0 }}% Excess Wt
                     </span>
+                    <a href="{{ route('analytics.disease.export', ['type' => 'obesity']) }}"
+                        class="px-2 py-1 rounded-lg bg-amber-50 hover:bg-amber-600 text-amber-600 hover:text-white font-bold transition flex items-center gap-1">
+                        <i class="fas fa-download text-[10px]"></i> Export CSV
+                    </a>
                 </div>
             </div>
 
             <!-- 4. Infection & Inflammatory Status -->
-            <div class="bg-white rounded-2xl p-5 border border-slate-200 shadow-sm hover:shadow-md transition">
-                <div class="flex items-center justify-between mb-3 pb-3 border-b border-slate-100">
-                    <div class="flex items-center gap-2.5">
-                        <div class="w-10 h-10 rounded-xl bg-purple-100 text-purple-600 flex items-center justify-center font-bold">
-                            <i class="fas fa-virus text-lg"></i>
+            <div class="bg-white rounded-2xl p-5 border border-slate-200 shadow-sm hover:shadow-md transition flex flex-col justify-between">
+                <div>
+                    <div class="flex items-center justify-between mb-3 pb-3 border-b border-slate-100">
+                        <div class="flex items-center gap-2.5">
+                            <div class="w-10 h-10 rounded-xl bg-purple-100 text-purple-600 flex items-center justify-center font-bold">
+                                <i class="fas fa-virus text-lg"></i>
+                            </div>
+                            <div>
+                                <h3 class="text-sm font-bold text-slate-800">Infection & Fever</h3>
+                                <span class="text-[11px] text-slate-500">Temperature & Pathogen Log</span>
+                            </div>
                         </div>
+                        <span class="text-xs font-black px-2 py-0.5 rounded-full bg-purple-50 text-purple-700">
+                            {{ $infection }}/{{ $totalConsultations }}
+                        </span>
+                    </div>
+
+                    <div class="space-y-2.5 my-3">
                         <div>
-                            <h3 class="text-sm font-bold text-slate-800">Infection & Fever</h3>
-                            <span class="text-[11px] text-slate-500">Temperature & Pathogen Log</span>
+                            <div class="flex justify-between text-xs font-semibold mb-1">
+                                <span class="text-purple-600 flex items-center gap-1.5">
+                                    <span class="w-2 h-2 rounded-full bg-purple-500"></span> Febrile / Infection (&gt; 99.4°F)
+                                </span>
+                                <span class="font-bold text-slate-700">{{ $infection }} ({{ $totalConsultations > 0 ? round(($infection / $totalConsultations) * 100, 1) : 0 }}%)</span>
+                            </div>
+                            <div class="w-full bg-slate-100 rounded-full h-2">
+                                <div class="bg-purple-500 h-2 rounded-full" style="width: {{ $totalConsultations > 0 ? ($infection / $totalConsultations) * 100 : 0 }}%"></div>
+                            </div>
                         </div>
-                    </div>
-                    <span class="text-xs font-black px-2 py-0.5 rounded-full bg-purple-50 text-purple-700">
-                        {{ $infection }}/{{ $totalConsultations }}
-                    </span>
-                </div>
 
-                <div class="space-y-2.5 my-3">
-                    <div>
-                        <div class="flex justify-between text-xs font-semibold mb-1">
-                            <span class="text-purple-600 flex items-center gap-1.5">
-                                <span class="w-2 h-2 rounded-full bg-purple-500"></span> Febrile / Infection (&gt; 99.4°F)
-                            </span>
-                            <span class="font-bold text-slate-700">{{ $infection }} ({{ $totalConsultations > 0 ? round(($infection / $totalConsultations) * 100, 1) : 0 }}%)</span>
-                        </div>
-                        <div class="w-full bg-slate-100 rounded-full h-2">
-                            <div class="bg-purple-500 h-2 rounded-full" style="width: {{ $totalConsultations > 0 ? ($infection / $totalConsultations) * 100 : 0 }}%"></div>
-                        </div>
-                    </div>
-
-                    <div>
-                        <div class="flex justify-between text-xs font-semibold mb-1">
-                            <span class="text-emerald-600 flex items-center gap-1.5">
-                                <span class="w-2 h-2 rounded-full bg-emerald-500"></span> Afebrile / Normal (&le; 99.4°F)
-                            </span>
-                            <span class="font-bold text-slate-700">{{ $normalTemp }} ({{ $totalConsultations > 0 ? round(($normalTemp / $totalConsultations) * 100, 1) : 0 }}%)</span>
-                        </div>
-                        <div class="w-full bg-slate-100 rounded-full h-2">
-                            <div class="bg-emerald-500 h-2 rounded-full" style="width: {{ $totalConsultations > 0 ? ($normalTemp / $totalConsultations) * 100 : 0 }}%"></div>
+                        <div>
+                            <div class="flex justify-between text-xs font-semibold mb-1">
+                                <span class="text-emerald-600 flex items-center gap-1.5">
+                                    <span class="w-2 h-2 rounded-full bg-emerald-500"></span> Afebrile / Normal (&le; 99.4°F)
+                                </span>
+                                <span class="font-bold text-slate-700">{{ $normalTemp }} ({{ $totalConsultations > 0 ? round(($normalTemp / $totalConsultations) * 100, 1) : 0 }}%)</span>
+                            </div>
+                            <div class="w-full bg-slate-100 rounded-full h-2">
+                                <div class="bg-emerald-500 h-2 rounded-full" style="width: {{ $totalConsultations > 0 ? ($normalTemp / $totalConsultations) * 100 : 0 }}%"></div>
+                            </div>
                         </div>
                     </div>
                 </div>
 
-                <div class="mt-7 pt-2.5 border-t border-slate-100 text-[11px] text-slate-500 flex justify-between">
-                    <span>Active Infection:</span>
+                <div class="mt-7 pt-2.5 border-t border-slate-100 text-[11px] text-slate-500 flex items-center justify-between">
                     <span class="font-bold {{ $infection > 0 ? 'text-purple-600' : 'text-emerald-600' }}">
                         {{ $totalConsultations > 0 ? round(($infection / $totalConsultations) * 100, 1) : 0 }}% Prevalence
                     </span>
+                    <a href="{{ route('analytics.disease.export', ['type' => 'infection']) }}"
+                        class="px-2 py-1 rounded-lg bg-purple-50 hover:bg-purple-600 text-purple-600 hover:text-white font-bold transition flex items-center gap-1">
+                        <i class="fas fa-download text-[10px]"></i> Export CSV
+                    </a>
                 </div>
             </div>
 
@@ -344,9 +441,15 @@
                         High-value clinical research intersections for early intervention and complication prevention
                     </p>
                 </div>
-                <span class="text-xs bg-indigo-50 text-indigo-700 font-bold px-3 py-1 rounded-full w-fit">
-                    Medical Research Indices
-                </span>
+                <div class="flex items-center gap-2">
+                    <a href="{{ route('analytics.disease.export', ['type' => 'triad']) }}"
+                        class="text-xs bg-rose-50 hover:bg-rose-600 text-rose-700 hover:text-white font-bold px-3 py-1.5 rounded-xl transition flex items-center gap-1.5 border border-rose-200">
+                        <i class="fas fa-download"></i> Export Triad Data
+                    </a>
+                    <span class="text-xs bg-indigo-50 text-indigo-700 font-bold px-3 py-1.5 rounded-xl">
+                        Research Indices
+                    </span>
+                </div>
             </div>
 
             <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
@@ -461,6 +564,13 @@
                 <div class="flex items-center gap-3">
                     <input type="text" id="cohortSearch" placeholder="Search patient name, phone, metric..."
                         class="px-3.5 py-2 text-xs rounded-xl border border-slate-200 focus:ring-2 focus:ring-indigo-300 focus:border-indigo-400 outline-none w-56 sm:w-64 bg-slate-50/60">
+
+                    <!-- Dynamic Export Button for Active Cohort Tab -->
+                    <button type="button" id="exportCohortBtn" onclick="exportCurrentCohort()"
+                        class="px-3.5 py-2 rounded-xl bg-slate-100 hover:bg-indigo-600 text-slate-700 hover:text-white text-xs font-bold transition flex items-center gap-1.5 border border-slate-200 shadow-sm">
+                        <i class="fas fa-file-csv text-indigo-500 group-hover:text-white"></i>
+                        <span>Export View (CSV)</span>
+                    </button>
                 </div>
             </div>
 
@@ -476,7 +586,7 @@
                     🩺 Hypertensive ({{ $hypertension }})
                 </button>
                 <button type="button" onclick="filterCohort('obese')" class="cohort-filter-btn px-3 py-1.5 rounded-xl text-xs font-bold bg-slate-100 text-slate-600 hover:bg-slate-200 transition" data-filter="obese">
-                    ⚖️ Obese ({{ $obesity }})
+                    ⚖️ Obese ({{ $obese }})
                 </button>
                 <button type="button" onclick="filterCohort('infection')" class="cohort-filter-btn px-3 py-1.5 rounded-xl text-xs font-bold bg-slate-100 text-slate-600 hover:bg-slate-200 transition" data-filter="infection">
                     🌡️ Infection ({{ $infection }})
@@ -614,7 +724,10 @@
 
     <!-- Scripts for Cohort Filter and Charts -->
     <script>
+        let currentFilterType = 'all';
+
         function filterCohort(type) {
+            currentFilterType = type;
             document.querySelectorAll('.cohort-filter-btn').forEach(btn => {
                 if (btn.getAttribute('data-filter') === type) {
                     btn.className = "cohort-filter-btn px-3.5 py-1.5 rounded-xl text-xs font-bold bg-indigo-600 text-white shadow-sm transition";
@@ -635,6 +748,17 @@
 
                 row.style.display = show ? '' : 'none';
             });
+        }
+
+        function exportCurrentCohort() {
+            let exportType = 'all';
+            if (currentFilterType === 'diabetic') exportType = 'diabetes';
+            else if (currentFilterType === 'htn') exportType = 'hypertension';
+            else if (currentFilterType === 'obese') exportType = 'obesity';
+            else if (currentFilterType === 'infection') exportType = 'infection';
+            else if (currentFilterType === 'triad') exportType = 'triad';
+
+            window.location.href = "{{ route('analytics.disease.export') }}?type=" + exportType;
         }
 
         // Live search filter
@@ -661,7 +785,7 @@
                                 {{ $preDiabetes }},
                                 {{ $hypertension }},
                                 {{ $preHypertension }},
-                                {{ $obesity }},
+                                {{ $obese }},
                                 {{ $infection }},
                                 {{ $normalGlycemic }}
                             ],
@@ -724,7 +848,7 @@
                             },
                             {
                                 label: 'Obesity',
-                                data: monthlyData.length > 0 ? monthlyData.map(m => m.obesity_count) : [{{ $obesity }}],
+                                data: monthlyData.length > 0 ? monthlyData.map(m => m.obesity_count) : [{{ $obese }}],
                                 backgroundColor: '#10b981',
                                 borderRadius: 6
                             }

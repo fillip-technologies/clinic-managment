@@ -958,5 +958,592 @@ class PatientController extends Controller
             'monthlyTrend'
         ));
     }
+
+    public function exportDiseaseAnalytics(Request $request)
+    {
+        $type = strtolower($request->get('type', 'all'));
+        $filename = 'disease_analytics_' . $type . '_' . date('Y-m-d_His') . '.csv';
+
+        $query = PatientClinicalRecord::with('patient')->latest();
+
+        // Specific disease filters
+        if ($type === 'diabetes') {
+            $query->where(function ($q) {
+                $q->where('hba1c', '>=', 6.5)
+                  ->orWhere('bsf', '>=', 126)
+                  ->orWhere('diabetes', '!=', 'Normal');
+            });
+        } elseif ($type === 'pre_diabetes') {
+            $query->where(function ($q) {
+                $q->whereBetween('hba1c', [5.7, 6.4])
+                  ->orWhereBetween('bsf', [100, 125])
+                  ->orWhere('diabetes', 'like', '%pre%');
+            });
+        } elseif ($type === 'hypertension') {
+            $query->where(function ($q) {
+                $q->where('sbp', '>=', 140)
+                  ->orWhere('dbp', '>=', 90)
+                  ->orWhere('hypertension', '!=', 'Normal')
+                  ->orWhere('htn', 'Yes');
+            });
+        } elseif ($type === 'pre_hypertension') {
+            $query->where(function ($q) {
+                $q->whereBetween('sbp', [130, 139])
+                  ->orWhereBetween('dbp', [85, 89])
+                  ->orWhere('hypertension', 'like', '%pre%');
+            });
+        } elseif ($type === 'obesity') {
+            $query->where(function ($q) {
+                $q->where('bmi', '>=', 25)
+                  ->orWhere('obesity', '!=', 'Normal');
+            });
+        } elseif ($type === 'infection') {
+            $query->where(function ($q) {
+                $q->where('temprature', '>', 99.4)
+                  ->orWhere('infection', '!=', 'Normal');
+            });
+        }
+
+        $records = $query->get();
+
+        $headers = [
+            'Content-Type' => 'text/csv; charset=UTF-8',
+            'Content-Disposition' => "attachment; filename=\"{$filename}\"",
+            'Pragma' => 'no-cache',
+            'Cache-Control' => 'must-revalidate, post-check=0, pre-check=0',
+            'Expires' => '0',
+        ];
+
+        return response()->stream(function () use ($records, $type) {
+            $handle = fopen('php://output', 'w');
+            // Write UTF-8 BOM for Excel compatibility
+            fprintf($handle, chr(0xEF) . chr(0xBB) . chr(0xBF));
+
+            if ($type === 'diabetes' || $type === 'pre_diabetes') {
+                fputcsv($handle, [
+                    'Record ID', 'Patient ID', 'Patient Name', 'Age', 'Gender', 'Mobile', 'Address', 'Consultation Date',
+                    'Diagnostic Status', 'HbA1c (%)', 'Fasting Blood Sugar (BSF mg/dL)', 'Postprandial Sugar (BSPP mg/dL)',
+                    'Newly Detected', 'Duration of Diabetes (Yrs)', 'Insulin Start Date', 'Insulin Stop Date',
+                    'BMI (kg/m²)', 'Weight (kg)', 'SBP (mmHg)', 'DBP (mmHg)',
+                    'Serum Creatinine (mg/dL)', 'eGFR (mL/min)', 'Microalbuminuria ACR',
+                    'Total Cholesterol', 'Triglycerides', 'HDL', 'LDL',
+                    'Ophthalmic Exam', 'Foot Exam', 'Echo / Cardiac Exam'
+                ]);
+
+                foreach ($records as $r) {
+                    $hba1c = floatval($r->hba1c ?? 0);
+                    $bsf = floatval($r->bsf ?? 0);
+                    $status = ($hba1c >= 6.5 || $bsf >= 126 || str_contains(strtolower($r->diabetes ?? ''), 'diabet')) ? 'Diabetes' : (($hba1c >= 5.7 || $bsf >= 100) ? 'Pre-Diabetes' : ($r->diabetes ?? 'Normal'));
+
+                    fputcsv($handle, [
+                        $r->id,
+                        $r->patient_id,
+                        $r->patient->patient_name ?? 'N/A',
+                        $r->patient->age ?? 'N/A',
+                        $r->patient->gender ?? 'N/A',
+                        $r->patient->mobile ?? 'N/A',
+                        $r->patient->address ?? 'N/A',
+                        $r->created_at ? $r->created_at->format('Y-m-d H:i') : 'N/A',
+                        $status,
+                        $r->hba1c ?: '-',
+                        $r->bsf ?: '-',
+                        $r->bspp ?: '-',
+                        $r->newly_detected ?: '-',
+                        $r->duration_of_diabetes ?: '-',
+                        $r->start_insulin_date ?: '-',
+                        $r->stop_insulin_date ?: '-',
+                        $r->bmi ?: '-',
+                        $r->weight_kg ?: '-',
+                        $r->sbp ?: '-',
+                        $r->dbp ?: '-',
+                        $r->creatinine ?: '-',
+                        $r->egfr ?: '-',
+                        $r->acr ?: '-',
+                        $r->chol ?: '-',
+                        $r->tg ?: '-',
+                        $r->hdl ?: '-',
+                        $r->ldl ?: '-',
+                        $r->ophthalmic_ex ?: '-',
+                        $r->foot_ev ?: '-',
+                        $r->car_echo_ev ?: '-'
+                    ]);
+                }
+            } elseif ($type === 'hypertension' || $type === 'pre_hypertension') {
+                fputcsv($handle, [
+                    'Record ID', 'Patient ID', 'Patient Name', 'Age', 'Gender', 'Mobile', 'Address', 'Consultation Date',
+                    'Vascular Status', 'Known HTN History', 'Systolic BP (SBP mmHg)', 'Diastolic BP (DBP mmHg)',
+                    'Pulse Pressure (mmHg)', 'Mean Arterial Pressure (MAP mmHg)',
+                    'BMI (kg/m²)', 'HbA1c (%)', 'Creatinine (mg/dL)', 'eGFR (mL/min)',
+                    'Serum Sodium (Na+)', 'Serum Potassium (K+)',
+                    'Total Cholesterol', 'Triglycerides', 'HDL', 'LDL',
+                    'Cardiac Echo Exam', 'Ophthalmic Exam'
+                ]);
+
+                foreach ($records as $r) {
+                    $sbp = intval($r->sbp ?? 0);
+                    $dbp = intval($r->dbp ?? 0);
+                    $pp = ($sbp > 0 && $dbp > 0) ? ($sbp - $dbp) : '-';
+                    $map = ($sbp > 0 && $dbp > 0) ? round($dbp + (($sbp - $dbp) / 3), 1) : '-';
+                    $status = ($sbp >= 140 || $dbp >= 90 || str_contains(strtolower($r->hypertension ?? ''), 'stage')) ? 'Hypertension' : (($sbp >= 130 || $dbp >= 85) ? 'Pre-Hypertension' : ($r->hypertension ?? 'Normal'));
+
+                    fputcsv($handle, [
+                        $r->id,
+                        $r->patient_id,
+                        $r->patient->patient_name ?? 'N/A',
+                        $r->patient->age ?? 'N/A',
+                        $r->patient->gender ?? 'N/A',
+                        $r->patient->mobile ?? 'N/A',
+                        $r->patient->address ?? 'N/A',
+                        $r->created_at ? $r->created_at->format('Y-m-d H:i') : 'N/A',
+                        $status,
+                        $r->htn ?: ($r->hypertension ?? '-'),
+                        $r->sbp ?: '-',
+                        $r->dbp ?: '-',
+                        $pp,
+                        $map,
+                        $r->bmi ?: '-',
+                        $r->hba1c ?: '-',
+                        $r->creatinine ?: '-',
+                        $r->egfr ?: '-',
+                        $r->na_plus ?: '-',
+                        $r->k_plus ?: '-',
+                        $r->chol ?: '-',
+                        $r->tg ?: '-',
+                        $r->hdl ?: '-',
+                        $r->ldl ?: '-',
+                        $r->car_echo_ev ?: '-',
+                        $r->ophthalmic_ex ?: '-'
+                    ]);
+                }
+            } elseif ($type === 'obesity') {
+                fputcsv($handle, [
+                    'Record ID', 'Patient ID', 'Patient Name', 'Age', 'Gender', 'Mobile', 'Address', 'Consultation Date',
+                    'Adiposity Status', 'Height (cm)', 'Weight (kg)', 'BMI (kg/m²)', 'BMI Category',
+                    'Waist Circumference (cm)', 'Hip Circumference (cm)', 'Waist-Hip Ratio (WHR)', 'Waist-Height Ratio (WHtR)',
+                    'Physical Activity', 'Diet (Veg/Non-Veg)', 'Social Class', 'Income Class',
+                    'SBP (mmHg)', 'DBP (mmHg)', 'HbA1c (%)', 'Fasting Blood Sugar (BSF)',
+                    'Total Cholesterol', 'Triglycerides', 'SGPT (ALT U/L)', 'SGOT (AST U/L)', 'ALKP',
+                    'FibroScan Score', 'USG Findings'
+                ]);
+
+                foreach ($records as $r) {
+                    $bmi = floatval($r->bmi ?? 0);
+                    $status = ($bmi >= 25 || str_contains(strtolower($r->obesity ?? ''), 'obese')) ? 'Obese' : (($bmi >= 23) ? 'Overweight' : (($bmi > 0 && $bmi < 18.5) ? 'Underweight' : ($r->obesity ?? 'Normal')));
+
+                    fputcsv($handle, [
+                        $r->id,
+                        $r->patient_id,
+                        $r->patient->patient_name ?? 'N/A',
+                        $r->patient->age ?? 'N/A',
+                        $r->patient->gender ?? 'N/A',
+                        $r->patient->mobile ?? 'N/A',
+                        $r->patient->address ?? 'N/A',
+                        $r->created_at ? $r->created_at->format('Y-m-d H:i') : 'N/A',
+                        $status,
+                        $r->height_cm ?: '-',
+                        $r->weight_kg ?: '-',
+                        $r->bmi ?: '-',
+                        $r->bmi_group ?: $status,
+                        $r->waist_cm ?: '-',
+                        $r->hip_cm ?: '-',
+                        $r->waist_hip_ratio ?: '-',
+                        $r->waist_height_ratio ?: '-',
+                        $r->physical_activity ?: '-',
+                        $r->veg_nonveg ?: '-',
+                        $r->social_class ?: '-',
+                        $r->income_class ?: '-',
+                        $r->sbp ?: '-',
+                        $r->dbp ?: '-',
+                        $r->hba1c ?: '-',
+                        $r->bsf ?: '-',
+                        $r->chol ?: '-',
+                        $r->tg ?: '-',
+                        $r->sgpt ?: '-',
+                        $r->sgot ?: '-',
+                        $r->alkp ?: '-',
+                        $r->fib_score ?: '-',
+                        $r->usg ?: '-'
+                    ]);
+                }
+            } elseif ($type === 'infection') {
+                fputcsv($handle, [
+                    'Record ID', 'Patient ID', 'Patient Name', 'Age', 'Gender', 'Mobile', 'Address', 'Consultation Date',
+                    'Infection Status', 'Body Temperature (°F)', 'Infection Diagnosis Details',
+                    'Hemoglobin (Hb %)', 'Platelets (PLT)', 'MCV', 'Urine Routine / Cast Cells',
+                    'HIV Serology', 'HBsAg Serology', 'HCV Serology',
+                    'Serum Sodium (Na+)', 'Serum Potassium (K+)', 'Ionized Calcium', 'Phosphorus',
+                    'Serum Creatinine', 'SGPT', 'Total Cholesterol'
+                ]);
+
+                foreach ($records as $r) {
+                    $temp = floatval($r->temprature ?? 0);
+                    $status = ($temp > 99.4 || (!empty($r->infection) && strtolower($r->infection) !== 'normal')) ? 'Infection / Febrile' : ($r->infection ?? 'Normal');
+
+                    fputcsv($handle, [
+                        $r->id,
+                        $r->patient_id,
+                        $r->patient->patient_name ?? 'N/A',
+                        $r->patient->age ?? 'N/A',
+                        $r->patient->gender ?? 'N/A',
+                        $r->patient->mobile ?? 'N/A',
+                        $r->patient->address ?? 'N/A',
+                        $r->created_at ? $r->created_at->format('Y-m-d H:i') : 'N/A',
+                        $status,
+                        $r->temprature ? $r->temprature . ' °F' : '-',
+                        $r->infection ?: '-',
+                        $r->hb_percent ?: '-',
+                        $r->plt ?: '-',
+                        $r->mcv ?: '-',
+                        $r->urine_cast_cell ?: '-',
+                        $r->hiv ?: '-',
+                        $r->hbsag ?: '-',
+                        $r->hcv ?: '-',
+                        $r->na_plus ?: '-',
+                        $r->k_plus ?: '-',
+                        $r->i_calcium ?: '-',
+                        $r->phosphorus ?: '-',
+                        $r->creatinine ?: '-',
+                        $r->sgpt ?: '-',
+                        $r->chol ?: '-'
+                    ]);
+                }
+            } elseif ($type === 'triad') {
+                fputcsv($handle, [
+                    'Record ID', 'Patient ID', 'Patient Name', 'Age', 'Gender', 'Mobile', 'Address', 'Consultation Date',
+                    'Diabetes Status', 'HbA1c (%)', 'BSF (mg/dL)',
+                    'Hypertension Status', 'SBP (mmHg)', 'DBP (mmHg)',
+                    'Obesity Status', 'BMI (kg/m²)', 'Weight (kg)',
+                    'Serum Creatinine', 'eGFR', 'SGPT', 'Cholesterol', 'Triglycerides',
+                    'Metabolic Triad Status'
+                ]);
+
+                foreach ($records as $r) {
+                    $hba1c = floatval($r->hba1c ?? 0);
+                    $bsf = floatval($r->bsf ?? 0);
+                    $isDiab = $hba1c >= 6.5 || $bsf >= 126 || str_contains(strtolower($r->diabetes ?? ''), 'diabet');
+
+                    $sbp = intval($r->sbp ?? 0);
+                    $dbp = intval($r->dbp ?? 0);
+                    $isHtn = $sbp >= 140 || $dbp >= 90 || str_contains(strtolower($r->hypertension ?? ''), 'stage') || str_contains(strtolower($r->hypertension ?? ''), 'hyper');
+
+                    $bmi = floatval($r->bmi ?? 0);
+                    $isObese = $bmi >= 25 || str_contains(strtolower($r->obesity ?? ''), 'obese');
+
+                    if ($isDiab && $isHtn && $isObese) {
+                        fputcsv($handle, [
+                            $r->id,
+                            $r->patient_id,
+                            $r->patient->patient_name ?? 'N/A',
+                            $r->patient->age ?? 'N/A',
+                            $r->patient->gender ?? 'N/A',
+                            $r->patient->mobile ?? 'N/A',
+                            $r->patient->address ?? 'N/A',
+                            $r->created_at ? $r->created_at->format('Y-m-d H:i') : 'N/A',
+                            $r->diabetes ?? 'Diabetes',
+                            $r->hba1c ?: '-',
+                            $r->bsf ?: '-',
+                            $r->hypertension ?? 'Hypertension',
+                            $r->sbp ?: '-',
+                            $r->dbp ?: '-',
+                            $r->obesity ?? 'Obese',
+                            $r->bmi ?: '-',
+                            $r->weight_kg ?: '-',
+                            $r->creatinine ?: '-',
+                            $r->egfr ?: '-',
+                            $r->sgpt ?: '-',
+                            $r->chol ?: '-',
+                            $r->tg ?: '-',
+                            'Metabolic Syndrome Triad (Active)'
+                        ]);
+                    }
+                }
+            } else {
+                // Master All-Variables Comprehensive Clinical Research Export
+                fputcsv($handle, [
+                    'Record ID', 'Patient ID', 'Patient Name', 'Age', 'Gender', 'Mobile', 'Address', 'Consultation Date',
+                    'Diabetes Classification', 'HbA1c (%)', 'Fasting Blood Sugar (BSF)', 'Postprandial Sugar (BSPP)', 'Newly Detected Diab', 'Duration Diab (Yrs)', 'Insulin Start', 'Insulin Stop',
+                    'Hypertension Classification', 'Known HTN', 'SBP (mmHg)', 'DBP (mmHg)',
+                    'Obesity Classification', 'Height (cm)', 'Weight (kg)', 'BMI (kg/m²)', 'BMI Group', 'Waist (cm)', 'Hip (cm)', 'WHR', 'WHtR', 'Diet', 'Activity', 'Social Class', 'Income Class',
+                    'Infection Classification', 'Body Temp (°F)', 'Infection Notes', 'HIV', 'HBsAg', 'HCV', 'Urine Cast Cells',
+                    'Hb (%)', 'Platelet Count', 'MCV',
+                    'Creatinine (mg/dL)', 'eGFR (mL/min)', 'ACR', 'Uric Acid', 'Na+', 'K+', 'Ionized Calcium', 'Phosphorus',
+                    'SGPT (ALT)', 'SGOT (AST)', 'ALKP', 'FibroScan Score', 'USG Notes',
+                    'Total Cholesterol', 'Triglycerides', 'HDL', 'LDL',
+                    'TSH', 'T3', 'T4', 'Vitamin D25', 'Vitamin B12', 'Serum Cortisol', 'Dexamethasone Test',
+                    'Ophthalmic Exam', 'Foot Exam', 'Echo Exam'
+                ]);
+
+                foreach ($records as $r) {
+                    fputcsv($handle, [
+                        $r->id,
+                        $r->patient_id,
+                        $r->patient->patient_name ?? 'N/A',
+                        $r->patient->age ?? 'N/A',
+                        $r->patient->gender ?? 'N/A',
+                        $r->patient->mobile ?? 'N/A',
+                        $r->patient->address ?? 'N/A',
+                        $r->created_at ? $r->created_at->format('Y-m-d H:i') : 'N/A',
+                        $r->diabetes ?? 'Normal',
+                        $r->hba1c ?: '-',
+                        $r->bsf ?: '-',
+                        $r->bspp ?: '-',
+                        $r->newly_detected ?: '-',
+                        $r->duration_of_diabetes ?: '-',
+                        $r->start_insulin_date ?: '-',
+                        $r->stop_insulin_date ?: '-',
+                        $r->hypertension ?? 'Normal',
+                        $r->htn ?: '-',
+                        $r->sbp ?: '-',
+                        $r->dbp ?: '-',
+                        $r->obesity ?? 'Normal',
+                        $r->height_cm ?: '-',
+                        $r->weight_kg ?: '-',
+                        $r->bmi ?: '-',
+                        $r->bmi_group ?: '-',
+                        $r->waist_cm ?: '-',
+                        $r->hip_cm ?: '-',
+                        $r->waist_hip_ratio ?: '-',
+                        $r->waist_height_ratio ?: '-',
+                        $r->veg_nonveg ?: '-',
+                        $r->physical_activity ?: '-',
+                        $r->social_class ?: '-',
+                        $r->income_class ?: '-',
+                        $r->infection ?? 'Normal',
+                        $r->temprature ? $r->temprature . ' °F' : '-',
+                        $r->infection ?: '-',
+                        $r->hiv ?: '-',
+                        $r->hbsag ?: '-',
+                        $r->hcv ?: '-',
+                        $r->urine_cast_cell ?: '-',
+                        $r->hb_percent ?: '-',
+                        $r->plt ?: '-',
+                        $r->mcv ?: '-',
+                        $r->creatinine ?: '-',
+                        $r->egfr ?: '-',
+                        $r->acr ?: '-',
+                        $r->uric_acid ?: '-',
+                        $r->na_plus ?: '-',
+                        $r->k_plus ?: '-',
+                        $r->i_calcium ?: '-',
+                        $r->phosphorus ?: '-',
+                        $r->sgpt ?: '-',
+                        $r->sgot ?: '-',
+                        $r->alkp ?: '-',
+                        $r->fib_score ?: '-',
+                        $r->usg ?: '-',
+                        $r->chol ?: '-',
+                        $r->tg ?: '-',
+                        $r->hdl ?: '-',
+                        $r->ldl ?: '-',
+                        $r->tsh ?: '-',
+                        $r->t3 ?: '-',
+                        $r->t4 ?: '-',
+                        $r->vitamin_d25 ?: '-',
+                        $r->vitamin_b12 ?: '-',
+                        $r->s_cortisol ?: '-',
+                        $r->dex_skip_test ?: '-',
+                        $r->ophthalmic_ex ?: '-',
+                        $r->foot_ev ?: '-',
+                        $r->car_echo_ev ?: '-'
+                    ]);
+                }
+            }
+
+            fclose($handle);
+        }, 200, $headers);
+    }
+
+    public function exportPatientRecords($id)
+    {
+        $patient = Patient::with(['clinicalRecords' => function ($q) {
+            $q->orderBy('id', 'asc');
+        }])->findOrFail($id);
+
+        $patientNameClean = \Illuminate\Support\Str::slug($patient->patient_name ?? 'patient', '_');
+        $filename = 'patient_' . $patient->id . '_' . $patientNameClean . '_clinical_history_' . date('Y-m-d') . '.csv';
+
+        $records = $patient->clinicalRecords;
+
+        $headers = [
+            'Content-Type' => 'text/csv; charset=UTF-8',
+            'Content-Disposition' => "attachment; filename=\"{$filename}\"",
+            'Pragma' => 'no-cache',
+            'Cache-Control' => 'must-revalidate, post-check=0, pre-check=0',
+            'Expires' => '0',
+        ];
+
+        return response()->stream(function () use ($patient, $records) {
+            $handle = fopen('php://output', 'w');
+            // UTF-8 BOM for Excel
+            fprintf($handle, chr(0xEF) . chr(0xBB) . chr(0xBF));
+
+            fputcsv($handle, [
+                'Patient ID',
+                'Patient Name',
+                'Age',
+                'Gender',
+                'Mobile',
+                'Address',
+                'Marital Status',
+                'Occupation',
+                'Education',
+                'Registration Date',
+                'Visit / Record ID',
+                'Consultation Date',
+                'Diabetes Classification',
+                'HbA1c (%)',
+                'Fasting Blood Sugar BSF (mg/dL)',
+                'Postprandial Sugar BSPP (mg/dL)',
+                'Newly Detected Diabetes',
+                'Duration of Diabetes (Yrs)',
+                'Insulin Start Date',
+                'Insulin Stop Date',
+                'Hypertension Classification',
+                'Known HTN History',
+                'Systolic BP SBP (mmHg)',
+                'Diastolic BP DBP (mmHg)',
+                'Pulse Pressure (mmHg)',
+                'Mean Arterial Pressure (MAP mmHg)',
+                'Obesity Classification',
+                'Height (cm)',
+                'Weight (kg)',
+                'BMI (kg/m²)',
+                'BMI Category Group',
+                'Waist (cm)',
+                'Hip (cm)',
+                'Waist-Hip Ratio (WHR)',
+                'Waist-Height Ratio (WHtR)',
+                'Diet (Veg/Non-Veg)',
+                'Physical Activity Level',
+                'Social Class',
+                'Income Class',
+                'Infection Status',
+                'Body Temperature (°F)',
+                'Infection Details',
+                'HIV Serology',
+                'HBsAg Serology',
+                'HCV Serology',
+                'Urine Cast Cells',
+                'Hemoglobin Hb (%)',
+                'Platelets PLT (10^3/uL)',
+                'MCV (fL)',
+                'Serum Creatinine (mg/dL)',
+                'eGFR (mL/min/1.73m²)',
+                'Microalbuminuria ACR (mg/g)',
+                'Uric Acid (mg/dL)',
+                'Serum Sodium Na+ (mEq/L)',
+                'Serum Potassium K+ (mEq/L)',
+                'Ionized Calcium (mg/dL)',
+                'Serum Phosphorus (mg/dL)',
+                'SGPT ALT (U/L)',
+                'SGOT AST (U/L)',
+                'Alkaline Phosphatase ALKP (U/L)',
+                'FibroScan Score',
+                'USG Findings',
+                'Total Cholesterol (mg/dL)',
+                'Triglycerides TG (mg/dL)',
+                'HDL Cholesterol (mg/dL)',
+                'LDL Cholesterol (mg/dL)',
+                'TSH (uIU/mL)',
+                'T3 (ng/dL)',
+                'T4 (ug/dL)',
+                'Vitamin D25 (ng/mL)',
+                'Vitamin B12 (pg/mL)',
+                'Serum Cortisol (ug/dL)',
+                'Dexamethasone Suppression Test',
+                'Ophthalmic Eye Exam',
+                'Diabetic Foot Exam',
+                'Cardiac Echo / Carotid Exam'
+            ]);
+
+            foreach ($records as $r) {
+                $sbp = intval($r->sbp ?? 0);
+                $dbp = intval($r->dbp ?? 0);
+                $pp = ($sbp > 0 && $dbp > 0) ? ($sbp - $dbp) : '-';
+                $map = ($sbp > 0 && $dbp > 0) ? round($dbp + (($sbp - $dbp) / 3), 1) : '-';
+
+                fputcsv($handle, [
+                    $patient->id,
+                    $patient->patient_name ?? 'N/A',
+                    $patient->age ?? 'N/A',
+                    $patient->gender ?? 'N/A',
+                    $patient->mobile ?? 'N/A',
+                    $patient->address ?? 'N/A',
+                    $patient->marital_status ?? 'N/A',
+                    $patient->occupation ?? 'N/A',
+                    $patient->education ?? 'N/A',
+                    $patient->created_at ? $patient->created_at->format('Y-m-d') : 'N/A',
+                    $r->id,
+                    $r->created_at ? $r->created_at->format('Y-m-d H:i') : 'N/A',
+                    $r->diabetes ?? 'Normal',
+                    $r->hba1c ?: '-',
+                    $r->bsf ?: '-',
+                    $r->bspp ?: '-',
+                    $r->newly_detected ?: '-',
+                    $r->duration_of_diabetes ?: '-',
+                    $r->start_insulin_date ?: '-',
+                    $r->stop_insulin_date ?: '-',
+                    $r->hypertension ?? 'Normal',
+                    $r->htn ?: '-',
+                    $r->sbp ?: '-',
+                    $r->dbp ?: '-',
+                    $pp,
+                    $map,
+                    $r->obesity ?? 'Normal',
+                    $r->height_cm ?: '-',
+                    $r->weight_kg ?: '-',
+                    $r->bmi ?: '-',
+                    $r->bmi_group ?: '-',
+                    $r->waist_cm ?: '-',
+                    $r->hip_cm ?: '-',
+                    $r->waist_hip_ratio ?: '-',
+                    $r->waist_height_ratio ?: '-',
+                    $r->veg_nonveg ?: '-',
+                    $r->physical_activity ?: '-',
+                    $r->social_class ?: '-',
+                    $r->income_class ?: '-',
+                    $r->infection ?? 'Normal',
+                    $r->temprature ? $r->temprature . ' °F' : '-',
+                    $r->infection ?: '-',
+                    $r->hiv ?: '-',
+                    $r->hbsag ?: '-',
+                    $r->hcv ?: '-',
+                    $r->urine_cast_cell ?: '-',
+                    $r->hb_percent ?: '-',
+                    $r->plt ?: '-',
+                    $r->mcv ?: '-',
+                    $r->creatinine ?: '-',
+                    $r->egfr ?: '-',
+                    $r->acr ?: '-',
+                    $r->uric_acid ?: '-',
+                    $r->na_plus ?: '-',
+                    $r->k_plus ?: '-',
+                    $r->i_calcium ?: '-',
+                    $r->phosphorus ?: '-',
+                    $r->sgpt ?: '-',
+                    $r->sgot ?: '-',
+                    $r->alkp ?: '-',
+                    $r->fib_score ?: '-',
+                    $r->usg ?: '-',
+                    $r->chol ?: '-',
+                    $r->tg ?: '-',
+                    $r->hdl ?: '-',
+                    $r->ldl ?: '-',
+                    $r->tsh ?: '-',
+                    $r->t3 ?: '-',
+                    $r->t4 ?: '-',
+                    $r->vitamin_d25 ?: '-',
+                    $r->vitamin_b12 ?: '-',
+                    $r->s_cortisol ?: '-',
+                    $r->dex_skip_test ?: '-',
+                    $r->ophthalmic_ex ?: '-',
+                    $r->foot_ev ?: '-',
+                    $r->car_echo_ev ?: '-'
+                ]);
+            }
+
+            fclose($handle);
+        }, 200, $headers);
+    }
 }
 

@@ -127,7 +127,7 @@
                 </button>
 
                 <!-- Dropdown -->
-                <div x-show="open" x-transition class="ml-6 mt-1.5 space-y-1 pl-3 border-l-2 border-slate-700">
+                <div x-show="open" x-cloak x-transition style="{{ $isReports ? '' : 'display: none;' }}" class="ml-6 mt-1.5 space-y-1 pl-3 border-l-2 border-slate-700">
 
                     <a href="{{ route('report.diabetesReport') }}"
                         class="block px-3.5 py-2 rounded-lg text-xs font-medium transition-all duration-200

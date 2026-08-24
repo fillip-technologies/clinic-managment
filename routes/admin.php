@@ -33,9 +33,11 @@ Route::prefix('admin')->middleware(['super_admin'])->group(function () {
         Route::get('/addnewReport/{id}', 'addnewReport')->name('addnewReport');
         Route::post('/createNewRecord/{id}', 'createNewRecord')->name('createNewRecord');
         Route::get('/patient/details/{id}', 'show')->name('patient.show');
+        Route::get('/patient/export/{id}', 'exportPatientRecords')->name('patient.export');
         Route::get('/single/patient/{id}', 'edit')->name('patient.edit');
         Route::delete('/delete/patient/{id}', 'destroy')->name('patient.delete');
         Route::get('/analytics/disease','diseaseAnalytics')->name('analytics.disease');
+        Route::get('/analytics/disease/export', 'exportDiseaseAnalytics')->name('analytics.disease.export');
     });
 
     Route::controller(ReportController::class)->group(function () {
