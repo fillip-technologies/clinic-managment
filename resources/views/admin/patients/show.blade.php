@@ -1,6 +1,8 @@
 @extends('admin.loyout.master')
 @section('content')
 
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
     <style>
         .detail-card {
             background: #ffffff;
@@ -193,15 +195,31 @@
             </div>
         </div>
 
-        <!-- Key Clinical Alerts & Metrics Header (KPI Row) -->
-        <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 sm:gap-4">
-            <!-- BMI -->
-            @php
-                $bmiVal = floatval($record->bmi ?? 0);
-                $bmiBg = 'bg-emerald-50 text-emerald-700 border-emerald-200';
-                if ($bmiVal >= 25) $bmiBg = 'bg-red-50 text-red-700 border-red-200';
-                elseif ($bmiVal >= 23) $bmiBg = 'bg-amber-50 text-amber-700 border-amber-200';
-            @endphp
+        <!-- Navigation Tab Switcher -->
+        <div class="flex items-center gap-3 border-b border-slate-200 no-print">
+            <button type="button" onclick="switchDetailTab('profile')" id="tab-btn-profile"
+                class="px-5 py-3 text-sm font-bold flex items-center gap-2 border-b-2 border-indigo-600 text-indigo-600 transition">
+                <i class="fas fa-file-medical"></i>
+                <span>Clinical Profile & Records</span>
+            </button>
+            <button type="button" onclick="switchDetailTab('analytics')" id="tab-btn-analytics"
+                class="px-5 py-3 text-sm font-bold flex items-center gap-2 border-b-2 border-transparent text-slate-500 hover:text-slate-700 hover:border-slate-300 transition">
+                <i class="fas fa-chart-line text-indigo-500"></i>
+                <span>Health Trends & Graphs</span>
+                <span class="text-[10px] bg-indigo-100 text-indigo-700 px-2 py-0.5 rounded-full font-bold">Analytics</span>
+            </button>
+        </div>
+
+        <div id="content-profile" class="space-y-6">
+            <!-- Key Clinical Alerts & Metrics Header (KPI Row) -->
+            <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 sm:gap-4">
+                <!-- BMI -->
+                @php
+                    $bmiVal = floatval($record->bmi ?? 0);
+                    $bmiBg = 'bg-emerald-50 text-emerald-700 border-emerald-200';
+                    if ($bmiVal >= 25) $bmiBg = 'bg-red-50 text-red-700 border-red-200';
+                    elseif ($bmiVal >= 23) $bmiBg = 'bg-amber-50 text-amber-700 border-amber-200';
+                @endphp
             <div class="p-4 rounded-2xl border {{ $bmiBg }} flex flex-col justify-between">
                 <span class="text-[10px] font-bold uppercase tracking-wider">BMI (kg/m²)</span>
                 <div class="my-1">
@@ -730,6 +748,766 @@
                 </table>
             </div>
         </div>
+        <!-- End of #content-profile -->
     </div>
 
+    <!-- Patient Health Trends & Graphs Content -->
+    <div id="content-analytics" class="space-y-6 hidden">
+
+            @php
+                // Chronological records for charts
+                $sortedRecords = $allRecords->sortBy('id')->values();
+                $totalVisits = $sortedRecords->count();
+                $baselineRecord = $sortedRecords->first();
+                $latestRecord = $sortedRecords->last();
+
+                // Quick latest values
+                $currSbp = intval($latestRecord->sbp ?? $record->sbp ?? 0);
+                $currDbp = intval($latestRecord->dbp ?? $record->dbp ?? 0);
+                $currHba1c = floatval($latestRecord->hba1c ?? $record->hba1c ?? 0);
+                $currBsf = floatval($latestRecord->bsf ?? $record->bsf ?? 0);
+                $currBspp = floatval($latestRecord->bspp ?? $record->bspp ?? 0);
+                $currBmi = floatval($latestRecord->bmi ?? $record->bmi ?? 0);
+                $currWeight = floatval($latestRecord->weight_kg ?? $record->weight_kg ?? 0);
+                $currCreatinine = floatval($latestRecord->creatinine ?? $record->creatinine ?? 0);
+                $currEgfr = floatval($latestRecord->egfr ?? $record->egfr ?? 0);
+
+                // Helper to compute SVG graph coordinates
+                if (!function_exists('calcSvgChart')) {
+                    function calcSvgChart($records, $field, $minDefault = 0, $maxDefault = 100) {
+                        $data = [];
+                        foreach ($records as $r) {
+                            $val = $r->$field;
+                            if (!is_null($val) && $val !== '' && is_numeric($val)) {
+                                $dateStr = $r->created_at ? $r->created_at->format('d M') : ($r->record_date ? \Carbon\Carbon::parse($r->record_date)->format('d M') : 'V#' . $r->id);
+                                $data[] = [
+                                    'label' => $dateStr,
+                                    'full_date' => $r->created_at ? $r->created_at->format('d M Y') : 'Visit #' . $r->id,
+                                    'value' => floatval($val),
+                                    'id' => $r->id
+                                ];
+                            }
+                        }
+                        if (empty($data)) return null;
+
+                        $values = array_column($data, 'value');
+                        $minVal = min($values);
+                        $maxVal = max($values);
+                        $minY = min($minVal * 0.85, $minDefault);
+                        $maxY = max($maxVal * 1.15, $maxDefault);
+                        if ($maxY == $minY) { $maxY += 10; $minY = max(0, $minY - 10); }
+
+                        $width = 500;
+                        $height = 160;
+                        $padX = 45;
+                        $padY = 28;
+                        $chartW = $width - (2 * $padX);
+                        $chartH = $height - (2 * $padY);
+
+                        $count = count($data);
+                        $points = [];
+                        $svgPoints = [];
+
+                        foreach ($data as $i => $item) {
+                            $x = $count > 1 ? $padX + ($i * ($chartW / ($count - 1))) : ($width / 2);
+                            $norm = ($item['value'] - $minY) / ($maxY - $minY);
+                            $y = ($height - $padY) - ($norm * $chartH);
+                            $points[] = [
+                                'x' => round($x, 1),
+                                'y' => round($y, 1),
+                                'label' => $item['label'],
+                                'full_date' => $item['full_date'],
+                                'value' => $item['value'],
+                                'id' => $item['id']
+                            ];
+                            $svgPoints[] = round($x, 1) . ',' . round($y, 1);
+                        }
+
+                        $polylineStr = implode(' ', $svgPoints);
+                        $firstX = $points[0]['x'];
+                        $lastX = end($points)['x'];
+                        $bottomY = $height - $padY;
+                        $polygonStr = "{$firstX},{$bottomY} {$polylineStr} {$lastX},{$bottomY}";
+
+                        return [
+                            'points' => $points,
+                            'polyline' => $polylineStr,
+                            'polygon' => $polygonStr,
+                            'minY' => round($minY, 1),
+                            'maxY' => round($maxY, 1),
+                            'latest' => end($data)['value'],
+                            'baseline' => $data[0]['value'],
+                            'count' => $count
+                        ];
+                    }
+                }
+
+                // Compute SVG chart data for all metrics
+                $svgSbp = calcSvgChart($sortedRecords, 'sbp', 60, 180);
+                $svgDbp = calcSvgChart($sortedRecords, 'dbp', 40, 110);
+                $svgHba1c = calcSvgChart($sortedRecords, 'hba1c', 4, 12);
+                $svgBsf = calcSvgChart($sortedRecords, 'bsf', 60, 200);
+                $svgBspp = calcSvgChart($sortedRecords, 'bspp', 80, 250);
+                $svgBmi = calcSvgChart($sortedRecords, 'bmi', 15, 38);
+                $svgWeight = calcSvgChart($sortedRecords, 'weight_kg', 30, 110);
+                $svgCreatinine = calcSvgChart($sortedRecords, 'creatinine', 0.4, 3.5);
+                $svgEgfr = calcSvgChart($sortedRecords, 'egfr', 20, 120);
+                $svgChol = calcSvgChart($sortedRecords, 'chol', 80, 260);
+                $svgTg = calcSvgChart($sortedRecords, 'tg', 50, 250);
+                $svgHdl = calcSvgChart($sortedRecords, 'hdl', 20, 80);
+                $svgLdl = calcSvgChart($sortedRecords, 'ldl', 30, 180);
+                $svgSgpt = calcSvgChart($sortedRecords, 'sgpt', 10, 100);
+                $svgSgot = calcSvgChart($sortedRecords, 'sgot', 10, 100);
+                $svgAlkp = calcSvgChart($sortedRecords, 'alkp', 30, 180);
+                $svgHb = calcSvgChart($sortedRecords, 'hb_percent', 6, 18);
+                $svgPlt = calcSvgChart($sortedRecords, 'plt', 50, 400);
+                $svgTemp = calcSvgChart($sortedRecords, 'temprature', 96, 104);
+            @endphp
+
+            <!-- Overview Header Banner -->
+            <div class="bg-gradient-to-r from-slate-900 via-indigo-950 to-slate-900 rounded-3xl p-6 sm:p-7 text-white shadow-xl">
+                <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-6 pb-6 border-b border-white/10">
+                    <div>
+                        <div class="flex items-center gap-2 mb-2">
+                            <span class="px-3 py-1 rounded-full text-xs font-bold bg-indigo-500/30 text-indigo-200 border border-indigo-400/30 flex items-center gap-1.5">
+                                <i class="fas fa-chart-line text-indigo-300"></i> Patient Longitudinal Analytics
+                            </span>
+                            <span class="text-xs text-slate-400">
+                                {{ $totalVisits }} {{ \Illuminate\Support\Str::plural('Consultation', $totalVisits) }} Recorded
+                            </span>
+                        </div>
+                        <h2 class="text-2xl sm:text-3xl font-black text-white tracking-tight">
+                            Patient Health Trends & Trajectory Graphs
+                        </h2>
+                        <p class="text-xs text-slate-300 mt-1 max-w-2xl">
+                            Visual tracking of vitals, blood pressure, glycemic control, kidney function, lipid profile, and liver enzymes across all clinical consultations.
+                        </p>
+                    </div>
+
+                    <div class="flex items-center gap-3">
+                        <div class="bg-white/10 backdrop-blur-md px-4 py-3 rounded-2xl border border-white/10 text-center">
+                            <span class="text-[10px] uppercase font-bold text-slate-300 block">Baseline Date</span>
+                            <span class="text-xs font-bold text-white">
+                                {{ $baselineRecord && $baselineRecord->created_at ? $baselineRecord->created_at->format('d M Y') : 'N/A' }}
+                            </span>
+                        </div>
+                        <div class="bg-white/10 backdrop-blur-md px-4 py-3 rounded-2xl border border-white/10 text-center">
+                            <span class="text-[10px] uppercase font-bold text-slate-300 block">Latest Follow-up</span>
+                            <span class="text-xs font-bold text-white">
+                                {{ $latestRecord && $latestRecord->created_at ? $latestRecord->created_at->format('d M Y') : 'N/A' }}
+                            </span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 4 Quick Key Metric Cards -->
+                <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mt-6">
+                    <div class="bg-white/5 rounded-2xl p-4 border border-white/10">
+                        <span class="text-[10px] font-bold uppercase text-slate-400 block tracking-wider">Blood Pressure</span>
+                        <div class="text-xl sm:text-2xl font-black text-white my-1">
+                            {{ $currSbp && $currDbp ? $currSbp . '/' . $currDbp : ($currSbp ? $currSbp : 'N/A') }} <span class="text-[11px] font-normal text-slate-400">mmHg</span>
+                        </div>
+                        <span class="text-[11px] {{ $currSbp >= 140 ? 'text-red-400 font-bold' : ($currSbp >= 130 ? 'text-amber-400 font-bold' : 'text-emerald-400 font-bold') }}">
+                            {{ $currSbp >= 140 ? 'Hypertensive' : ($currSbp >= 130 ? 'Pre-Hypertension' : 'Normal Limit') }}
+                        </span>
+                    </div>
+
+                    <div class="bg-white/5 rounded-2xl p-4 border border-white/10">
+                        <span class="text-[10px] font-bold uppercase text-slate-400 block tracking-wider">Glycemic (HbA1c)</span>
+                        <div class="text-xl sm:text-2xl font-black text-white my-1">
+                            {{ $currHba1c ? $currHba1c . '%' : 'N/A' }}
+                        </div>
+                        <span class="text-[11px] {{ $currHba1c >= 6.5 ? 'text-red-400 font-bold' : ($currHba1c >= 5.7 ? 'text-amber-400 font-bold' : 'text-emerald-400 font-bold') }}">
+                            {{ $currHba1c >= 6.5 ? 'Diabetic Range' : ($currHba1c >= 5.7 ? 'Pre-Diabetic' : 'Normal Limit') }}
+                        </span>
+                    </div>
+
+                    <div class="bg-white/5 rounded-2xl p-4 border border-white/10">
+                        <span class="text-[10px] font-bold uppercase text-slate-400 block tracking-wider">BMI & Weight</span>
+                        <div class="text-xl sm:text-2xl font-black text-white my-1">
+                            {{ $currBmi ?: 'N/A' }} <span class="text-[11px] font-normal text-slate-400">{{ $currWeight ? '(' . $currWeight . ' kg)' : '' }}</span>
+                        </div>
+                        <span class="text-[11px] {{ $currBmi >= 25 ? 'text-red-400 font-bold' : ($currBmi >= 23 ? 'text-amber-400 font-bold' : 'text-emerald-400 font-bold') }}">
+                            {{ $currBmi >= 25 ? 'Obese' : ($currBmi >= 23 ? 'Overweight' : 'Normal Weight') }}
+                        </span>
+                    </div>
+
+                    <div class="bg-white/5 rounded-2xl p-4 border border-white/10">
+                        <span class="text-[10px] font-bold uppercase text-slate-400 block tracking-wider">Renal (Creatinine)</span>
+                        <div class="text-xl sm:text-2xl font-black text-white my-1">
+                            {{ $currCreatinine ? $currCreatinine : 'N/A' }} <span class="text-[11px] font-normal text-slate-400">{{ $currCreatinine ? 'mg/dL' : '' }}</span>
+                        </div>
+                        <span class="text-[11px] text-slate-300 font-bold">
+                            eGFR: {{ $currEgfr ? $currEgfr . ' mL/min' : 'N/A' }}
+                        </span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Graph Category Filter Tabs -->
+            <div class="flex flex-wrap items-center gap-2 bg-white p-2.5 rounded-2xl border border-slate-200 shadow-sm no-print">
+                <button type="button" onclick="filterGraphSection('all')" class="graph-filter-btn px-4 py-2 rounded-xl text-xs font-bold bg-indigo-600 text-white shadow-sm transition" data-category="all">
+                    All Graphs (8)
+                </button>
+                <button type="button" onclick="filterGraphSection('vitals')" class="graph-filter-btn px-3.5 py-2 rounded-xl text-xs font-bold bg-slate-100 text-slate-600 hover:bg-slate-200 transition" data-category="vitals">
+                    🩺 Blood Pressure & Vitals
+                </button>
+                <button type="button" onclick="filterGraphSection('diabetes')" class="graph-filter-btn px-3.5 py-2 rounded-xl text-xs font-bold bg-slate-100 text-slate-600 hover:bg-slate-200 transition" data-category="diabetes">
+                    🩸 Diabetes & Sugar
+                </button>
+                <button type="button" onclick="filterGraphSection('weight')" class="graph-filter-btn px-3.5 py-2 rounded-xl text-xs font-bold bg-slate-100 text-slate-600 hover:bg-slate-200 transition" data-category="weight">
+                    ⚖️ Weight & BMI
+                </button>
+                <button type="button" onclick="filterGraphSection('kidney')" class="graph-filter-btn px-3.5 py-2 rounded-xl text-xs font-bold bg-slate-100 text-slate-600 hover:bg-slate-200 transition" data-category="kidney">
+                    🧪 Kidney (KFT)
+                </button>
+                <button type="button" onclick="filterGraphSection('lipid')" class="graph-filter-btn px-3.5 py-2 rounded-xl text-xs font-bold bg-slate-100 text-slate-600 hover:bg-slate-200 transition" data-category="lipid">
+                    🫀 Lipids & Cholesterol
+                </button>
+                <button type="button" onclick="filterGraphSection('liver')" class="graph-filter-btn px-3.5 py-2 rounded-xl text-xs font-bold bg-slate-100 text-slate-600 hover:bg-slate-200 transition" data-category="liver">
+                    🧬 Liver Enzymes (LFT)
+                </button>
+                <button type="button" onclick="filterGraphSection('blood')" class="graph-filter-btn px-3.5 py-2 rounded-xl text-xs font-bold bg-slate-100 text-slate-600 hover:bg-slate-200 transition" data-category="blood">
+                    🩸 CBC & Hemoglobin
+                </button>
+            </div>
+
+            <!-- 8 Clinical Graphs Grid (Native SVG + Vector Visualization) -->
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+
+                <!-- 1. Blood Pressure Trajectory Graph -->
+                <div class="graph-card bg-white p-5 rounded-2xl border border-slate-200 shadow-sm" data-category="vitals">
+                    <div class="flex items-center justify-between mb-4 pb-3 border-b border-slate-100">
+                        <div class="flex items-center gap-2.5">
+                            <div class="w-9 h-9 rounded-xl bg-red-100 text-red-600 flex items-center justify-center font-bold">
+                                <i class="fas fa-heart-pulse"></i>
+                            </div>
+                            <div>
+                                <h4 class="text-sm font-bold text-slate-800">Blood Pressure Trajectory</h4>
+                                <span class="text-xs text-slate-500">Systolic (SBP) & Diastolic (DBP) in mmHg</span>
+                            </div>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <span class="flex items-center gap-1 text-[11px] font-bold text-red-600">
+                                <span class="w-2.5 h-2.5 rounded-full bg-red-500"></span> SBP
+                            </span>
+                            <span class="flex items-center gap-1 text-[11px] font-bold text-blue-600">
+                                <span class="w-2.5 h-2.5 rounded-full bg-blue-500"></span> DBP
+                            </span>
+                        </div>
+                    </div>
+
+                    @if($svgSbp && !empty($svgSbp['points']))
+                        <div class="relative w-full overflow-hidden bg-slate-50/50 rounded-xl p-3 border border-slate-100">
+                            <svg viewBox="0 0 500 160" class="w-full h-44 drop-shadow-sm select-none" preserveAspectRatio="none">
+                                <!-- Grid Lines -->
+                                <line x1="45" y1="28" x2="455" y2="28" stroke="#e2e8f0" stroke-width="1" stroke-dasharray="3,3" />
+                                <text x="40" y="32" text-anchor="end" font-size="9" fill="#94a3b8" font-family="monospace">{{ $svgSbp['maxY'] }}</text>
+
+                                <line x1="45" y1="80" x2="455" y2="80" stroke="#f1f5f9" stroke-width="1" stroke-dasharray="3,3" />
+                                <text x="40" y="84" text-anchor="end" font-size="9" fill="#94a3b8" font-family="monospace">{{ round(($svgSbp['minY'] + $svgSbp['maxY'])/2) }}</text>
+
+                                <line x1="45" y1="132" x2="455" y2="132" stroke="#e2e8f0" stroke-width="1" />
+                                <text x="40" y="136" text-anchor="end" font-size="9" fill="#94a3b8" font-family="monospace">{{ $svgSbp['minY'] }}</text>
+
+                                <!-- SBP Target Line (120 mmHg) -->
+                                @php
+                                    $normT = min(1, max(0, (120 - $svgSbp['minY']) / ($svgSbp['maxY'] - $svgSbp['minY'])));
+                                    $targetY = 132 - ($normT * 104);
+                                @endphp
+                                <line x1="45" y1="{{ $targetY }}" x2="455" y2="{{ $targetY }}" stroke="#10b981" stroke-width="1.5" stroke-dasharray="4,4" opacity="0.8" />
+                                <text x="455" y="{{ $targetY - 4 }}" text-anchor="end" font-size="8" fill="#059669" font-weight="bold">Target: ≤ 120/80 mmHg</text>
+
+                                <!-- SBP Area & Polyline -->
+                                @if($svgSbp['count'] > 1)
+                                    <polygon points="{{ $svgSbp['polygon'] }}" fill="rgba(239, 68, 68, 0.12)" />
+                                    <polyline points="{{ $svgSbp['polyline'] }}" fill="none" stroke="#ef4444" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" />
+                                @endif
+
+                                <!-- SBP Points -->
+                                @foreach($svgSbp['points'] as $p)
+                                    <line x1="{{ $p['x'] }}" y1="{{ $p['y'] }}" x2="{{ $p['x'] }}" y2="132" stroke="#cbd5e1" stroke-width="1" stroke-dasharray="2,2" opacity="0.6" />
+                                    <circle cx="{{ $p['x'] }}" cy="{{ $p['y'] }}" r="5" fill="#ffffff" stroke="#ef4444" stroke-width="3" />
+                                    <rect x="{{ $p['x'] - 16 }}" y="{{ $p['y'] - 20 }}" width="32" height="14" rx="4" fill="#ef4444" />
+                                    <text x="{{ $p['x'] }}" y="{{ $p['y'] - 10 }}" text-anchor="middle" font-size="9" font-weight="bold" fill="#ffffff">{{ $p['value'] }}</text>
+                                    <text x="{{ $p['x'] }}" y="148" text-anchor="middle" font-size="9" fill="#64748b" font-weight="bold">{{ $p['label'] }}</text>
+                                @endforeach
+                            </svg>
+                        </div>
+                    @else
+                        <div class="h-44 flex items-center justify-center text-xs text-slate-400 bg-slate-50 rounded-xl border border-dashed border-slate-200">
+                            No blood pressure records logged yet
+                        </div>
+                    @endif
+                </div>
+
+                <!-- 2. Glycemic Control & Diabetes Graph -->
+                <div class="graph-card bg-white p-5 rounded-2xl border border-slate-200 shadow-sm" data-category="diabetes">
+                    <div class="flex items-center justify-between mb-4 pb-3 border-b border-slate-100">
+                        <div class="flex items-center gap-2.5">
+                            <div class="w-9 h-9 rounded-xl bg-rose-100 text-rose-600 flex items-center justify-center font-bold">
+                                <i class="fas fa-droplet"></i>
+                            </div>
+                            <div>
+                                <h4 class="text-sm font-bold text-slate-800">Glycemic Control & Diabetes</h4>
+                                <span class="text-xs text-slate-500">HbA1c (%) & Fasting Sugar (BSF mg/dL)</span>
+                            </div>
+                        </div>
+                        <span class="text-xs font-bold px-2.5 py-1 rounded-full bg-slate-100 text-slate-700">Target: HbA1c &lt; 5.7%</span>
+                    </div>
+
+                    @if($svgHba1c && !empty($svgHba1c['points']))
+                        <div class="relative w-full overflow-hidden bg-slate-50/50 rounded-xl p-3 border border-slate-100">
+                            <svg viewBox="0 0 500 160" class="w-full h-44 drop-shadow-sm select-none" preserveAspectRatio="none">
+                                <line x1="45" y1="28" x2="455" y2="28" stroke="#e2e8f0" stroke-width="1" stroke-dasharray="3,3" />
+                                <text x="40" y="32" text-anchor="end" font-size="9" fill="#94a3b8" font-family="monospace">{{ $svgHba1c['maxY'] }}%</text>
+
+                                <line x1="45" y1="80" x2="455" y2="80" stroke="#f1f5f9" stroke-width="1" stroke-dasharray="3,3" />
+                                <text x="40" y="84" text-anchor="end" font-size="9" fill="#94a3b8" font-family="monospace">{{ round(($svgHba1c['minY'] + $svgHba1c['maxY'])/2, 1) }}%</text>
+
+                                <line x1="45" y1="132" x2="455" y2="132" stroke="#e2e8f0" stroke-width="1" />
+                                <text x="40" y="136" text-anchor="end" font-size="9" fill="#94a3b8" font-family="monospace">{{ $svgHba1c['minY'] }}%</text>
+
+                                @php
+                                    $normH = min(1, max(0, (5.7 - $svgHba1c['minY']) / ($svgHba1c['maxY'] - $svgHba1c['minY'])));
+                                    $targetHbY = 132 - ($normH * 104);
+                                @endphp
+                                <line x1="45" y1="{{ $targetHbY }}" x2="455" y2="{{ $targetHbY }}" stroke="#10b981" stroke-width="1.5" stroke-dasharray="4,4" opacity="0.8" />
+                                <text x="455" y="{{ $targetHbY - 4 }}" text-anchor="end" font-size="8" fill="#059669" font-weight="bold">Normal Cutoff: &lt; 5.7%</text>
+
+                                @if($svgHba1c['count'] > 1)
+                                    <polygon points="{{ $svgHba1c['polygon'] }}" fill="rgba(225, 29, 72, 0.12)" />
+                                    <polyline points="{{ $svgHba1c['polyline'] }}" fill="none" stroke="#e11d48" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" />
+                                @endif
+
+                                @foreach($svgHba1c['points'] as $p)
+                                    <line x1="{{ $p['x'] }}" y1="{{ $p['y'] }}" x2="{{ $p['x'] }}" y2="132" stroke="#cbd5e1" stroke-width="1" stroke-dasharray="2,2" opacity="0.6" />
+                                    <circle cx="{{ $p['x'] }}" cy="{{ $p['y'] }}" r="5" fill="#ffffff" stroke="#e11d48" stroke-width="3" />
+                                    <rect x="{{ $p['x'] - 18 }}" y="{{ $p['y'] - 20 }}" width="36" height="14" rx="4" fill="#e11d48" />
+                                    <text x="{{ $p['x'] }}" y="{{ $p['y'] - 10 }}" text-anchor="middle" font-size="9" font-weight="bold" fill="#ffffff">{{ $p['value'] }}%</text>
+                                    <text x="{{ $p['x'] }}" y="148" text-anchor="middle" font-size="9" fill="#64748b" font-weight="bold">{{ $p['label'] }}</text>
+                                @endforeach
+                            </svg>
+                        </div>
+                    @else
+                        <div class="h-44 flex items-center justify-center text-xs text-slate-400 bg-slate-50 rounded-xl border border-dashed border-slate-200">
+                            No HbA1c lab tests recorded yet
+                        </div>
+                    @endif
+                </div>
+
+                <!-- 3. Weight & BMI Trajectory Graph -->
+                <div class="graph-card bg-white p-5 rounded-2xl border border-slate-200 shadow-sm" data-category="weight">
+                    <div class="flex items-center justify-between mb-4 pb-3 border-b border-slate-100">
+                        <div class="flex items-center gap-2.5">
+                            <div class="w-9 h-9 rounded-xl bg-amber-100 text-amber-600 flex items-center justify-center font-bold">
+                                <i class="fas fa-weight-scale"></i>
+                            </div>
+                            <div>
+                                <h4 class="text-sm font-bold text-slate-800">Body Weight & BMI Trajectory</h4>
+                                <span class="text-xs text-slate-500">BMI (kg/m²) & Weight (kg) over consultations</span>
+                            </div>
+                        </div>
+                        <span class="text-xs font-bold px-2.5 py-1 rounded-full bg-slate-100 text-slate-700">Healthy: &lt; 23 kg/m²</span>
+                    </div>
+
+                    @if($svgBmi && !empty($svgBmi['points']))
+                        <div class="relative w-full overflow-hidden bg-slate-50/50 rounded-xl p-3 border border-slate-100">
+                            <svg viewBox="0 0 500 160" class="w-full h-44 drop-shadow-sm select-none" preserveAspectRatio="none">
+                                <line x1="45" y1="28" x2="455" y2="28" stroke="#e2e8f0" stroke-width="1" stroke-dasharray="3,3" />
+                                <text x="40" y="32" text-anchor="end" font-size="9" fill="#94a3b8" font-family="monospace">{{ $svgBmi['maxY'] }}</text>
+
+                                <line x1="45" y1="80" x2="455" y2="80" stroke="#f1f5f9" stroke-width="1" stroke-dasharray="3,3" />
+                                <text x="40" y="84" text-anchor="end" font-size="9" fill="#94a3b8" font-family="monospace">{{ round(($svgBmi['minY'] + $svgBmi['maxY'])/2, 1) }}</text>
+
+                                <line x1="45" y1="132" x2="455" y2="132" stroke="#e2e8f0" stroke-width="1" />
+                                <text x="40" y="136" text-anchor="end" font-size="9" fill="#94a3b8" font-family="monospace">{{ $svgBmi['minY'] }}</text>
+
+                                @php
+                                    $normB = min(1, max(0, (23 - $svgBmi['minY']) / ($svgBmi['maxY'] - $svgBmi['minY'])));
+                                    $targetBmiY = 132 - ($normB * 104);
+                                @endphp
+                                <line x1="45" y1="{{ $targetBmiY }}" x2="455" y2="{{ $targetBmiY }}" stroke="#10b981" stroke-width="1.5" stroke-dasharray="4,4" opacity="0.8" />
+                                <text x="455" y="{{ $targetBmiY - 4 }}" text-anchor="end" font-size="8" fill="#059669" font-weight="bold">Normal BMI: &lt; 23 kg/m²</text>
+
+                                @if($svgBmi['count'] > 1)
+                                    <polygon points="{{ $svgBmi['polygon'] }}" fill="rgba(245, 158, 11, 0.12)" />
+                                    <polyline points="{{ $svgBmi['polyline'] }}" fill="none" stroke="#f59e0b" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" />
+                                @endif
+
+                                @foreach($svgBmi['points'] as $p)
+                                    <line x1="{{ $p['x'] }}" y1="{{ $p['y'] }}" x2="{{ $p['x'] }}" y2="132" stroke="#cbd5e1" stroke-width="1" stroke-dasharray="2,2" opacity="0.6" />
+                                    <circle cx="{{ $p['x'] }}" cy="{{ $p['y'] }}" r="5" fill="#ffffff" stroke="#f59e0b" stroke-width="3" />
+                                    <rect x="{{ $p['x'] - 18 }}" y="{{ $p['y'] - 20 }}" width="36" height="14" rx="4" fill="#f59e0b" />
+                                    <text x="{{ $p['x'] }}" y="{{ $p['y'] - 10 }}" text-anchor="middle" font-size="9" font-weight="bold" fill="#ffffff">{{ $p['value'] }}</text>
+                                    <text x="{{ $p['x'] }}" y="148" text-anchor="middle" font-size="9" fill="#64748b" font-weight="bold">{{ $p['label'] }}</text>
+                                @endforeach
+                            </svg>
+                        </div>
+                    @else
+                        <div class="h-44 flex items-center justify-center text-xs text-slate-400 bg-slate-50 rounded-xl border border-dashed border-slate-200">
+                            No BMI or weight measurements recorded yet
+                        </div>
+                    @endif
+                </div>
+
+                <!-- 4. Kidney Function (KFT) Graph -->
+                <div class="graph-card bg-white p-5 rounded-2xl border border-slate-200 shadow-sm" data-category="kidney">
+                    <div class="flex items-center justify-between mb-4 pb-3 border-b border-slate-100">
+                        <div class="flex items-center gap-2.5">
+                            <div class="w-9 h-9 rounded-xl bg-teal-100 text-teal-600 flex items-center justify-center font-bold">
+                                <i class="fas fa-flask"></i>
+                            </div>
+                            <div>
+                                <h4 class="text-sm font-bold text-slate-800">Kidney Function (KFT)</h4>
+                                <span class="text-xs text-slate-500">Serum Creatinine (mg/dL) & eGFR</span>
+                            </div>
+                        </div>
+                        <span class="text-xs font-bold px-2.5 py-1 rounded-full bg-slate-100 text-slate-700">Normal Creat: 0.6 - 1.2</span>
+                    </div>
+
+                    @if($svgCreatinine && !empty($svgCreatinine['points']))
+                        <div class="relative w-full overflow-hidden bg-slate-50/50 rounded-xl p-3 border border-slate-100">
+                            <svg viewBox="0 0 500 160" class="w-full h-44 drop-shadow-sm select-none" preserveAspectRatio="none">
+                                <line x1="45" y1="28" x2="455" y2="28" stroke="#e2e8f0" stroke-width="1" stroke-dasharray="3,3" />
+                                <text x="40" y="32" text-anchor="end" font-size="9" fill="#94a3b8" font-family="monospace">{{ $svgCreatinine['maxY'] }}</text>
+
+                                <line x1="45" y1="80" x2="455" y2="80" stroke="#f1f5f9" stroke-width="1" stroke-dasharray="3,3" />
+                                <text x="40" y="84" text-anchor="end" font-size="9" fill="#94a3b8" font-family="monospace">{{ round(($svgCreatinine['minY'] + $svgCreatinine['maxY'])/2, 1) }}</text>
+
+                                <line x1="45" y1="132" x2="455" y2="132" stroke="#e2e8f0" stroke-width="1" />
+                                <text x="40" y="136" text-anchor="end" font-size="9" fill="#94a3b8" font-family="monospace">{{ $svgCreatinine['minY'] }}</text>
+
+                                @if($svgCreatinine['count'] > 1)
+                                    <polygon points="{{ $svgCreatinine['polygon'] }}" fill="rgba(13, 148, 136, 0.12)" />
+                                    <polyline points="{{ $svgCreatinine['polyline'] }}" fill="none" stroke="#0d9488" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" />
+                                @endif
+
+                                @foreach($svgCreatinine['points'] as $p)
+                                    <line x1="{{ $p['x'] }}" y1="{{ $p['y'] }}" x2="{{ $p['x'] }}" y2="132" stroke="#cbd5e1" stroke-width="1" stroke-dasharray="2,2" opacity="0.6" />
+                                    <circle cx="{{ $p['x'] }}" cy="{{ $p['y'] }}" r="5" fill="#ffffff" stroke="#0d9488" stroke-width="3" />
+                                    <rect x="{{ $p['x'] - 18 }}" y="{{ $p['y'] - 20 }}" width="36" height="14" rx="4" fill="#0d9488" />
+                                    <text x="{{ $p['x'] }}" y="{{ $p['y'] - 10 }}" text-anchor="middle" font-size="9" font-weight="bold" fill="#ffffff">{{ $p['value'] }}</text>
+                                    <text x="{{ $p['x'] }}" y="148" text-anchor="middle" font-size="9" fill="#64748b" font-weight="bold">{{ $p['label'] }}</text>
+                                @endforeach
+                            </svg>
+                        </div>
+                    @else
+                        <div class="h-44 flex items-center justify-center text-xs text-slate-400 bg-slate-50 rounded-xl border border-dashed border-slate-200">
+                            No Creatinine renal tests recorded yet
+                        </div>
+                    @endif
+                </div>
+
+                <!-- 5. Lipid Profile & Cholesterol Graph -->
+                <div class="graph-card bg-white p-5 rounded-2xl border border-slate-200 shadow-sm" data-category="lipid">
+                    <div class="flex items-center justify-between mb-4 pb-3 border-b border-slate-100">
+                        <div class="flex items-center gap-2.5">
+                            <div class="w-9 h-9 rounded-xl bg-blue-100 text-blue-600 flex items-center justify-center font-bold">
+                                <i class="fas fa-heart"></i>
+                            </div>
+                            <div>
+                                <h4 class="text-sm font-bold text-slate-800">Lipid Profile & Cholesterol</h4>
+                                <span class="text-xs text-slate-500">Total Cholesterol (mg/dL)</span>
+                            </div>
+                        </div>
+                        <span class="text-xs font-bold px-2.5 py-1 rounded-full bg-slate-100 text-slate-700">Target: &lt; 200 mg/dL</span>
+                    </div>
+
+                    @if($svgChol && !empty($svgChol['points']))
+                        <div class="relative w-full overflow-hidden bg-slate-50/50 rounded-xl p-3 border border-slate-100">
+                            <svg viewBox="0 0 500 160" class="w-full h-44 drop-shadow-sm select-none" preserveAspectRatio="none">
+                                <line x1="45" y1="28" x2="455" y2="28" stroke="#e2e8f0" stroke-width="1" stroke-dasharray="3,3" />
+                                <text x="40" y="32" text-anchor="end" font-size="9" fill="#94a3b8" font-family="monospace">{{ $svgChol['maxY'] }}</text>
+
+                                <line x1="45" y1="80" x2="455" y2="80" stroke="#f1f5f9" stroke-width="1" stroke-dasharray="3,3" />
+                                <text x="40" y="84" text-anchor="end" font-size="9" fill="#94a3b8" font-family="monospace">{{ round(($svgChol['minY'] + $svgChol['maxY'])/2) }}</text>
+
+                                <line x1="45" y1="132" x2="455" y2="132" stroke="#e2e8f0" stroke-width="1" />
+                                <text x="40" y="136" text-anchor="end" font-size="9" fill="#94a3b8" font-family="monospace">{{ $svgChol['minY'] }}</text>
+
+                                @if($svgChol['count'] > 1)
+                                    <polygon points="{{ $svgChol['polygon'] }}" fill="rgba(37, 99, 235, 0.12)" />
+                                    <polyline points="{{ $svgChol['polyline'] }}" fill="none" stroke="#2563eb" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" />
+                                @endif
+
+                                @foreach($svgChol['points'] as $p)
+                                    <line x1="{{ $p['x'] }}" y1="{{ $p['y'] }}" x2="{{ $p['x'] }}" y2="132" stroke="#cbd5e1" stroke-width="1" stroke-dasharray="2,2" opacity="0.6" />
+                                    <circle cx="{{ $p['x'] }}" cy="{{ $p['y'] }}" r="5" fill="#ffffff" stroke="#2563eb" stroke-width="3" />
+                                    <rect x="{{ $p['x'] - 18 }}" y="{{ $p['y'] - 20 }}" width="36" height="14" rx="4" fill="#2563eb" />
+                                    <text x="{{ $p['x'] }}" y="{{ $p['y'] - 10 }}" text-anchor="middle" font-size="9" font-weight="bold" fill="#ffffff">{{ $p['value'] }}</text>
+                                    <text x="{{ $p['x'] }}" y="148" text-anchor="middle" font-size="9" fill="#64748b" font-weight="bold">{{ $p['label'] }}</text>
+                                @endforeach
+                            </svg>
+                        </div>
+                    @else
+                        <div class="h-44 flex items-center justify-center text-xs text-slate-400 bg-slate-50 rounded-xl border border-dashed border-slate-200">
+                            No Lipid Profile cholesterol records logged yet
+                        </div>
+                    @endif
+                </div>
+
+                <!-- 6. Liver Enzymes (LFT) Graph -->
+                <div class="graph-card bg-white p-5 rounded-2xl border border-slate-200 shadow-sm" data-category="liver">
+                    <div class="flex items-center justify-between mb-4 pb-3 border-b border-slate-100">
+                        <div class="flex items-center gap-2.5">
+                            <div class="w-9 h-9 rounded-xl bg-emerald-100 text-emerald-600 flex items-center justify-center font-bold">
+                                <i class="fas fa-dna"></i>
+                            </div>
+                            <div>
+                                <h4 class="text-sm font-bold text-slate-800">Liver Function Tests (LFT)</h4>
+                                <span class="text-xs text-slate-500">SGPT / ALT Enzymes (U/L)</span>
+                            </div>
+                        </div>
+                        <span class="text-xs font-bold px-2.5 py-1 rounded-full bg-slate-100 text-slate-700">Normal SGPT: &lt; 45 U/L</span>
+                    </div>
+
+                    @if($svgSgpt && !empty($svgSgpt['points']))
+                        <div class="relative w-full overflow-hidden bg-slate-50/50 rounded-xl p-3 border border-slate-100">
+                            <svg viewBox="0 0 500 160" class="w-full h-44 drop-shadow-sm select-none" preserveAspectRatio="none">
+                                <line x1="45" y1="28" x2="455" y2="28" stroke="#e2e8f0" stroke-width="1" stroke-dasharray="3,3" />
+                                <text x="40" y="32" text-anchor="end" font-size="9" fill="#94a3b8" font-family="monospace">{{ $svgSgpt['maxY'] }}</text>
+
+                                <line x1="45" y1="80" x2="455" y2="80" stroke="#f1f5f9" stroke-width="1" stroke-dasharray="3,3" />
+                                <text x="40" y="84" text-anchor="end" font-size="9" fill="#94a3b8" font-family="monospace">{{ round(($svgSgpt['minY'] + $svgSgpt['maxY'])/2) }}</text>
+
+                                <line x1="45" y1="132" x2="455" y2="132" stroke="#e2e8f0" stroke-width="1" />
+                                <text x="40" y="136" text-anchor="end" font-size="9" fill="#94a3b8" font-family="monospace">{{ $svgSgpt['minY'] }}</text>
+
+                                @if($svgSgpt['count'] > 1)
+                                    <polygon points="{{ $svgSgpt['polygon'] }}" fill="rgba(16, 185, 129, 0.12)" />
+                                    <polyline points="{{ $svgSgpt['polyline'] }}" fill="none" stroke="#10b981" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" />
+                                @endif
+
+                                @foreach($svgSgpt['points'] as $p)
+                                    <line x1="{{ $p['x'] }}" y1="{{ $p['y'] }}" x2="{{ $p['x'] }}" y2="132" stroke="#cbd5e1" stroke-width="1" stroke-dasharray="2,2" opacity="0.6" />
+                                    <circle cx="{{ $p['x'] }}" cy="{{ $p['y'] }}" r="5" fill="#ffffff" stroke="#10b981" stroke-width="3" />
+                                    <rect x="{{ $p['x'] - 18 }}" y="{{ $p['y'] - 20 }}" width="36" height="14" rx="4" fill="#10b981" />
+                                    <text x="{{ $p['x'] }}" y="{{ $p['y'] - 10 }}" text-anchor="middle" font-size="9" font-weight="bold" fill="#ffffff">{{ $p['value'] }}</text>
+                                    <text x="{{ $p['x'] }}" y="148" text-anchor="middle" font-size="9" fill="#64748b" font-weight="bold">{{ $p['label'] }}</text>
+                                @endforeach
+                            </svg>
+                        </div>
+                    @else
+                        <div class="h-44 flex items-center justify-center text-xs text-slate-400 bg-slate-50 rounded-xl border border-dashed border-slate-200">
+                            No Liver Function SGPT tests recorded yet
+                        </div>
+                    @endif
+                </div>
+
+                <!-- 7. Complete Blood Count (CBC) Graph -->
+                <div class="graph-card bg-white p-5 rounded-2xl border border-slate-200 shadow-sm" data-category="blood">
+                    <div class="flex items-center justify-between mb-4 pb-3 border-b border-slate-100">
+                        <div class="flex items-center gap-2.5">
+                            <div class="w-9 h-9 rounded-xl bg-purple-100 text-purple-600 flex items-center justify-center font-bold">
+                                <i class="fas fa-vial"></i>
+                            </div>
+                            <div>
+                                <h4 class="text-sm font-bold text-slate-800">Complete Blood Count (CBC)</h4>
+                                <span class="text-xs text-slate-500">Hemoglobin (Hb %)</span>
+                            </div>
+                        </div>
+                        <span class="text-xs font-bold px-2.5 py-1 rounded-full bg-slate-100 text-slate-700">Normal Hb: 12 - 16%</span>
+                    </div>
+
+                    @if($svgHb && !empty($svgHb['points']))
+                        <div class="relative w-full overflow-hidden bg-slate-50/50 rounded-xl p-3 border border-slate-100">
+                            <svg viewBox="0 0 500 160" class="w-full h-44 drop-shadow-sm select-none" preserveAspectRatio="none">
+                                <line x1="45" y1="28" x2="455" y2="28" stroke="#e2e8f0" stroke-width="1" stroke-dasharray="3,3" />
+                                <text x="40" y="32" text-anchor="end" font-size="9" fill="#94a3b8" font-family="monospace">{{ $svgHb['maxY'] }}%</text>
+
+                                <line x1="45" y1="80" x2="455" y2="80" stroke="#f1f5f9" stroke-width="1" stroke-dasharray="3,3" />
+                                <text x="40" y="84" text-anchor="end" font-size="9" fill="#94a3b8" font-family="monospace">{{ round(($svgHb['minY'] + $svgHb['maxY'])/2, 1) }}%</text>
+
+                                <line x1="45" y1="132" x2="455" y2="132" stroke="#e2e8f0" stroke-width="1" />
+                                <text x="40" y="136" text-anchor="end" font-size="9" fill="#94a3b8" font-family="monospace">{{ $svgHb['minY'] }}%</text>
+
+                                @if($svgHb['count'] > 1)
+                                    <polygon points="{{ $svgHb['polygon'] }}" fill="rgba(190, 18, 60, 0.12)" />
+                                    <polyline points="{{ $svgHb['polyline'] }}" fill="none" stroke="#be123c" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" />
+                                @endif
+
+                                @foreach($svgHb['points'] as $p)
+                                    <line x1="{{ $p['x'] }}" y1="{{ $p['y'] }}" x2="{{ $p['x'] }}" y2="132" stroke="#cbd5e1" stroke-width="1" stroke-dasharray="2,2" opacity="0.6" />
+                                    <circle cx="{{ $p['x'] }}" cy="{{ $p['y'] }}" r="5" fill="#ffffff" stroke="#be123c" stroke-width="3" />
+                                    <rect x="{{ $p['x'] - 18 }}" y="{{ $p['y'] - 20 }}" width="36" height="14" rx="4" fill="#be123c" />
+                                    <text x="{{ $p['x'] }}" y="{{ $p['y'] - 10 }}" text-anchor="middle" font-size="9" font-weight="bold" fill="#ffffff">{{ $p['value'] }}%</text>
+                                    <text x="{{ $p['x'] }}" y="148" text-anchor="middle" font-size="9" fill="#64748b" font-weight="bold">{{ $p['label'] }}</text>
+                                @endforeach
+                            </svg>
+                        </div>
+                    @else
+                        <div class="h-44 flex items-center justify-center text-xs text-slate-400 bg-slate-50 rounded-xl border border-dashed border-slate-200">
+                            No Hemoglobin blood tests recorded yet
+                        </div>
+                    @endif
+                </div>
+
+                <!-- 8. Body Temperature Log Graph -->
+                <div class="graph-card bg-white p-5 rounded-2xl border border-slate-200 shadow-sm" data-category="vitals">
+                    <div class="flex items-center justify-between mb-4 pb-3 border-b border-slate-100">
+                        <div class="flex items-center gap-2.5">
+                            <div class="w-9 h-9 rounded-xl bg-indigo-100 text-indigo-600 flex items-center justify-center font-bold">
+                                <i class="fas fa-thermometer-half"></i>
+                            </div>
+                            <div>
+                                <h4 class="text-sm font-bold text-slate-800">Body Temperature Log</h4>
+                                <span class="text-xs text-slate-500">Body Temperature (°F)</span>
+                            </div>
+                        </div>
+                        <span class="text-xs font-bold px-2.5 py-1 rounded-full bg-slate-100 text-slate-700">Normal: 98.6 °F</span>
+                    </div>
+
+                    @if($svgTemp && !empty($svgTemp['points']))
+                        <div class="relative w-full overflow-hidden bg-slate-50/50 rounded-xl p-3 border border-slate-100">
+                            <svg viewBox="0 0 500 160" class="w-full h-44 drop-shadow-sm select-none" preserveAspectRatio="none">
+                                <line x1="45" y1="28" x2="455" y2="28" stroke="#e2e8f0" stroke-width="1" stroke-dasharray="3,3" />
+                                <text x="40" y="32" text-anchor="end" font-size="9" fill="#94a3b8" font-family="monospace">{{ $svgTemp['maxY'] }}°F</text>
+
+                                <line x1="45" y1="80" x2="455" y2="80" stroke="#f1f5f9" stroke-width="1" stroke-dasharray="3,3" />
+                                <text x="40" y="84" text-anchor="end" font-size="9" fill="#94a3b8" font-family="monospace">{{ round(($svgTemp['minY'] + $svgTemp['maxY'])/2, 1) }}°F</text>
+
+                                <line x1="45" y1="132" x2="455" y2="132" stroke="#e2e8f0" stroke-width="1" />
+                                <text x="40" y="136" text-anchor="end" font-size="9" fill="#94a3b8" font-family="monospace">{{ $svgTemp['minY'] }}°F</text>
+
+                                @php
+                                    $normT = min(1, max(0, (98.6 - $svgTemp['minY']) / ($svgTemp['maxY'] - $svgTemp['minY'])));
+                                    $targetTempY = 132 - ($normT * 104);
+                                @endphp
+                                <line x1="45" y1="{{ $targetTempY }}" x2="455" y2="{{ $targetTempY }}" stroke="#10b981" stroke-width="1.5" stroke-dasharray="4,4" opacity="0.8" />
+                                <text x="455" y="{{ $targetTempY - 4 }}" text-anchor="end" font-size="8" fill="#059669" font-weight="bold">Normal Baseline: 98.6 °F</text>
+
+                                @if($svgTemp['count'] > 1)
+                                    <polygon points="{{ $svgTemp['polygon'] }}" fill="rgba(124, 58, 237, 0.12)" />
+                                    <polyline points="{{ $svgTemp['polyline'] }}" fill="none" stroke="#7c3aed" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" />
+                                @endif
+
+                                @foreach($svgTemp['points'] as $p)
+                                    <line x1="{{ $p['x'] }}" y1="{{ $p['y'] }}" x2="{{ $p['x'] }}" y2="132" stroke="#cbd5e1" stroke-width="1" stroke-dasharray="2,2" opacity="0.6" />
+                                    <circle cx="{{ $p['x'] }}" cy="{{ $p['y'] }}" r="5" fill="#ffffff" stroke="#7c3aed" stroke-width="3" />
+                                    <rect x="{{ $p['x'] - 18 }}" y="{{ $p['y'] - 20 }}" width="36" height="14" rx="4" fill="#7c3aed" />
+                                    <text x="{{ $p['x'] }}" y="{{ $p['y'] - 10 }}" text-anchor="middle" font-size="9" font-weight="bold" fill="#ffffff">{{ $p['value'] }}°</text>
+                                    <text x="{{ $p['x'] }}" y="148" text-anchor="middle" font-size="9" fill="#64748b" font-weight="bold">{{ $p['label'] }}</text>
+                                @endforeach
+                            </svg>
+                        </div>
+                    @else
+                        <div class="h-44 flex items-center justify-center text-xs text-slate-400 bg-slate-50 rounded-xl border border-dashed border-slate-200">
+                            No temperature readings recorded yet
+                        </div>
+                    @endif
+                </div>
+
+            </div>
+
+            <!-- Consultation Visit Record Log Table -->
+            <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-5 sm:p-6">
+                <div class="flex items-center justify-between mb-4 pb-3 border-b border-slate-100">
+                    <h3 class="text-base font-bold text-slate-800 flex items-center gap-2">
+                        <i class="fas fa-list-check text-indigo-600"></i>
+                        Chronological Consultation Record Log
+                    </h3>
+                    <span class="text-xs bg-indigo-50 text-indigo-700 font-bold px-3 py-1 rounded-full">
+                        {{ $totalVisits }} Recorded Data Point(s)
+                    </span>
+                </div>
+
+                <div class="overflow-x-auto">
+                    <table class="min-w-full text-xs text-left text-slate-600">
+                        <thead class="bg-slate-50 border-b border-slate-200 uppercase font-bold text-slate-500">
+                            <tr>
+                                <th class="px-4 py-3">Consultation Date</th>
+                                <th class="px-4 py-3">BP (SBP/DBP)</th>
+                                <th class="px-4 py-3">HbA1c</th>
+                                <th class="px-4 py-3">Fasting (BSF)</th>
+                                <th class="px-4 py-3">BMI / Wt</th>
+                                <th class="px-4 py-3">Creatinine</th>
+                                <th class="px-4 py-3">SGPT</th>
+                                <th class="px-4 py-3">Temp</th>
+                                <th class="px-4 py-3 text-center">Action</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-slate-100">
+                            @foreach($sortedRecords as $vRec)
+                                <tr class="hover:bg-slate-50 {{ $vRec->id == $record->id ? 'bg-indigo-50/40 font-semibold' : '' }}">
+                                    <td class="px-4 py-3 text-slate-800 font-bold">
+                                        {{ $vRec->created_at ? $vRec->created_at->format('d M Y') : 'Visit #' . $vRec->id }}
+                                        @if($vRec->id == $record->id)
+                                            <span class="ml-1 text-[9px] bg-indigo-600 text-white px-1.5 py-0.5 rounded font-bold">Viewing</span>
+                                        @endif
+                                    </td>
+                                    <td class="px-4 py-3 font-mono">{{ $vRec->sbp && $vRec->dbp ? $vRec->sbp . '/' . $vRec->dbp : ($vRec->sbp ?: '-') }}</td>
+                                    <td class="px-4 py-3">{{ $vRec->hba1c ? $vRec->hba1c . '%' : '-' }}</td>
+                                    <td class="px-4 py-3">{{ $vRec->bsf ? $vRec->bsf . ' mg/dL' : '-' }}</td>
+                                    <td class="px-4 py-3">{{ $vRec->bmi ? $vRec->bmi : '-' }} {{ $vRec->weight_kg ? '(' . $vRec->weight_kg . 'kg)' : '' }}</td>
+                                    <td class="px-4 py-3">{{ $vRec->creatinine ? $vRec->creatinine . ' mg/dL' : '-' }}</td>
+                                    <td class="px-4 py-3">{{ $vRec->sgpt ? $vRec->sgpt . ' U/L' : '-' }}</td>
+                                    <td class="px-4 py-3">{{ $vRec->temprature ? $vRec->temprature . ' °F' : '-' }}</td>
+                                    <td class="px-4 py-3 text-center">
+                                        <a href="{{ route('patient.show', $patient->id) }}?record_id={{ $vRec->id }}"
+                                            class="px-2.5 py-1 rounded-lg text-xs font-semibold bg-indigo-50 hover:bg-indigo-600 text-indigo-600 hover:text-white transition inline-block">
+                                            Inspect Visit
+                                        </a>
+                                    </td>
+                                </tr>
+                            @endforeach
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+        </div>
+        <!-- End of #content-analytics -->
+
+    </div>
+
+    <!-- Scripts for Tab Switching and Category Filter -->
+    <script>
+        function switchDetailTab(tabName) {
+            const profileContent = document.getElementById('content-profile');
+            const analyticsContent = document.getElementById('content-analytics');
+            const btnProfile = document.getElementById('tab-btn-profile');
+            const btnAnalytics = document.getElementById('tab-btn-analytics');
+
+            if (tabName === 'analytics') {
+                if (profileContent) profileContent.classList.add('hidden');
+                if (analyticsContent) analyticsContent.classList.remove('hidden');
+
+                if (btnProfile) btnProfile.className = "px-5 py-3 text-sm font-bold flex items-center gap-2 border-b-2 border-transparent text-slate-500 hover:text-slate-700 hover:border-slate-300 transition";
+                if (btnAnalytics) btnAnalytics.className = "px-5 py-3 text-sm font-bold flex items-center gap-2 border-b-2 border-indigo-600 text-indigo-600 transition";
+            } else {
+                if (analyticsContent) analyticsContent.classList.add('hidden');
+                if (profileContent) profileContent.classList.remove('hidden');
+
+                if (btnAnalytics) btnAnalytics.className = "px-5 py-3 text-sm font-bold flex items-center gap-2 border-b-2 border-transparent text-slate-500 hover:text-slate-700 hover:border-slate-300 transition";
+                if (btnProfile) btnProfile.className = "px-5 py-3 text-sm font-bold flex items-center gap-2 border-b-2 border-indigo-600 text-indigo-600 transition";
+            }
+        }
+
+        function filterGraphSection(category) {
+            document.querySelectorAll('.graph-filter-btn').forEach(btn => {
+                if (btn.getAttribute('data-category') === category) {
+                    btn.className = "graph-filter-btn px-4 py-2 rounded-xl text-xs font-bold bg-indigo-600 text-white shadow-sm transition";
+                } else {
+                    btn.className = "graph-filter-btn px-3.5 py-2 rounded-xl text-xs font-bold bg-slate-100 text-slate-600 hover:bg-slate-200 transition";
+                }
+            });
+
+            document.querySelectorAll('.graph-card').forEach(card => {
+                if (category === 'all' || card.getAttribute('data-category') === category) {
+                    card.classList.remove('hidden');
+                } else {
+                    card.classList.add('hidden');
+                }
+            });
+        }
+
+        // Auto-switch to analytics tab if URL contains ?tab=analytics or #graphs
+        document.addEventListener('DOMContentLoaded', function() {
+            const urlParams = new URLSearchParams(window.location.search);
+            if (urlParams.get('tab') === 'analytics' || window.location.hash === '#graphs' || window.location.hash === '#analytics') {
+                switchDetailTab('analytics');
+            }
+        });
+    </script>
 @endsection
