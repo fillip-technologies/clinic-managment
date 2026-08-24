@@ -98,17 +98,27 @@
         }
     </style>
 
+@php
+    $patient = $patient ?? $record->patient ?? new \App\Models\Patient();
+    $allRecords = $allRecords ?? ($patient->id ? $patient->clinicalRecords : collect([$record]));
+@endphp
+
     <div class="w-full max-w-7xl bg-white rounded-3xl card-shadow p-6 md:p-9 transition-all m-auto">
 
         <!-- Header -->
-        <div class="flex flex-wrap items-center justify-between border-b border-[#e2ebf3] pb-5 mb-7">
+        <div class="flex flex-wrap items-center justify-between border-b border-[#e2ebf3] pb-5 mb-6 gap-3">
             <div class="flex items-center gap-3">
-                <i class="fas fa-notes-medical text-3xl text-[#1f6e96]"></i>
-                <h1 class="text-2xl md:text-3xl font-semibold text-[#0b2a3f] tracking-tight">
-                    Edit Patient Clinical Record
-                </h1>
+                <div>
+                    <h1 class="text-2xl md:text-3xl font-semibold text-[#0b2a3f] tracking-tight flex items-center gap-2">
+                        <span>Edit Patient Record</span>
+                        <span class="text-xs px-2.5 py-0.5 rounded-full font-bold bg-[#e0effa] text-[#1f6e96]">
+                            {{ $patient->registration_no ?? ('ID #' . $patient->id) }}
+                        </span>
+                    </h1>
+                    <p class="text-xs text-slate-500 mt-0.5">Editing details for <strong class="text-slate-700">{{ $patient->patient_name ?? 'Patient' }}</strong></p>
+                </div>
             </div>
-            <div class="flex items-center gap-3 mt-2 sm:mt-0">
+            <div class="flex items-center gap-3">
                 <span class="badge-soft">
                     <i class="far fa-calendar-alt mr-1"></i>
                     Record #{{ $record->id ?? 'New' }}
@@ -124,12 +134,42 @@
             </div>
         </div>
 
+        <!-- ====== VISIT / RECORD DATE SELECTOR ====== -->
+        @if ($allRecords->count() > 1)
+            <div class="bg-gradient-to-r from-[#eef6fc] via-[#f4f9fd] to-[#eef6fc] border border-[#a8c9e2] rounded-2xl p-4 sm:p-5 mb-7 shadow-sm flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+                <div class="flex items-center gap-3">
+                    <div class="w-11 h-11 rounded-xl bg-[#1f6e96] text-white flex items-center justify-center shadow-md flex-shrink-0">
+                        <i class="fas fa-calendar-check text-lg"></i>
+                    </div>
+                    <div>
+                        <h3 class="text-sm sm:text-base font-bold text-[#0b2a3f] flex items-center gap-2">
+                            <span>Select Visit Date to Edit</span>
+                            <span class="text-xs px-2.5 py-0.5 rounded-full bg-[#1f6e96]/10 text-[#1f6e96] font-bold">
+                                {{ $allRecords->count() }} Visits Available
+                            </span>
+                        </h3>
+                        <p class="text-xs text-[#5a7e9a]">Switching date loads the clinical laboratory data recorded on that specific visit date.</p>
+                    </div>
+                </div>
+
+                <div class="flex items-center gap-2 w-full md:w-auto">
+                    <label class="text-xs font-bold uppercase text-[#1f6e96] whitespace-nowrap"><i class="fas fa-calendar-day mr-1"></i>Visit Date:</label>
+                    <select onchange="window.location.href = '{{ route('patient.edit', $patient->id) }}?record_id=' + this.value"
+                        class="w-full md:w-auto rounded-xl border-2 border-[#1f6e96]/40 bg-white px-4 py-2 text-xs sm:text-sm font-bold text-[#0b2a3f] shadow-sm cursor-pointer hover:border-[#1f6e96] focus:ring-2 focus:ring-[#1f6e96] outline-none">
+                        @foreach ($allRecords as $idx => $rec)
+                            <option value="{{ $rec->id }}" {{ $rec->id == $record->id ? 'selected' : '' }}>
+                                Visit #{{ $allRecords->count() - $idx }}: {{ $rec->created_at ? $rec->created_at->format('d M Y (h:i A)') : 'Visit #' . $rec->id }} {{ $loop->first ? '— (Latest Visit)' : '' }}
+                            </option>
+                        @endforeach
+                    </select>
+                </div>
+            </div>
+        @endif
+
         <!-- ====== FORM with pre-filled data ====== -->
-        <form action="{{ route('patient.update', $record->patient->id) }}" method="POST" enctype="multipart/form-data">
+        <form action="{{ route('patient.update', $patient->id ?? $record->patient_id) }}" method="POST" enctype="multipart/form-data">
             @csrf
-
-
-            <div class="space-y-7">
+            <input type="hidden" name="record_id" value="{{ $record->id ?? '' }}">
                 <!-- === SECTION 1: Personal & Demographics === -->
                 <div>
                     <div class="flex items-center gap-2 text-[#124263] font-semibold text-base mb-3">

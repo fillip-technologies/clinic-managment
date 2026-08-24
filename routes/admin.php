@@ -20,6 +20,7 @@ Route::prefix('admin')->middleware(['super_admin'])->group(function () {
         Route::get('/edit/doctor/{id}', 'editDoctor')->name('doctor.edit');
         Route::post('/appoinmentstore', 'appoinmentstore')->name('appoinmentstore');
         Route::get('/listappoinment', 'listappoinment')->name('listappoinment');
+        Route::delete('/appointment/delete/{id}', 'deleteAppointment')->name('appointment.delete');
         Route::post('/update/doctor/{id}', 'UpdateDoctor')->name('doctor.update');
         Route::post('/Add/doctor', 'AddDoctor')->name('AddDoctor');
     });

@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Patient;
 
 use App\Http\Controllers\Controller;
 use App\Models\DoctorData;
+use App\Models\Patient;
 use App\Models\PatientClinicalRecord;
 use Illuminate\Http\Request;
 
@@ -11,25 +12,37 @@ class ReportController extends Controller
 {
     public function diabetesReport()
     {
-        $records = PatientClinicalRecord::with(['patient'])->where('diabetes', 'Diabetes')->get();
+        $records = Patient::whereHas('clinicalRecords', function ($q) {
+            $q->where('diabetes', 'Diabetes');
+        })->with(['latestRecord', 'clinicalRecords'])->latest()->get();
+
         return view('admin.reports.diabetes', compact('records'));
     }
 
     public function obesityReport()
     {
-        $records = PatientClinicalRecord::with(['patient'])->where('obesity', 'Obesity')->get();
+        $records = Patient::whereHas('clinicalRecords', function ($q) {
+            $q->where('obesity', 'Obesity');
+        })->with(['latestRecord', 'clinicalRecords'])->latest()->get();
+
         return view('admin.reports.obesity', compact('records'));
     }
 
     public function hypertensioReport()
     {
-        $records = PatientClinicalRecord::with(['patient'])->where('hypertension', 'Hypertension')->get();
+        $records = Patient::whereHas('clinicalRecords', function ($q) {
+            $q->where('hypertension', 'Hypertension')->orWhere('htn', 'Yes');
+        })->with(['latestRecord', 'clinicalRecords'])->latest()->get();
+
         return view('admin.reports.hypertension', compact('records'));
     }
 
     public function InfectionReport()
     {
-        $records = PatientClinicalRecord::with(['patient'])->where('infection', 'Infection')->get();
+        $records = Patient::whereHas('clinicalRecords', function ($q) {
+            $q->where('infection', 'Infection');
+        })->with(['latestRecord', 'clinicalRecords'])->latest()->get();
+
         return view('admin.reports.infection', compact('records'));
     }
 

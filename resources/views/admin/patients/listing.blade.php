@@ -414,29 +414,31 @@
             <!-- Stats Row -->
             <div class="grid grid-cols-2 sm:grid-cols-5 gap-3 mb-5 pb-4 border-b border-[#e9eff5]">
                 <div class="bg-[#f8fcff] rounded-xl p-3 text-center">
-                    <span class="text-xs text-[#5a7e9a] uppercase font-semibold">Total Records</span>
+                    <span class="text-xs text-[#5a7e9a] uppercase font-semibold">Total Patients</span>
                     <p class="text-xl font-bold text-[#0b2a3f]" id="totalRecords">{{ $records->count() }}</p>
                 </div>
                 <div class="bg-[#f8fcff] rounded-xl p-3 text-center">
                     <span class="text-xs text-[#5a7e9a] uppercase font-semibold">Newly Detected</span>
                     <p class="text-xl font-bold text-[#1f6e96]" id="newlyDetected">
-                        {{ $records->where('newly_detected', true)->count() }}</p>
+                        {{ $records->filter(fn($p) => ($p->latestRecord?->newly_detected ?? $p->newly_detected) == 'Yes' || ($p->latestRecord?->newly_detected ?? $p->newly_detected) == 1)->count() }}
+                    </p>
                 </div>
                 <div class="bg-[#f8fcff] rounded-xl p-3 text-center">
                     <span class="text-xs text-[#5a7e9a] uppercase font-semibold">On Insulin</span>
                     <p class="text-xl font-bold text-[#8b5cf6]" id="onInsulin">
-                        {{ $records->filter(function ($r) {return $r->start_insulin_date && !$r->stop_insulin_date;})->count() }}
+                        {{ $records->filter(fn($p) => ($p->latestRecord?->start_insulin_date ?? $p->start_insulin_date) && !($p->latestRecord?->stop_insulin_date ?? $p->stop_insulin_date))->count() }}
                     </p>
                 </div>
                 <div class="bg-[#f8fcff] rounded-xl p-3 text-center">
                     <span class="text-xs text-[#5a7e9a] uppercase font-semibold">Hypertension</span>
                     <p class="text-xl font-bold text-[#ef4444]" id="hypertension">
-                        {{ $records->where('htn', true)->count() }}</p>
+                        {{ $records->filter(fn($p) => ($p->latestRecord?->htn ?? $p->htn) == 'Yes' || ($p->latestRecord?->hypertension ?? $p->hypertension) == 'Hypertension' || floatval($p->latestRecord?->sbp ?? $p->sbp) >= 140 || floatval($p->latestRecord?->dbp ?? $p->dbp) >= 90)->count() }}
+                    </p>
                 </div>
                 <div class="bg-[#f8fcff] rounded-xl p-3 text-center">
                     <span class="text-xs text-[#5a7e9a] uppercase font-semibold">At Risk</span>
                     <p class="text-xl font-bold text-[#f59e0b]" id="atRisk">
-                        {{ $records->filter(function ($r) {return $r->bmi > 25 || $r->hba1c > 6.5 || $r->sbp > 140 || $r->dbp > 90;})->count() }}
+                        {{ $records->filter(fn($p) => floatval($p->latestRecord?->bmi ?? $p->bmi) > 25 || floatval($p->latestRecord?->hba1c ?? $p->hba1c) > 6.5 || floatval($p->latestRecord?->sbp ?? $p->sbp) > 140 || floatval($p->latestRecord?->dbp ?? $p->dbp) > 90)->count() }}
                     </p>
                 </div>
             </div>
@@ -461,14 +463,21 @@
                         </tr>
                     </thead>
                     <tbody>
-                        @foreach ($records as $record)
+                        @foreach ($records as $item)
                             @php
-                                // Medical parameter evaluation based on reference table
-                                $bmi = floatval($record->bmi);
-                                $hba1c = floatval($record->hba1c);
-                                $sbp = floatval($record->sbp);
-                                $dbp = floatval($record->dbp);
-                                $temp = floatval($record->temperature ?? 98.6);
+                                if ($item instanceof \App\Models\Patient) {
+                                    $patient = $item;
+                                    $clinical = $item->latestRecord;
+                                } else {
+                                    $patient = $item->patient ?? new \App\Models\Patient();
+                                    $clinical = $item;
+                                }
+
+                                $bmi = floatval($clinical->bmi ?? 0);
+                                $hba1c = floatval($clinical->hba1c ?? 0);
+                                $sbp = floatval($clinical->sbp ?? 0);
+                                $dbp = floatval($clinical->dbp ?? 0);
+                                $temp = floatval($clinical->temprature ?? $clinical->temperature ?? 98.6);
 
                                 // BMI Status
                                 $bmiStatus = 'normal';
@@ -529,7 +538,6 @@
                                             ? 'badge-warning'
                                             : 'badge-normal');
 
-                                // Count abnormal parameters
                                 $abnormalCount = 0;
                                 if ($bmi > 25) {
                                     $abnormalCount++;
@@ -546,17 +554,16 @@
                             @endphp
                             <tr>
                                 <td>{{ $loop->iteration }}</td>
-                                <td>{{ $record->patient->record_date ? \Carbon\Carbon::parse($record->record_date)->format('d/m/Y') : '-' }}
+                                <td>{{ $patient->record_date ? \Carbon\Carbon::parse($patient->record_date)->format('d/m/Y') : ($clinical?->created_at ? $clinical->created_at->format('d/m/Y') : '-') }}
                                 </td>
                                 <td>
-                                    <span class="font-medium">{{ $record->patient->patient_name ?? 'N/A' }}</span>
-                                    @if ($record->patient)
-                                        <small class="text-gray-400 block text-xs">ID:
-                                            {{ $record->patient->id ?? '' }}</small>
-                                    @endif
+                                    <a href="{{ route('patient.show', $patient->id) }}" class="font-medium text-[#1f6e96] hover:underline">
+                                        {{ $patient->patient_name ?? 'N/A' }}
+                                    </a>
+                                    <small class="text-gray-400 block text-xs">ID: {{ $patient->id }} {{ $patient->registration_no ? '| ' . $patient->registration_no : '' }}</small>
                                 </td>
-                                <td>{{ $record->patient->age ?? '-' }} / {{ $record->patient->gender ?? '-' }}</td>
-                                <td>{{ $record->patient->mobile_no ?? '-' }}</td>
+                                <td>{{ $patient->age ?? '-' }} / {{ $patient->gender ?? '-' }}</td>
+                                <td>{{ $patient->mobile_no ?? '-' }}</td>
                                 <td>
                                     @php
                                         $bmiColor = 'value-normal';
@@ -567,7 +574,7 @@
                                         }
                                     @endphp
                                     <span class="tooltip-trigger {{ $bmiColor }}" title="BMI: {{ $bmiLabel }}">
-                                        {{ $record->bmi ?? '-' }}
+                                        {{ $clinical?->bmi ?? '-' }}
                                         @if ($bmi > 25)
                                             <span class="status-dot critical"></span>
                                         @elseif($bmi >= 23)
@@ -587,7 +594,7 @@
                                         }
                                     @endphp
                                     <span class="tooltip-trigger {{ $hba1cColor }}" title="HbA1c: {{ $hba1cLabel }}">
-                                        {{ $record->hba1c ? $record->hba1c . '%' : '-' }}
+                                        {{ $clinical?->hba1c ? $clinical->hba1c . '%' : '-' }}
                                         @if ($hba1c >= 6.5)
                                             <span class="status-dot critical"></span>
                                         @elseif($hba1c >= 5.7)
@@ -607,7 +614,7 @@
                                         }
                                     @endphp
                                     <span class="tooltip-trigger {{ $bpColor }}" title="BP: {{ $bpLabel }}">
-                                        {{ $record->sbp && $record->dbp ? $record->sbp . '/' . $record->dbp : '-' }}
+                                        {{ $clinical && ($clinical->sbp || $clinical->dbp) ? $clinical->sbp . '/' . $clinical->dbp : '-' }}
                                         @if ($sbp > 140 || $dbp > 90)
                                             <span class="status-dot critical"></span>
                                         @elseif($sbp > 130 || $dbp > 90)
@@ -618,18 +625,20 @@
                                     </span>
                                 </td>
                                 <td>
-                                    @if ($record->newly_detected)
+                                    @if ($clinical?->newly_detected == 'Yes' || $clinical?->newly_detected == 1)
                                         <span class="badge-status bg-blue-100 text-blue-700"><i
                                                 class="fas fa-bolt mr-1"></i>New</span>
+                                    @elseif($clinical?->duration_of_diabetes)
+                                        <span class="badge-status bg-gray-100 text-gray-600">{{ $clinical->duration_of_diabetes }} yrs</span>
                                     @else
-                                        <span class="badge-status bg-gray-100 text-gray-600">Chronic</span>
+                                        <span class="badge-status bg-gray-50 text-gray-400">Normal</span>
                                     @endif
                                 </td>
                                 <td>
-                                    @if ($record->start_insulin_date && !$record->stop_insulin_date)
+                                    @if ($clinical?->start_insulin_date && !$clinical?->stop_insulin_date)
                                         <span class="badge-status bg-purple-100 text-purple-700"><i
                                                 class="fas fa-syringe mr-1"></i>Active</span>
-                                    @elseif($record->start_insulin_date && $record->stop_insulin_date)
+                                    @elseif($clinical?->start_insulin_date && $clinical?->stop_insulin_date)
                                         <span class="badge-status bg-gray-100 text-gray-600">Stopped</span>
                                     @else
                                         <span class="badge-status bg-gray-50 text-gray-400">Not on</span>
@@ -657,27 +666,27 @@
                                 </td>
                                 <td>
                                     <div class="flex gap-1">
-                                        <a href="{{ route('patient.show', $record->id) }}"
-                                            class="action-btn bg-blue-50 text-blue-600 hover:bg-blue-100 flex items-center justify-center" title="View">
+                                        <a href="{{ route('patient.show', $patient->id) }}"
+                                            class="action-btn bg-blue-50 text-blue-600 hover:bg-blue-100 flex items-center justify-center" title="View Patient Details">
                                             <i class="fas fa-eye"></i>
                                         </a>
 
-                                        <a href="{{ route('addnewReport',$record->id) }}"
-                                            class="action-btn bg-blue-50 text-blue-600 hover:bg-blue-100" title="Add New">
+                                        <a href="{{ route('addnewReport', $clinical?->id ?? $patient->id) }}"
+                                            class="action-btn bg-blue-50 text-blue-600 hover:bg-blue-100 flex items-center justify-center" title="Add Follow-up Visit">
                                             <i class="fas fa-add"></i>
                                         </a>
-                                        <a href="{{ route('patient.edit',$record->id) }}"
-                                            class="action-btn bg-yellow-50 text-yellow-600 hover:bg-yellow-100"
-                                            title="Edit">
+                                        <a href="{{ route('patient.edit', $patient->id) }}"
+                                            class="action-btn bg-yellow-50 text-yellow-600 hover:bg-yellow-100 flex items-center justify-center"
+                                            title="Edit Patient">
                                             <i class="fas fa-edit"></i>
                                         </a>
-                                        <form action="{{ route('patient.delete', $record->id) }}" method="POST">
+                                        <form action="{{ route('patient.delete', $patient->id) }}" method="POST">
                                             @csrf
                                             @method('DELETE')
-                                            <button type="submit" onclick="return confirm('Are you sure delete data')"
-                                                class="action-btn bg-red-50 text-red-600 hover:bg-red-100" title="Delete">
+                                            <button type="submit" onclick="return confirm('Are you sure you want to delete this patient and all clinical records?')"
+                                                class="action-btn bg-red-50 text-red-600 hover:bg-red-100 flex items-center justify-center" title="Delete Patient">
                                                 <i class="fas fa-trash"></i>
-                                                </button>
+                                            </button>
                                         </form>
 
                                     </div>
