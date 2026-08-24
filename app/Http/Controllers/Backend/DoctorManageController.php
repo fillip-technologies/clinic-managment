@@ -128,4 +128,12 @@ class DoctorManageController extends Controller
        $appointments = Appoinment::latest()->paginate(10);
        return view('listing.aapoinment',compact('appointments'));
     }
+
+    public function deleteAppointment($id)
+    {
+        $appointment = Appoinment::findOrFail($id);
+        $appointment->delete();
+
+        return redirect()->back()->with('success', 'Appointment deleted successfully.');
+    }
 }

@@ -153,12 +153,24 @@
                             {{ $appointment->created_at ? $appointment->created_at->format('d M Y, h:i A') : '-' }}
                         </td>
                         <td class="px-5 py-3.5 text-center whitespace-nowrap">
-                            <a href="{{ route('patient.form') }}?name={{ urlencode($appointment->patient_name ?? '') }}&number={{ urlencode($appointment->phone ?? '') }}"
-                               title="Register Patient (Pass {{ $appointment->patient_name }} and {{ $appointment->phone }})"
-                               class="inline-flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-semibold text-xs transition shadow-sm hover:shadow-md group/btn">
-                                <i class="fas fa-plus text-xs group-hover/btn:scale-125 transition-transform"></i>
-                                <span>Add Patient</span>
-                            </a>
+                            <div class="flex items-center justify-center gap-1.5">
+                                <a href="{{ route('patient.form') }}?name={{ urlencode($appointment->patient_name ?? '') }}&number={{ urlencode($appointment->phone ?? '') }}"
+                                   title="Register Patient (Pass {{ $appointment->patient_name }} and {{ $appointment->phone }})"
+                                   class="inline-flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-semibold text-xs transition shadow-sm hover:shadow-md group/btn">
+                                    <i class="fas fa-plus text-xs group-hover/btn:scale-125 transition-transform"></i>
+                                    <span>Add Patient</span>
+                                </a>
+
+                                <form action="{{ route('appointment.delete', $appointment->id) }}" method="POST" class="inline-block" onsubmit="return confirm('Are you sure you want to delete this appointment for {{ addslashes($appointment->patient_name) }}?');">
+                                    @csrf
+                                    @method('DELETE')
+                                    <button type="submit"
+                                        title="Delete Appointment"
+                                        class="w-8 h-8 rounded-xl bg-red-50 hover:bg-red-600 text-red-600 hover:text-white border border-red-200 hover:border-red-600 transition flex items-center justify-center shadow-sm hover:shadow">
+                                        <i class="fas fa-trash-alt text-xs"></i>
+                                    </button>
+                                </form>
+                            </div>
                         </td>
                     </tr>
                     @empty
