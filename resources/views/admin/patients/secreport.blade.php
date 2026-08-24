@@ -87,10 +87,10 @@
             </div>
         </div>
 
-        <form action="{{ route('createNewRecord', $data->id) }}" class="space-y-7" method="POST" action="/patient-records"
+        <form action="{{ route('createNewRecord', $data->id ?? $data->patient_id ?? $data->patient?->id ?? 0) }}" class="space-y-7" method="POST"
             enctype="multipart/form-data">
             @csrf
-            <input type="hidden" name="patient_id" value="{{ $data->patient->id ?? '' }}">
+            <input type="hidden" name="patient_id" value="{{ $data->patient_id ?? $data->patient?->id ?? '' }}">
             <!-- === SECTION 1: Personal & Demographics === -->
             <div>
                 <div class="flex items-center gap-2 text-[#124263] font-semibold text-base mb-3">

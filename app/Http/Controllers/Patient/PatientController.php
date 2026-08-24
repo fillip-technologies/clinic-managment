@@ -16,7 +16,7 @@ class PatientController extends Controller
 {
     public function patientList()
     {
-        $records = PatientClinicalRecord::with(['patient'])->latest()->get();
+        $records = Patient::with(['latestRecord', 'clinicalRecords'])->latest()->get();
 
         return view('admin.patients.listing', compact('records'));
     }
@@ -248,32 +248,75 @@ class PatientController extends Controller
     }
 
 
-    public function show($id)
+    public function show(Request $request, $id)
     {
-        $record = PatientClinicalRecord::with(['patient'])->findOrFail($id);
-        $patient = $record->patient;
-
-        // Fetch all clinical records/visits for this patient
-        $allRecords = PatientClinicalRecord::where('patient_id', $record->patient_id)
-            ->orderBy('created_at', 'desc')
-            ->orderBy('id', 'desc')
-            ->get();
+        $patient = Patient::with(['latestRecord', 'clinicalRecords'])->find($id);
+        if ($patient) {
+            $allRecords = $patient->clinicalRecords()->orderBy('created_at', 'desc')->orderBy('id', 'desc')->get();
+            if ($request->filled('record_id')) {
+                $record = $allRecords->firstWhere('id', $request->record_id);
+            }
+            if (!isset($record) || !$record) {
+                $record = $allRecords->first();
+            }
+            if (!$record) {
+                $record = new PatientClinicalRecord(['patient_id' => $patient->id]);
+                $record->setRelation('patient', $patient);
+            }
+        } else {
+            $record = PatientClinicalRecord::with(['patient'])->findOrFail($id);
+            $patient = $record->patient ?? Patient::findOrFail($record->patient_id);
+            $allRecords = PatientClinicalRecord::where('patient_id', $record->patient_id)
+                ->orderBy('created_at', 'desc')
+                ->orderBy('id', 'desc')
+                ->get();
+        }
 
         return view('admin.patients.show', compact('record', 'patient', 'allRecords'));
     }
 
 
-    public function edit($id)
+    public function edit(Request $request, $id)
     {
-        $record = PatientClinicalRecord::findOrFail($id);
-        return view('admin.patients.edit', compact('record'));
+        $patient = Patient::with(['clinicalRecords'])->find($id);
+        if ($patient) {
+            $allRecords = $patient->clinicalRecords()->orderBy('created_at', 'desc')->orderBy('id', 'desc')->get();
+            if ($request->filled('record_id')) {
+                $record = $allRecords->firstWhere('id', $request->record_id);
+            }
+            if (!isset($record) || !$record) {
+                $record = $allRecords->first();
+            }
+            if (!$record) {
+                $record = new PatientClinicalRecord(['patient_id' => $patient->id]);
+                $record->setRelation('patient', $patient);
+            }
+        } else {
+            $record = PatientClinicalRecord::with(['patient'])->findOrFail($id);
+            $patient = $record->patient ?? Patient::findOrFail($record->patient_id);
+            $allRecords = $patient->clinicalRecords()->orderBy('created_at', 'desc')->orderBy('id', 'desc')->get();
+        }
+
+        return view('admin.patients.edit', compact('record', 'patient', 'allRecords'));
     }
 
     public function update(Request $request, $id)
     {
-        $patient = Patient::findOrFail($id);
+        $patient = Patient::find($id);
+        if (!$patient) {
+            $record = PatientClinicalRecord::with(['patient'])->findOrFail($id);
+            $patient = $record->patient ?? Patient::findOrFail($record->patient_id);
+        } else {
+            if ($request->filled('record_id') && $request->record_id > 0) {
+                $record = PatientClinicalRecord::where('patient_id', $patient->id)->where('id', $request->record_id)->first();
+            } else {
+                $record = PatientClinicalRecord::where('patient_id', $patient->id)->latest('id')->first();
+            }
+        }
 
-        $record = PatientClinicalRecord::where('patient_id', $patient->id)->first();
+        if (!$record) {
+            $record = new PatientClinicalRecord(['patient_id' => $patient->id]);
+        }
 
         $validator = Validator::make($request->all(), [
             'record_date' => 'required|date',
@@ -415,8 +458,13 @@ class PatientController extends Controller
         ]);
 
 
+        $matchAttributes = ['patient_id' => $patient->id];
+        if (!empty($record?->id)) {
+            $matchAttributes['id'] = $record->id;
+        }
+
         PatientClinicalRecord::updateOrCreate(
-            ['patient_id' => $patient->id],
+            $matchAttributes,
             [
                 'newly_detected' => $request->newly_detected,
                 'duration_of_diabetes' => $request->diabetes_duration,
@@ -490,6 +538,19 @@ class PatientController extends Controller
     }
     public function destroy($id)
     {
+        $patient = Patient::find($id);
+        if ($patient) {
+            foreach ($patient->clinicalRecords as $rec) {
+                if ($rec->attachment) {
+                    Storage::disk('public')->delete($rec->attachment);
+                }
+                $rec->delete();
+            }
+            $patient->delete();
+            return redirect()->route('list.patient')
+                ->with('success', 'Patient and all clinical records deleted successfully!');
+        }
+
         $record = PatientClinicalRecord::findOrFail($id);
         if ($record->attachment) {
             Storage::disk('public')->delete($record->attachment);
@@ -530,7 +591,17 @@ class PatientController extends Controller
 
     public function addnewReport($id)
     {
-        $data = PatientClinicalRecord::with(['patient'])->findOrFail($id);
+        $patient = Patient::find($id);
+        if ($patient) {
+            $data = $patient->latestRecord ?? $patient->clinicalRecords()->latest('id')->first();
+            if (!$data) {
+                $data = new PatientClinicalRecord(['patient_id' => $patient->id]);
+                $data->setRelation('patient', $patient);
+            }
+        } else {
+            $data = PatientClinicalRecord::with(['patient'])->findOrFail($id);
+        }
+
         return view('admin.patients.secreport', compact('data'));
     }
 
@@ -609,7 +680,16 @@ class PatientController extends Controller
             'Temperature' => checkReport('temperature', $request->temperature),
         ];
 
-        $creation = PatientClinicalRecord::find($id);
+        $patientId = $request->patient_id;
+        if (!$patientId) {
+            $patient = Patient::find($id);
+            if ($patient) {
+                $patientId = $patient->id;
+            } else {
+                $rec = PatientClinicalRecord::find($id);
+                $patientId = $rec?->patient_id;
+            }
+        }
 
         $attachmentPath = null;
         if ($request->hasFile('attachment')) {
@@ -617,8 +697,8 @@ class PatientController extends Controller
             $filename = time() . '_' . $file->getClientOriginalName();
             $attachmentPath = $file->storeAs('patient-attachments', $filename, 'public');
         }
-        $creation::create([
-            "patient_id" => $request->patient_id,
+        PatientClinicalRecord::create([
+            "patient_id" => $patientId,
             'newly_detected' => $request->newly_detected,
             'duration_of_diabetes' => $request->duration_of_diabetes,
             'start_insulin_date' => $request->start_insulin_date,

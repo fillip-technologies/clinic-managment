@@ -53,14 +53,18 @@
         }
     </style>
 
+@php
+    $record = $record ?? new \App\Models\PatientClinicalRecord(['patient_id' => $patient->id ?? 0]);
+@endphp
+
     <div class="max-w-7xl mx-auto space-y-6 pb-12">
         <!-- Top Navigation & Action Bar -->
         <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 bg-white p-4 sm:p-5 rounded-2xl border border-slate-200 shadow-sm no-print">
             <div class="flex items-center gap-3">
-                <a href="{{ route('list.patient') }}"
+                {{-- <a href="{{ route('list.patient') }}"
                     class="h-10 w-10 flex items-center justify-center rounded-xl bg-slate-100 hover:bg-indigo-50 text-slate-600 hover:text-indigo-600 border border-slate-200 transition">
                     <i class="fas fa-arrow-left"></i>
-                </a>
+                </a> --}}
                 <div>
                     <h1 class="text-xl sm:text-2xl font-bold text-slate-800 flex items-center gap-2">
                         <span>Patient Clinical Profile</span>
@@ -79,12 +83,12 @@
                     <i class="fas fa-print"></i> Print Profile
                 </button>
 
-                <a href="{{ route('addnewReport', $record->id) }}"
+                <a href="{{ route('addnewReport', $record->id ?? $patient->id) }}"
                     class="px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold flex items-center gap-1.5 shadow-sm hover:shadow transition">
                     <i class="fas fa-plus-circle"></i> Add Follow-up Visit
                 </a>
 
-                <a href="{{ route('patient.edit', $record->id) }}"
+                <a href="{{ route('patient.edit', $patient->id ?? $record->patient_id) }}?record_id={{ $record->id }}"
                     class="px-3.5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold flex items-center gap-1.5 shadow-sm hover:shadow transition">
                     <i class="fas fa-edit"></i> Edit Record
                 </a>
@@ -142,6 +146,35 @@
                                 <span>{{ $patient->address }}</span>
                             </div>
                         @endif
+
+                        <!-- Clinical Disease / Condition Tags -->
+                        <div class="flex flex-wrap items-center gap-1.5 mt-3">
+                            @if(!empty($record->diabetes))
+                                <span class="px-2.5 py-0.5 rounded-md text-[11px] font-bold bg-blue-500/20 text-blue-300 border border-blue-400/30">
+                                    <i class="fas fa-notes-medical mr-1"></i>Diabetes: {{ $record->diabetes }}
+                                </span>
+                            @endif
+                            @if(!empty($record->hypertension) || !empty($record->htn))
+                                <span class="px-2.5 py-0.5 rounded-md text-[11px] font-bold bg-red-500/20 text-red-300 border border-red-400/30">
+                                    <i class="fas fa-heart-pulse mr-1"></i>Hypertension: {{ $record->hypertension ?? ($record->htn ? 'Yes' : 'No') }}
+                                </span>
+                            @endif
+                            @if(!empty($record->obesity))
+                                <span class="px-2.5 py-0.5 rounded-md text-[11px] font-bold bg-amber-500/20 text-amber-300 border border-amber-400/30">
+                                    <i class="fas fa-weight-scale mr-1"></i>Obesity: {{ $record->obesity }}
+                                </span>
+                            @endif
+                            @if(!empty($record->infection))
+                                <span class="px-2.5 py-0.5 rounded-md text-[11px] font-bold bg-purple-500/20 text-purple-300 border border-purple-400/30">
+                                    <i class="fas fa-virus mr-1"></i>Infection: {{ $record->infection }}
+                                </span>
+                            @endif
+                            @if(!empty($record->temprature))
+                                <span class="px-2.5 py-0.5 rounded-md text-[11px] font-bold {{ floatval($record->temprature) > 99.4 ? 'bg-red-500/30 text-red-200 border-red-400/40' : 'bg-emerald-500/20 text-emerald-300 border-emerald-400/30' }}">
+                                    <i class="fas fa-thermometer-half mr-1"></i>Temp: {{ $record->temprature }}°F
+                                </span>
+                            @endif
+                        </div>
                     </div>
                 </div>
 
@@ -303,6 +336,12 @@
                         <div>
                             <p class="metric-label">Waist-to-Height Ratio</p>
                             <p class="metric-value">{{ $record->waist_height_ratio ?? 'N/A' }}</p>
+                        </div>
+                        <div>
+                            <p class="metric-label">Body Temperature</p>
+                            <p class="metric-value {{ floatval($record->temprature ?? 0) > 99.4 ? 'text-red-600 font-bold' : '' }}">
+                                {{ $record->temprature ? $record->temprature . ' °F' : '98.6 °F' }}
+                            </p>
                         </div>
                     </div>
                 </div>
@@ -670,10 +709,16 @@
                                     @endif
                                 </td>
                                 <td class="px-4 py-3 text-center">
-                                    <a href="{{ route('patient.show', $vRecord->id) }}"
-                                        class="px-2.5 py-1 rounded-lg text-xs font-semibold bg-indigo-50 hover:bg-indigo-600 text-indigo-600 hover:text-white transition">
-                                        View Details
-                                    </a>
+                                    @if ($vRecord->id == $record->id)
+                                        <span class="px-2.5 py-1 rounded-lg text-xs font-bold bg-indigo-600 text-white shadow-sm inline-block">
+                                            Viewing
+                                        </span>
+                                    @else
+                                        <a href="{{ route('patient.show', $patient->id) }}?record_id={{ $vRecord->id }}"
+                                            class="px-2.5 py-1 rounded-lg text-xs font-semibold bg-indigo-50 hover:bg-indigo-600 text-indigo-600 hover:text-white transition inline-block">
+                                            View Details
+                                        </a>
+                                    @endif
                                 </td>
                             </tr>
                         @empty

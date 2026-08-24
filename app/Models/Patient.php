@@ -21,9 +21,20 @@ class Patient extends Model
         ];
 
 
-        public function patintRecord(){
-            return $this->hasMany(PatientClinicalRecord::class);
-        }
+    public function clinicalRecords()
+    {
+        return $this->hasMany(PatientClinicalRecord::class, 'patient_id');
+    }
+
+    public function patintRecord()
+    {
+        return $this->hasMany(PatientClinicalRecord::class, 'patient_id');
+    }
+
+    public function latestRecord()
+    {
+        return $this->hasOne(PatientClinicalRecord::class, 'patient_id')->latestOfMany('id');
+    }
 
 
 }
