@@ -1,6 +1,83 @@
 @extends('admin.loyout.master')
 @section('content')
+    <!-- Chart.js and DataTables Assets -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/jquery.dataTables.min.css">
+    <link rel="stylesheet" href="https://cdn.datatables.net/responsive/2.5.0/css/responsive.dataTables.min.css">
+    <script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
+    <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
+    <script src="https://cdn.datatables.net/responsive/2.5.0/js/dataTables.responsive.min.js"></script>
+
+    <style>
+        /* Custom DataTables Styling for Tailwind Theme */
+        .dataTables_wrapper {
+            font-size: 0.8rem;
+            color: #475569;
+            margin-top: 0.5rem;
+        }
+        .dataTables_wrapper .dataTables_length {
+            margin-bottom: 0.75rem;
+        }
+        .dataTables_wrapper .dataTables_length select {
+            border: 1px solid #e2e8f0;
+            border-radius: 0.75rem;
+            padding: 0.35rem 1.75rem 0.35rem 0.75rem;
+            font-size: 0.75rem;
+            background-color: #f8fafc;
+            outline: none;
+            cursor: pointer;
+        }
+        .dataTables_wrapper .dataTables_filter {
+            margin-bottom: 0.75rem;
+        }
+        .dataTables_wrapper .dataTables_filter input {
+            border: 1px solid #e2e8f0;
+            border-radius: 0.75rem;
+            padding: 0.4rem 0.75rem;
+            font-size: 0.75rem;
+            background-color: #f8fafc;
+            outline: none;
+            margin-left: 0.5rem;
+        }
+        .dataTables_wrapper .dataTables_filter input:focus,
+        .dataTables_wrapper .dataTables_length select:focus {
+            border-color: #6366f1;
+            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.15);
+        }
+        .dataTables_wrapper .dataTables_info {
+            font-size: 0.75rem;
+            color: #64748b;
+            padding-top: 1rem;
+        }
+        .dataTables_wrapper .dataTables_paginate {
+            padding-top: 1rem;
+        }
+        .dataTables_wrapper .dataTables_paginate .paginate_button {
+            border-radius: 0.5rem !important;
+            padding: 0.3rem 0.75rem !important;
+            font-size: 0.75rem !important;
+            font-weight: 600 !important;
+            border: 1px solid transparent !important;
+            margin: 0 2px !important;
+        }
+        .dataTables_wrapper .dataTables_paginate .paginate_button.current {
+            background: #4f46e5 !important;
+            color: #ffffff !important;
+            border: 1px solid #4f46e5 !important;
+            box-shadow: 0 2px 6px rgba(79, 70, 229, 0.3);
+        }
+        .dataTables_wrapper .dataTables_paginate .paginate_button:hover:not(.current) {
+            background: #f1f5f9 !important;
+            color: #1e293b !important;
+            border: 1px solid #e2e8f0 !important;
+        }
+        table.dataTable.no-footer {
+            border-bottom: 1px solid #e2e8f0;
+        }
+        table.dataTable thead th {
+            border-bottom: 1px solid #e2e8f0 !important;
+        }
+    </style>
 
     <div class="space-y-7 max-w-7xl mx-auto pb-10">
 
@@ -548,7 +625,7 @@
 
         </div>
 
-        <!-- Patient Cohort Explorer & Research Data Table -->
+        <!-- Patient Cohort Explorer & Research DataTable -->
         <div class="bg-white rounded-3xl border border-slate-200 shadow-sm p-6">
             <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6 pb-4 border-b border-slate-100">
                 <div>
@@ -557,25 +634,22 @@
                         Clinical Patient Cohort Explorer
                     </h3>
                     <p class="text-xs text-slate-500 mt-0.5">
-                        Stratified patient records with exact diagnostic parameters and classified risk categories
+                        Interactive DataTable with instant sorting, pagination, search, and multi-disease cohort filters
                     </p>
                 </div>
 
                 <div class="flex items-center gap-3">
-                    <input type="text" id="cohortSearch" placeholder="Search patient name, phone, metric..."
-                        class="px-3.5 py-2 text-xs rounded-xl border border-slate-200 focus:ring-2 focus:ring-indigo-300 focus:border-indigo-400 outline-none w-56 sm:w-64 bg-slate-50/60">
-
                     <!-- Dynamic Export Button for Active Cohort Tab -->
                     <button type="button" id="exportCohortBtn" onclick="exportCurrentCohort()"
-                        class="px-3.5 py-2 rounded-xl bg-slate-100 hover:bg-indigo-600 text-slate-700 hover:text-white text-xs font-bold transition flex items-center gap-1.5 border border-slate-200 shadow-sm">
-                        <i class="fas fa-file-csv text-indigo-500 group-hover:text-white"></i>
+                        class="px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold transition flex items-center gap-1.5 shadow-sm">
+                        <i class="fas fa-file-csv text-sm"></i>
                         <span>Export View (CSV)</span>
                     </button>
                 </div>
             </div>
 
             <!-- Filter Buttons -->
-            <div class="flex flex-wrap items-center gap-2 mb-4">
+            <div class="flex flex-wrap items-center gap-2 mb-5">
                 <button type="button" onclick="filterCohort('all')" class="cohort-filter-btn px-3.5 py-1.5 rounded-xl text-xs font-bold bg-indigo-600 text-white shadow-sm transition" data-filter="all">
                     All Records ({{ $allRecords->count() }})
                 </button>
@@ -599,9 +673,9 @@
                 </button>
             </div>
 
-            <!-- Table -->
+            <!-- DataTable Container -->
             <div class="overflow-x-auto">
-                <table class="min-w-full text-xs text-left text-slate-600">
+                <table id="cohortTable" class="w-full text-xs text-left text-slate-600 display nowrap" style="width:100%">
                     <thead class="bg-slate-50 border-b border-slate-200 uppercase font-bold text-slate-500">
                         <tr>
                             <th class="px-4 py-3">Patient Name</th>
@@ -611,11 +685,11 @@
                             <th class="px-4 py-3">Temp</th>
                             <th class="px-4 py-3">Renal (Creat/eGFR)</th>
                             <th class="px-4 py-3">Diagnostic Classification</th>
-                            <th class="px-4 py-3 text-center">Action</th>
+                            <th class="px-4 py-3 text-center" data-orderable="false">Action</th>
                         </tr>
                     </thead>
                     <tbody id="cohortTableBody" class="divide-y divide-slate-100">
-                        @forelse($allRecords as $r)
+                        @foreach($allRecords as $r)
                             <tr class="cohort-row hover:bg-slate-50 transition"
                                 data-name="{{ strtolower($r->patient->patient_name ?? '') }}"
                                 data-diab="{{ $r->diab_class }}"
@@ -632,7 +706,7 @@
                                     </div>
                                 </td>
 
-                                <td class="px-4 py-3 whitespace-nowrap">
+                                <td class="px-4 py-3 whitespace-nowrap" data-order="{{ floatval($r->hba1c ?? 0) }}">
                                     <span class="font-bold {{ $r->hba1c >= 6.5 ? 'text-red-600' : ($r->hba1c >= 5.7 ? 'text-amber-600' : 'text-slate-700') }}">
                                         {{ $r->hba1c ? $r->hba1c . '%' : '-' }}
                                     </span>
@@ -641,13 +715,13 @@
                                     </div>
                                 </td>
 
-                                <td class="px-4 py-3 font-mono whitespace-nowrap">
+                                <td class="px-4 py-3 font-mono whitespace-nowrap" data-order="{{ intval($r->sbp ?? 0) }}">
                                     <span class="font-bold {{ $r->sbp >= 140 || $r->dbp >= 90 ? 'text-red-600' : ($r->sbp >= 130 ? 'text-amber-600' : 'text-slate-700') }}">
                                         {{ $r->sbp && $r->dbp ? $r->sbp . '/' . $r->dbp : ($r->sbp ?: '-') }}
                                     </span>
                                 </td>
 
-                                <td class="px-4 py-3 whitespace-nowrap">
+                                <td class="px-4 py-3 whitespace-nowrap" data-order="{{ floatval($r->bmi ?? 0) }}">
                                     <span class="font-bold {{ $r->bmi >= 25 ? 'text-red-600' : ($r->bmi >= 23 ? 'text-amber-600' : 'text-slate-700') }}">
                                         {{ $r->bmi ? $r->bmi : '-' }}
                                     </span>
@@ -656,13 +730,13 @@
                                     </div>
                                 </td>
 
-                                <td class="px-4 py-3 whitespace-nowrap">
+                                <td class="px-4 py-3 whitespace-nowrap" data-order="{{ floatval($r->temprature ?? 0) }}">
                                     <span class="font-bold {{ $r->temprature > 99.4 ? 'text-purple-600' : 'text-slate-700' }}">
                                         {{ $r->temprature ? $r->temprature . '°F' : '-' }}
                                     </span>
                                 </td>
 
-                                <td class="px-4 py-3 whitespace-nowrap">
+                                <td class="px-4 py-3 whitespace-nowrap" data-order="{{ floatval($r->creatinine ?? 0) }}">
                                     <span class="font-bold {{ $r->creatinine >= 1.3 ? 'text-amber-600' : 'text-slate-700' }}">
                                         {{ $r->creatinine ? $r->creatinine . ' mg/dL' : '-' }}
                                     </span>
@@ -708,13 +782,7 @@
                                     </a>
                                 </td>
                             </tr>
-                        @empty
-                            <tr>
-                                <td colspan="8" class="text-center py-8 text-slate-400">
-                                    No patient clinical records found in the database.
-                                </td>
-                            </tr>
-                        @endforelse
+                        @endforeach
                     </tbody>
                 </table>
             </div>
@@ -722,12 +790,67 @@
 
     </div>
 
-    <!-- Scripts for Cohort Filter and Charts -->
+    <!-- Scripts for Cohort Filter, DataTable, and Charts -->
     <script>
         let currentFilterType = 'all';
+        let cohortDataTable = null;
+
+        $(document).ready(function() {
+            // Register Custom Search Filter for DataTables
+            $.fn.dataTable.ext.search.push(function(settings, data, dataIndex) {
+                if (settings.nTable.id !== 'cohortTable') return true;
+                if (currentFilterType === 'all') return true;
+
+                const rowNode = cohortDataTable.row(dataIndex).node();
+                if (!rowNode) return true;
+
+                if (currentFilterType === 'diabetic') {
+                    return rowNode.dataset.diab === 'Diabetes' || rowNode.dataset.diab === 'Pre-Diabetes';
+                }
+                if (currentFilterType === 'htn') {
+                    return rowNode.dataset.htn === 'Hypertension' || rowNode.dataset.htn === 'Pre-Hypertension';
+                }
+                if (currentFilterType === 'obese') {
+                    return rowNode.dataset.bmi === 'Obese' || rowNode.dataset.bmi === 'Overweight';
+                }
+                if (currentFilterType === 'infection') {
+                    return rowNode.dataset.temp === 'Infection';
+                }
+                if (currentFilterType === 'triad') {
+                    return rowNode.dataset.triad === 'yes';
+                }
+                if (currentFilterType === 'multimorbidity') {
+                    return rowNode.dataset.multi === 'yes';
+                }
+                return true;
+            });
+
+            // Initialize DataTable
+            cohortDataTable = $('#cohortTable').DataTable({
+                responsive: true,
+                pageLength: 10,
+                lengthMenu: [[5, 10, 25, 50, -1], [5, 10, 25, 50, "All"]],
+                language: {
+                    search: "_INPUT_",
+                    searchPlaceholder: "Search cohort...",
+                    lengthMenu: "Show _MENU_ entries",
+                    info: "Showing _START_ to _END_ of _TOTAL_ patients",
+                    infoEmpty: "Showing 0 to 0 of 0 patients",
+                    emptyTable: "No clinical records found in the database",
+                    paginate: {
+                        first: '<i class="fas fa-angle-double-left"></i>',
+                        previous: '<i class="fas fa-chevron-left"></i>',
+                        next: '<i class="fas fa-chevron-right"></i>',
+                        last: '<i class="fas fa-angle-double-right"></i>'
+                    }
+                },
+                order: [[0, 'asc']]
+            });
+        });
 
         function filterCohort(type) {
             currentFilterType = type;
+
             document.querySelectorAll('.cohort-filter-btn').forEach(btn => {
                 if (btn.getAttribute('data-filter') === type) {
                     btn.className = "cohort-filter-btn px-3.5 py-1.5 rounded-xl text-xs font-bold bg-indigo-600 text-white shadow-sm transition";
@@ -736,18 +859,9 @@
                 }
             });
 
-            document.querySelectorAll('.cohort-row').forEach(row => {
-                let show = false;
-                if (type === 'all') show = true;
-                else if (type === 'diabetic' && (row.dataset.diab === 'Diabetes' || row.dataset.diab === 'Pre-Diabetes')) show = true;
-                else if (type === 'htn' && (row.dataset.htn === 'Hypertension' || row.dataset.htn === 'Pre-Hypertension')) show = true;
-                else if (type === 'obese' && (row.dataset.bmi === 'Obese' || row.dataset.bmi === 'Overweight')) show = true;
-                else if (type === 'infection' && row.dataset.temp === 'Infection') show = true;
-                else if (type === 'triad' && row.dataset.triad === 'yes') show = true;
-                else if (type === 'multimorbidity' && row.dataset.multi === 'yes') show = true;
-
-                row.style.display = show ? '' : 'none';
-            });
+            if (cohortDataTable) {
+                cohortDataTable.draw();
+            }
         }
 
         function exportCurrentCohort() {
@@ -760,15 +874,6 @@
 
             window.location.href = "{{ route('analytics.disease.export') }}?type=" + exportType;
         }
-
-        // Live search filter
-        document.getElementById('cohortSearch')?.addEventListener('input', function() {
-            const query = this.value.toLowerCase().trim();
-            document.querySelectorAll('.cohort-row').forEach(row => {
-                const text = row.innerText.toLowerCase();
-                row.style.display = text.includes(query) ? '' : 'none';
-            });
-        });
 
         // Charts Initialization
         document.addEventListener('DOMContentLoaded', function() {
