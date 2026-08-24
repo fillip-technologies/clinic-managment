@@ -58,6 +58,7 @@
             $isAppointments = request()->routeIs('listappoinment*') || request()->is('admin/listappoinment*');
             $isAnalytics = request()->routeIs('analytics.disease*') || request()->is('admin/analytics/*');
             $isReports = request()->routeIs('report.*') || request()->is('admin/*/report');
+            $isSettings = request()->routeIs('admin.settings*') || request()->routeIs('doctor.settings*') || request()->is('admin/settings*') || request()->is('doctor/settings*');
         @endphp
 
         <!-- Dashboard -->
@@ -157,9 +158,10 @@
             </div>
 
             <!-- Settings -->
-            <a href="#"
-                class="sidebar-item flex items-center gap-4 px-4 py-3 rounded-xl text-slate-300 hover:bg-slate-700/60 hover:text-white transition">
-                <i class="fas fa-cog w-5 text-center text-slate-400"></i>
+            <a href="{{ route('admin.settings') }}"
+                class="sidebar-item flex items-center gap-4 px-4 py-3 rounded-xl transition-all duration-200
+                {{ $isSettings ? 'bg-indigo-600 text-white font-semibold shadow-lg shadow-indigo-600/30 active' : 'text-slate-300 hover:bg-slate-700/60 hover:text-white' }}">
+                <i class="fas fa-cog w-5 text-center {{ $isSettings ? 'text-white' : 'text-slate-400' }}"></i>
                 <span class="font-medium">Settings</span>
             </a>
         @elseif(Auth::guard('doctor')->check())
@@ -172,9 +174,10 @@
                 <i class="fas fa-file-medical-alt w-5 text-center {{ $isDocReports ? 'text-white' : 'text-slate-400' }}"></i>
                 <span class="font-medium"> + Report Upload</span>
             </a>
-            <a href="#"
-                class="sidebar-item flex items-center gap-4 px-4 py-3 rounded-xl text-slate-300 hover:bg-slate-700/60 hover:text-white transition">
-                <i class="fas fa-cog w-5 text-center text-slate-400"></i>
+            <a href="{{ route('doctor.settings') }}"
+                class="sidebar-item flex items-center gap-4 px-4 py-3 rounded-xl transition-all duration-200
+                {{ $isSettings ? 'bg-indigo-600 text-white font-semibold shadow-lg shadow-indigo-600/30 active' : 'text-slate-300 hover:bg-slate-700/60 hover:text-white' }}">
+                <i class="fas fa-cog w-5 text-center {{ $isSettings ? 'text-white' : 'text-slate-400' }}"></i>
                 <span class="font-medium">Settings</span>
             </a>
         @endif

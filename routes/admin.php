@@ -12,6 +12,8 @@ Route::post('/system/login', [AdminController::class, 'systemLogin'])->name('sys
 
 Route::prefix('admin')->middleware(['super_admin'])->group(function () {
     Route::get('/dashboard', [AdminController::class, 'dashboard'])->name('admin.dashboard');
+    Route::get('/settings', [AdminController::class, 'settings'])->name('admin.settings');
+    Route::post('/password/update', [AdminController::class, 'updatePassword'])->name('admin.password.update');
     Route::post('/logout', [AdminController::class, 'AdminLogout'])->name('admin.logout');
     Route::controller(DoctorManageController::class)->group(function () {
         Route::get('/doctor/list', 'doctorList')->name('doctor.list');

@@ -6,6 +6,8 @@ use Illuminate\Support\Facades\Route;
 
 Route::prefix('doctor')->middleware(['doctor'])->group(function(){
     Route::get('/dashboard',[AdminController::class, 'dashboard'])->name('doctor.dashboard');
+    Route::get('/settings', [AdminController::class, 'settings'])->name('doctor.settings');
+    Route::post('/password/update', [AdminController::class, 'updatePassword'])->name('doctor.password.update');
     Route::controller(ReportController::class)->group(function(){
     Route::get('/doctor/report/form','doctorReportform')->name('doctor.report.form');
     Route::get('/doctor/repor/list','doctorReporlist')->name('doctorReporlist');

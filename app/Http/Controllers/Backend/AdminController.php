@@ -8,6 +8,7 @@ use App\Models\PatientClinicalRecord;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Hash;
 
 class AdminController extends Controller
 {
@@ -88,5 +89,46 @@ class AdminController extends Controller
         }
 
         return redirect()->route('login');
+    }
+
+    public function settings()
+    {
+        $user = Auth::guard('super_admin')->user() ?? Auth::guard('doctor')->user();
+        if (!$user) {
+            return redirect()->route('login');
+        }
+
+        return view('admin.settings.index', compact('user'));
+    }
+
+    public function updatePassword(Request $request)
+    {
+        $user = Auth::guard('super_admin')->user() ?? Auth::guard('doctor')->user();
+        if (!$user) {
+            return redirect()->route('login');
+        }
+
+        $request->validate([
+            'current_password' => 'required',
+            'password' => 'required|min:8|max:32|confirmed',
+        ], [
+            'current_password.required' => 'Please enter your current password.',
+            'password.required' => 'Please enter a new password.',
+            'password.min' => 'New password must be at least 8 characters long.',
+            'password.confirmed' => 'New password confirmation does not match.',
+        ]);
+
+        if (!Hash::check($request->current_password, $user->password)) {
+            return back()->with('error', 'Current password does not match our records.');
+        }
+
+        if (Hash::check($request->password, $user->password)) {
+            return back()->with('error', 'New password cannot be the same as your current password.');
+        }
+
+        $user->password = Hash::make($request->password);
+        $user->save();
+
+        return back()->with('success', 'Your password has been changed successfully!');
     }
 }
