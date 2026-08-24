@@ -112,7 +112,7 @@
                     <div class="col-span-1">
                         <label class="block text-xs font-semibold uppercase tracking-wide text-[#2f5a77] mb-1"><i
                                 class="far fa-user"></i> Patient’s Name</label>
-                        <input type="text" name="patient_name" value="{{ old('patient_name') }}" placeholder="Full name"
+                        <input type="text" name="patient_name" value="{{ old('patient_name', request('patient_name', request('name'))) }}" placeholder="Full name"
                             class="w-full rounded-xl border border-[#d3dfea] px-4 py-2.5 text-sm bg-[#fafdff] input-focus">
                     </div>
                     <!-- AGE -->
@@ -164,7 +164,7 @@
                     <div class="col-span-1">
                         <label class="block text-xs font-semibold uppercase tracking-wide text-[#2f5a77] mb-1"><i
                                 class="fas fa-phone-alt"></i> Mobile No.</label>
-                        <input type="tel" name="mobile" value="{{ old('mobile') }}" placeholder="+91 98765 43210"
+                        <input type="tel" name="mobile" value="{{ old('mobile', request('mobile', request('number', request('phone')))) }}" placeholder="+91 98765 43210"
                             class="w-full rounded-xl border border-[#d3dfea] px-4 py-2.5 text-sm bg-[#fafdff] input-focus">
                     </div>
                     <!-- New Registration No. -->

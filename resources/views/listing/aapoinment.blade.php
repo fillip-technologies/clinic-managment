@@ -112,7 +112,8 @@
                         <th scope="col" class="px-5 py-3.5 font-semibold">Phone</th>
                         <th scope="col" class="px-5 py-3.5 font-semibold">Visit Type</th>
                         <th scope="col" class="px-5 py-3.5 font-semibold">Note / Message</th>
-                        <th scope="col" class="px-5 py-3.5 font-semibold text-right">Date</th>
+                        <th scope="col" class="px-5 py-3.5 font-semibold">Date</th>
+                        <th scope="col" class="px-5 py-3.5 font-semibold text-center">Action</th>
                     </tr>
                 </thead>
                 <tbody id="tableBody" class="divide-y divide-slate-100">
@@ -148,13 +149,21 @@
                         <td class="px-5 py-3.5 text-slate-500 max-w-[200px] truncate" title="{{ $appointment->message }}">
                             {{ $appointment->message ?: '-' }}
                         </td>
-                        <td class="px-5 py-3.5 text-slate-400 text-xs text-right font-mono">
+                        <td class="px-5 py-3.5 text-slate-400 text-xs font-mono">
                             {{ $appointment->created_at ? $appointment->created_at->format('d M Y, h:i A') : '-' }}
+                        </td>
+                        <td class="px-5 py-3.5 text-center whitespace-nowrap">
+                            <a href="{{ route('patient.form') }}?name={{ urlencode($appointment->patient_name ?? '') }}&number={{ urlencode($appointment->phone ?? '') }}"
+                               title="Register Patient (Pass {{ $appointment->patient_name }} and {{ $appointment->phone }})"
+                               class="inline-flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-semibold text-xs transition shadow-sm hover:shadow-md group/btn">
+                                <i class="fas fa-plus text-xs group-hover/btn:scale-125 transition-transform"></i>
+                                <span>Add Patient</span>
+                            </a>
                         </td>
                     </tr>
                     @empty
                     <tr>
-                        <td colspan="6" class="px-5 py-12 text-center text-slate-500">
+                        <td colspan="7" class="px-5 py-12 text-center text-slate-500">
                             <div class="flex flex-col items-center gap-2">
                                 <div class="w-12 h-12 rounded-full bg-slate-100 flex items-center justify-center text-slate-400 mb-1">
                                     <i class="fas fa-calendar-times text-2xl"></i>
