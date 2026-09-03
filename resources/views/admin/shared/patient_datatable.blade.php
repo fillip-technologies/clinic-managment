@@ -62,14 +62,52 @@
         padding: 0.65rem 0.75rem;
         vertical-align: middle;
         white-space: nowrap;
-    }
-
-    #patientTable tbody tr td:not(:last-child) {
         cursor: pointer;
     }
 
-    #patientTable tbody tr:hover td:not(:last-child) {
+    #patientTable tbody tr:hover td {
         background-color: #f4f9ff;
+    }
+
+    /* Child row / dropdown containing only Actions */
+    table.dataTable > tbody > tr.child {
+        background-color: #f8fcff !important;
+    }
+
+    table.dataTable > tbody > tr.child > td.child {
+        padding: 0.85rem 1.5rem !important;
+        border-bottom: 1px solid #e2e8f0 !important;
+    }
+
+    table.dataTable > tbody > tr.child ul.dtr-details {
+        display: flex;
+        align-items: center;
+        gap: 1.25rem;
+        padding: 0;
+        margin: 0;
+        list-style: none;
+    }
+
+    table.dataTable > tbody > tr.child ul.dtr-details li {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        padding: 0;
+        border: none;
+    }
+
+    table.dataTable > tbody > tr.child span.dtr-title {
+        font-weight: 700;
+        color: #1f6e96;
+        font-size: 0.85rem;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+    }
+
+    table.dataTable > tbody > tr.child span.dtr-data {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
     }
 
     /* Custom Sleek Scrollbar */
@@ -159,14 +197,14 @@
     }
 
     .action-btn {
-        width: 30px;
-        height: 30px;
+        width: 32px;
+        height: 32px;
         border-radius: 8px;
         display: inline-flex;
         align-items: center;
         justify-content: center;
         transition: all 0.2s;
-        font-size: 0.8rem;
+        font-size: 0.85rem;
     }
 
     .action-btn:hover {
@@ -302,253 +340,292 @@
             </div>
         </div>
 
-        <!-- DataTable (table will be wrapped by DataTables dom so controls stay fixed) -->
-        <table id="patientTable" class="display responsive nowrap w-full min-w-[1150px]" style="width:100%">
-                <thead class="bg-[#f4f9ff] text-[#124263]">
+        <!-- DataTable (table wrapped by DataTables dom so controls stay fixed) -->
+        <table id="patientTable" class="display responsive nowrap w-full min-w-[2150px]" style="width:100%">
+            <thead class="bg-[#f4f9ff] text-[#124263]">
+                <tr>
+                    <th class="w-10 all">#</th>
+                    <th class="all">Patient Name</th>
+                    <th class="all">Reg No.</th>
+                    <th class="all">Duration DM</th>
+                    <th class="all">BMI</th>
+                    <th class="all">BP</th>
+                    <th class="all">HbA1c</th>
+                    <th class="all">Cholesterol</th>
+                    <th class="all">LDL</th>
+                    <th class="all">Creatinine</th>
+                    <th class="all">ACR</th>
+                    <th class="all">USG</th>
+                    <th class="all">FIB Score</th>
+                    <th class="all">Median Stiffness</th>
+                    <th class="all">Age/Gender</th>
+                    <th class="all">Mobile</th>
+                    <th class="all">Diabetes</th>
+                    <th class="all">Insulin</th>
+                    <th class="all">Status</th>
+                    <th class="all">Last Visit</th>
+                    <th class="none">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach ($records as $item)
+                    @php
+                        if ($item instanceof \App\Models\Patient) {
+                            $patient = $item;
+                            $clinical = $item->latestRecord;
+                        } else {
+                            $patient = $item->patient ?? new \App\Models\Patient();
+                            $clinical = $item;
+                        }
+
+                        $bmi = floatval($clinical->bmi ?? 0);
+                        $hba1c = floatval($clinical->hba1c ?? 0);
+                        $sbp = floatval($clinical->sbp ?? 0);
+                        $dbp = floatval($clinical->dbp ?? 0);
+                        $temp = floatval($clinical->temprature ?? $clinical->temperature ?? 98.6);
+
+                        // BMI Status
+                        $bmiStatus = 'normal';
+                        $bmiLabel = 'Normal';
+                        if ($bmi > 25) {
+                            $bmiStatus = 'critical';
+                            $bmiLabel = 'Obese (>25)';
+                        } elseif ($bmi >= 23 && $bmi <= 25) {
+                            $bmiStatus = 'warning';
+                            $bmiLabel = 'Overweight';
+                        }
+
+                        // HbA1c Status
+                        $hba1cStatus = 'normal';
+                        $hba1cLabel = 'Normal';
+                        if ($hba1c >= 6.5) {
+                            $hba1cStatus = 'critical';
+                            $hba1cLabel = 'Diabetes (>6.5%)';
+                        } elseif ($hba1c >= 5.7 && $hba1c < 6.5) {
+                            $hba1cStatus = 'warning';
+                            $hba1cLabel = 'Pre-Diabetes';
+                        }
+
+                        // BP Status
+                        $bpStatus = 'normal';
+                        $bpLabel = 'Normal';
+                        if ($sbp > 140 || $dbp > 90) {
+                            $bpStatus = 'critical';
+                            $bpLabel = 'Hypertension';
+                        } elseif ($sbp > 130 || $dbp > 90) {
+                            $bpStatus = 'warning';
+                            $bpLabel = 'Pre-Hypertension';
+                        }
+
+                        // Overall Status
+                        $overallStatus = 'normal';
+                        $statusLabel = 'Normal';
+                        if (
+                            $bmiStatus === 'critical' ||
+                            $hba1cStatus === 'critical' ||
+                            $bpStatus === 'critical'
+                        ) {
+                            $overallStatus === 'critical';
+                            $statusLabel = 'Critical';
+                        } elseif (
+                            $bmiStatus === 'warning' ||
+                            $hba1cStatus === 'warning' ||
+                            $bpStatus === 'warning'
+                        ) {
+                            $overallStatus = 'warning';
+                            $statusLabel = 'At Risk';
+                        }
+
+                        $statusBadgeClass =
+                            $overallStatus === 'critical'
+                                ? 'badge-critical'
+                                : ($overallStatus === 'warning'
+                                    ? 'badge-warning'
+                                    : 'badge-normal');
+
+                        $abnormalCount = 0;
+                        if ($bmi > 25) {
+                            $abnormalCount++;
+                        }
+                        if ($hba1c >= 5.7) {
+                            $abnormalCount++;
+                        }
+                        if ($sbp > 130 || $dbp > 90) {
+                            $abnormalCount++;
+                        }
+                        if ($temp > 99.4) {
+                            $abnormalCount++;
+                        }
+                    @endphp
                     <tr>
-                        <th class="w-10">#</th>
-                        <th>Date</th>
-                        <th>Patient Name</th>
-                        <th>Age/Gender</th>
-                        <th>Mobile</th>
-                        <th>BMI</th>
-                        <th>HbA1c</th>
-                        <th>BP</th>
-                        <th>Diabetes</th>
-                        <th>Insulin</th>
-                        <th>Status</th>
-                        <th>Actions</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @foreach ($records as $item)
-                        @php
-                            if ($item instanceof \App\Models\Patient) {
-                                $patient = $item;
-                                $clinical = $item->latestRecord;
-                            } else {
-                                $patient = $item->patient ?? new \App\Models\Patient();
-                                $clinical = $item;
-                            }
-
-                            $bmi = floatval($clinical->bmi ?? 0);
-                            $hba1c = floatval($clinical->hba1c ?? 0);
-                            $sbp = floatval($clinical->sbp ?? 0);
-                            $dbp = floatval($clinical->dbp ?? 0);
-                            $temp = floatval($clinical->temprature ?? $clinical->temperature ?? 98.6);
-
-                            // BMI Status
-                            $bmiStatus = 'normal';
-                            $bmiLabel = 'Normal';
-                            if ($bmi > 25) {
-                                $bmiStatus = 'critical';
-                                $bmiLabel = 'Obese (>25)';
-                            } elseif ($bmi >= 23 && $bmi <= 25) {
-                                $bmiStatus = 'warning';
-                                $bmiLabel = 'Overweight';
-                            }
-
-                            // HbA1c Status
-                            $hba1cStatus = 'normal';
-                            $hba1cLabel = 'Normal';
-                            if ($hba1c >= 6.5) {
-                                $hba1cStatus = 'critical';
-                                $hba1cLabel = 'Diabetes (>6.5%)';
-                            } elseif ($hba1c >= 5.7 && $hba1c < 6.5) {
-                                $hba1cStatus = 'warning';
-                                $hba1cLabel = 'Pre-Diabetes';
-                            }
-
-                            // BP Status
-                            $bpStatus = 'normal';
-                            $bpLabel = 'Normal';
-                            if ($sbp > 140 || $dbp > 90) {
-                                $bpStatus = 'critical';
-                                $bpLabel = 'Hypertension';
-                            } elseif ($sbp > 130 || $dbp > 90) {
-                                $bpStatus = 'warning';
-                                $bpLabel = 'Pre-Hypertension';
-                            }
-
-                            // Overall Status
-                            $overallStatus = 'normal';
-                            $statusLabel = 'Normal';
-                            if (
-                                $bmiStatus === 'critical' ||
-                                $hba1cStatus === 'critical' ||
-                                $bpStatus === 'critical'
-                            ) {
-                                $overallStatus = 'critical';
-                                $statusLabel = 'Critical';
-                            } elseif (
-                                $bmiStatus === 'warning' ||
-                                $hba1cStatus === 'warning' ||
-                                $bpStatus === 'warning'
-                            ) {
-                                $overallStatus = 'warning';
-                                $statusLabel = 'At Risk';
-                            }
-
-                            $statusBadgeClass =
-                                $overallStatus === 'critical'
-                                    ? 'badge-critical'
-                                    : ($overallStatus === 'warning'
-                                        ? 'badge-warning'
-                                        : 'badge-normal');
-
-                            $abnormalCount = 0;
-                            if ($bmi > 25) {
-                                $abnormalCount++;
-                            }
-                            if ($hba1c >= 5.7) {
-                                $abnormalCount++;
-                            }
-                            if ($sbp > 130 || $dbp > 90) {
-                                $abnormalCount++;
-                            }
-                            if ($temp > 99.4) {
-                                $abnormalCount++;
-                            }
-                        @endphp
-                        <tr>
-                            <td>{{ $loop->iteration }}</td>
-                            <td>
-                                {{ $patient->record_date ? \Carbon\Carbon::parse($patient->record_date)->format('d/m/Y') : ($clinical?->created_at ? $clinical->created_at->format('d/m/Y') : '-') }}
-                            </td>
-                            <td>
-                                <a href="{{ route('patient.show', $patient->id) }}" class="font-bold text-[#1f6e96] hover:underline">
-                                    {{ $patient->patient_name ?? 'N/A' }}
+                        <td class="dtr-control">{{ $loop->iteration }}</td>
+                        <td>
+                            <a href="{{ route('patient.show', $patient->id) }}" class="font-bold text-[#1f6e96] hover:underline">
+                                {{ $patient->patient_name ?? 'N/A' }}
+                            </a>
+                        </td>
+                        <td>
+                            <span class="font-semibold text-slate-700">{{ $patient->registration_no ?: '-' }}</span>
+                        </td>
+                        <td>
+                            @if(!empty($clinical?->duration_of_diabetes))
+                                <span class="font-medium text-slate-700">{{ is_numeric($clinical->duration_of_diabetes) ? $clinical->duration_of_diabetes . ' yrs' : $clinical->duration_of_diabetes }}</span>
+                            @else
+                                <span class="text-slate-400">-</span>
+                            @endif
+                        </td>
+                        <td>
+                            @php
+                                $bmiColor = 'value-normal';
+                                if ($bmi > 25) {
+                                    $bmiColor = 'value-critical';
+                                } elseif ($bmi >= 23) {
+                                    $bmiColor = 'value-warning';
+                                }
+                            @endphp
+                            <span class="tooltip-trigger {{ $bmiColor }}" title="BMI: {{ $bmiLabel }}">
+                                {{ $clinical?->bmi ?? '-' }}
+                                @if ($bmi > 25)
+                                    <span class="status-dot critical"></span>
+                                @elseif($bmi >= 23)
+                                    <span class="status-dot warning"></span>
+                                @else
+                                    <span class="status-dot normal"></span>
+                                @endif
+                            </span>
+                        </td>
+                        <td>
+                            @php
+                                $bpColor = 'value-normal';
+                                if ($sbp > 140 || $dbp > 90) {
+                                    $bpColor = 'value-critical';
+                                } elseif ($sbp > 130 || $dbp > 90) {
+                                    $bpColor = 'value-warning';
+                                }
+                            @endphp
+                            <span class="tooltip-trigger {{ $bpColor }}" title="BP: {{ $bpLabel }}">
+                                {{ $clinical && ($clinical->sbp || $clinical->dbp) ? $clinical->sbp . '/' . $clinical->dbp : '-' }}
+                                @if ($sbp > 140 || $dbp > 90)
+                                    <span class="status-dot critical"></span>
+                                @elseif($sbp > 130 || $dbp > 90)
+                                    <span class="status-dot warning"></span>
+                                @else
+                                    <span class="status-dot normal"></span>
+                                @endif
+                            </span>
+                        </td>
+                        <td>
+                            @php
+                                $hba1cColor = 'value-normal';
+                                if ($hba1c >= 6.5) {
+                                    $hba1cColor = 'value-critical';
+                                } elseif ($hba1c >= 5.7) {
+                                    $hba1cColor = 'value-warning';
+                                }
+                            @endphp
+                            <span class="tooltip-trigger {{ $hba1cColor }}" title="HbA1c: {{ $hba1cLabel }}">
+                                {{ $clinical?->hba1c ? $clinical->hba1c . '%' : '-' }}
+                                @if ($hba1c >= 6.5)
+                                    <span class="status-dot critical"></span>
+                                @elseif($hba1c >= 5.7)
+                                    <span class="status-dot warning"></span>
+                                @else
+                                    <span class="status-dot normal"></span>
+                                @endif
+                            </span>
+                        </td>
+                        <td>
+                            <span class="font-medium text-slate-700">{{ $clinical?->chol ? (is_numeric($clinical->chol) ? rtrim(rtrim($clinical->chol, '0'), '.') : $clinical->chol) : '-' }}</span>
+                        </td>
+                        <td>
+                            <span class="font-medium text-slate-700">{{ $clinical?->ldl ? (is_numeric($clinical->ldl) ? rtrim(rtrim($clinical->ldl, '0'), '.') : $clinical->ldl) : '-' }}</span>
+                        </td>
+                        <td>
+                            <span class="font-medium text-slate-700">{{ $clinical?->creatinine ? (is_numeric($clinical->creatinine) ? rtrim(rtrim($clinical->creatinine, '0'), '.') : $clinical->creatinine) : '-' }}</span>
+                        </td>
+                        <td>
+                            <span class="font-medium text-slate-700">{{ $clinical?->acr ? (is_numeric($clinical->acr) ? rtrim(rtrim($clinical->acr, '0'), '.') : $clinical->acr) : '-' }}</span>
+                        </td>
+                        <td>
+                            <span class="font-medium text-slate-700">{{ $clinical?->usg ?: '-' }}</span>
+                        </td>
+                        <td>
+                            <span class="font-medium text-slate-700">{{ $clinical?->fib_score ? (is_numeric($clinical->fib_score) ? rtrim(rtrim($clinical->fib_score, '0'), '.') : $clinical->fib_score) : '-' }}</span>
+                        </td>
+                        <td>
+                            <span class="font-medium text-slate-700">{{ $clinical?->median_stiffness ? (is_numeric($clinical->median_stiffness) ? rtrim(rtrim($clinical->median_stiffness, '0'), '.') : $clinical->median_stiffness) : '-' }}</span>
+                        </td>
+                        <td>{{ $patient->age ?? '-' }} / {{ $patient->gender ?? '-' }}</td>
+                        <td>{{ $patient->mobile_no ?? '-' }}</td>
+                        <td>
+                            @if ($clinical?->newly_detected == 'Yes' || $clinical?->newly_detected == 1)
+                                <span class="badge-status bg-blue-100 text-blue-700"><i class="fas fa-bolt mr-1"></i>New</span>
+                            @elseif($clinical?->duration_of_diabetes)
+                                <span class="badge-status bg-gray-100 text-gray-600">{{ $clinical->duration_of_diabetes }} yrs</span>
+                            @else
+                                <span class="badge-status bg-gray-50 text-gray-400">Normal</span>
+                            @endif
+                        </td>
+                        <td>
+                            @if ($clinical?->start_insulin_date && !$clinical?->stop_insulin_date)
+                                <span class="badge-status bg-purple-100 text-purple-700"><i class="fas fa-syringe mr-1"></i>Active</span>
+                            @elseif($clinical?->start_insulin_date && $clinical?->stop_insulin_date)
+                                <span class="badge-status bg-gray-100 text-gray-600">Stopped</span>
+                            @else
+                                <span class="badge-status bg-gray-50 text-gray-400">Not on</span>
+                            @endif
+                        </td>
+                        <td>
+                            <span class="badge-status {{ $statusBadgeClass }}">
+                                @if ($overallStatus === 'critical')
+                                    <i class="fas fa-exclamation-triangle mr-1"></i>
+                                @elseif($overallStatus === 'warning')
+                                    <i class="fas fa-exclamation-circle mr-1"></i>
+                                @else
+                                    <i class="fas fa-check-circle mr-1"></i>
+                                @endif
+                                {{ $statusLabel }}
+                                @if ($abnormalCount > 0)
+                                    <span class="ml-1 px-1.5 py-0.5 bg-white/30 rounded-full text-xs">{{ $abnormalCount }}</span>
+                                @endif
+                            </span>
+                            @if ($temp > 99.4)
+                                <span class="badge-status badge-critical ml-1"><i class="fas fa-thermometer-half mr-1"></i>Fever</span>
+                            @endif
+                        </td>
+                        <td>
+                            <span class="font-medium text-slate-600">{{ $patient->record_date ? \Carbon\Carbon::parse($patient->record_date)->format('d/m/Y') : ($clinical?->created_at ? $clinical->created_at->format('d/m/Y') : '-') }}</span>
+                        </td>
+                        <td class="none">
+                            <div class="flex items-center gap-2 py-1">
+                                <a href="{{ route('patient.show', $patient->id) }}"
+                                    class="action-btn bg-blue-50 text-blue-600 hover:bg-blue-100 flex items-center justify-center" title="View Patient Details">
+                                    <i class="fas fa-eye"></i>
                                 </a>
-                                <small class="text-slate-400 block text-[11px]">ID: {{ $patient->id }} {{ $patient->registration_no ? '| ' . $patient->registration_no : '' }}</small>
-                            </td>
-                            <td>{{ $patient->age ?? '-' }} / {{ $patient->gender ?? '-' }}</td>
-                            <td>{{ $patient->mobile_no ?? '-' }}</td>
-                            <td>
-                                @php
-                                    $bmiColor = 'value-normal';
-                                    if ($bmi > 25) {
-                                        $bmiColor = 'value-critical';
-                                    } elseif ($bmi >= 23) {
-                                        $bmiColor = 'value-warning';
-                                    }
-                                @endphp
-                                <span class="tooltip-trigger {{ $bmiColor }}" title="BMI: {{ $bmiLabel }}">
-                                    {{ $clinical?->bmi ?? '-' }}
-                                    @if ($bmi > 25)
-                                        <span class="status-dot critical"></span>
-                                    @elseif($bmi >= 23)
-                                        <span class="status-dot warning"></span>
-                                    @else
-                                        <span class="status-dot normal"></span>
-                                    @endif
-                                </span>
-                            </td>
-                            <td>
-                                @php
-                                    $hba1cColor = 'value-normal';
-                                    if ($hba1c >= 6.5) {
-                                        $hba1cColor = 'value-critical';
-                                    } elseif ($hba1c >= 5.7) {
-                                        $hba1cColor = 'value-warning';
-                                    }
-                                @endphp
-                                <span class="tooltip-trigger {{ $hba1cColor }}" title="HbA1c: {{ $hba1cLabel }}">
-                                    {{ $clinical?->hba1c ? $clinical->hba1c . '%' : '-' }}
-                                    @if ($hba1c >= 6.5)
-                                        <span class="status-dot critical"></span>
-                                    @elseif($hba1c >= 5.7)
-                                        <span class="status-dot warning"></span>
-                                    @else
-                                        <span class="status-dot normal"></span>
-                                    @endif
-                                </span>
-                            </td>
-                            <td>
-                                @php
-                                    $bpColor = 'value-normal';
-                                    if ($sbp > 140 || $dbp > 90) {
-                                        $bpColor = 'value-critical';
-                                    } elseif ($sbp > 130 || $dbp > 90) {
-                                        $bpColor = 'value-warning';
-                                    }
-                                @endphp
-                                <span class="tooltip-trigger {{ $bpColor }}" title="BP: {{ $bpLabel }}">
-                                    {{ $clinical && ($clinical->sbp || $clinical->dbp) ? $clinical->sbp . '/' . $clinical->dbp : '-' }}
-                                    @if ($sbp > 140 || $dbp > 90)
-                                        <span class="status-dot critical"></span>
-                                    @elseif($sbp > 130 || $dbp > 90)
-                                        <span class="status-dot warning"></span>
-                                    @else
-                                        <span class="status-dot normal"></span>
-                                    @endif
-                                </span>
-                            </td>
-                            <td>
-                                @if ($clinical?->newly_detected == 'Yes' || $clinical?->newly_detected == 1)
-                                    <span class="badge-status bg-blue-100 text-blue-700"><i class="fas fa-bolt mr-1"></i>New</span>
-                                @elseif($clinical?->duration_of_diabetes)
-                                    <span class="badge-status bg-gray-100 text-gray-600">{{ $clinical->duration_of_diabetes }} yrs</span>
-                                @else
-                                    <span class="badge-status bg-gray-50 text-gray-400">Normal</span>
-                                @endif
-                            </td>
-                            <td>
-                                @if ($clinical?->start_insulin_date && !$clinical?->stop_insulin_date)
-                                    <span class="badge-status bg-purple-100 text-purple-700"><i class="fas fa-syringe mr-1"></i>Active</span>
-                                @elseif($clinical?->start_insulin_date && $clinical?->stop_insulin_date)
-                                    <span class="badge-status bg-gray-100 text-gray-600">Stopped</span>
-                                @else
-                                    <span class="badge-status bg-gray-50 text-gray-400">Not on</span>
-                                @endif
-                            </td>
-                            <td>
-                                <span class="badge-status {{ $statusBadgeClass }}">
-                                    @if ($overallStatus === 'critical')
-                                        <i class="fas fa-exclamation-triangle mr-1"></i>
-                                    @elseif($overallStatus === 'warning')
-                                        <i class="fas fa-exclamation-circle mr-1"></i>
-                                    @else
-                                        <i class="fas fa-check-circle mr-1"></i>
-                                    @endif
-                                    {{ $statusLabel }}
-                                    @if ($abnormalCount > 0)
-                                        <span class="ml-1 px-1.5 py-0.5 bg-white/30 rounded-full text-xs">{{ $abnormalCount }}</span>
-                                    @endif
-                                </span>
-                                @if ($temp > 99.4)
-                                    <span class="badge-status badge-critical ml-1"><i class="fas fa-thermometer-half mr-1"></i>Fever</span>
-                                @endif
-                            </td>
-                            <td>
-                                <div class="flex items-center gap-1">
-                                    <a href="{{ route('patient.show', $patient->id) }}"
-                                        class="action-btn bg-blue-50 text-blue-600 hover:bg-blue-100 flex items-center justify-center" title="View Patient Details">
-                                        <i class="fas fa-eye"></i>
-                                    </a>
 
-                                    <a href="{{ route('addnewReport', $clinical?->id ?? $patient->id) }}"
-                                        class="action-btn bg-blue-50 text-blue-600 hover:bg-blue-100 flex items-center justify-center" title="Add Follow-up Visit">
-                                        <i class="fas fa-plus"></i>
-                                    </a>
-                                    <a href="{{ route('patient.edit', $patient->id) }}"
-                                        class="action-btn bg-yellow-50 text-yellow-600 hover:bg-yellow-100 flex items-center justify-center"
-                                        title="Edit Patient">
-                                        <i class="fas fa-edit"></i>
-                                    </a>
-                                    <form action="{{ route('patient.delete', $patient->id) }}" method="POST" class="inline">
-                                        @csrf
-                                        @method('DELETE')
-                                        <button type="submit" onclick="return confirm('Are you sure you want to delete this patient and all clinical records?')"
-                                            class="action-btn bg-red-50 text-red-600 hover:bg-red-100 flex items-center justify-center" title="Delete Patient">
-                                            <i class="fas fa-trash"></i>
-                                        </button>
-                                    </form>
-                                </div>
-                            </td>
-                        </tr>
-                    @endforeach
-                </tbody>
-            </table>
+                                <a href="{{ route('addnewReport', $clinical?->id ?? $patient->id) }}"
+                                    class="action-btn bg-blue-50 text-blue-600 hover:bg-blue-100 flex items-center justify-center" title="Add Follow-up Visit">
+                                    <i class="fas fa-plus"></i>
+                                </a>
+                                <a href="{{ route('patient.edit', $patient->id) }}"
+                                    class="action-btn bg-yellow-50 text-yellow-600 hover:bg-yellow-100 flex items-center justify-center"
+                                    title="Edit Patient">
+                                    <i class="fas fa-edit"></i>
+                                </a>
+                                <form action="{{ route('patient.delete', $patient->id) }}" method="POST" class="inline">
+                                    @csrf
+                                    @method('DELETE')
+                                    <button type="submit" onclick="return confirm('Are you sure you want to delete this patient and all clinical records?')"
+                                        class="action-btn bg-red-50 text-red-600 hover:bg-red-100 flex items-center justify-center" title="Delete Patient">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </form>
+                            </div>
+                        </td>
+                    </tr>
+                @endforeach
+            </tbody>
+        </table>
     </div>
 </div>
 
@@ -564,6 +641,7 @@
                     target: 0
                 }
             },
+            autoWidth: false,
             pageLength: 10,
             lengthMenu: [
                 [5, 10, 25, 50, -1],
@@ -587,22 +665,35 @@
             columnDefs: [
                 {
                     targets: [0],
+                    className: 'dtr-control',
                     orderable: false,
                     searchable: false
                 },
                 {
-                    targets: [11],
+                    targets: [20],
                     orderable: false
                 }
             ]
         });
 
-        // Allow clicking anywhere on the row to toggle expansion
-        $('#patientTable tbody').on('click', 'tr td:not(:last-child):not(.dtr-control)', function(e) {
+        // Allow clicking anywhere on the row to toggle expansion, while keeping buttons/links working
+        $('#patientTable tbody').on('click', 'tr td:not(.dtr-control)', function(e) {
             if ($(e.target).closest('.action-btn, a, button, form, input, select').length) {
                 return;
             }
             $(this).closest('tr').find('td.dtr-control').trigger('click');
+        });
+
+        // Maintain sequential numbers on sort/filter
+        patientDataTable.on('order.dt search.dt draw.dt', function() {
+            let info = patientDataTable.page.info();
+            patientDataTable.column(0, {
+                search: 'applied',
+                order: 'applied',
+                page: 'current'
+            }).nodes().each(function(cell, i) {
+                cell.innerHTML = i + 1 + info.start;
+            });
         });
     });
 
