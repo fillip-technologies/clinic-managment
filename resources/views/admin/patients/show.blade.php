@@ -610,6 +610,10 @@
                             <span class="text-slate-600 font-medium">FibroScan:</span>
                             <span class="font-bold text-slate-800">{{ $record->fib_scan ? $record->fib_scan . ' kPa' : 'N/A' }}</span>
                         </div>
+                        <div class="flex justify-between p-2 bg-slate-50 rounded-lg">
+                            <span class="text-slate-600 font-medium">Median Stiffness:</span>
+                            <span class="font-bold text-slate-800">{{ $record->median_stiffness ? $record->median_stiffness . ' kPa' : 'N/A' }}</span>
+                        </div>
                         <div class="p-2 bg-slate-50 rounded-lg">
                             <span class="text-slate-600 font-medium block mb-1">USG Abdomen Findings:</span>
                             <p class="font-semibold text-slate-800">{{ $record->usg ?: 'No findings recorded' }}</p>

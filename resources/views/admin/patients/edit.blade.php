@@ -687,6 +687,12 @@
                                 class="w-full rounded-xl border border-[#d3dfea] px-3 py-2 text-sm input-focus">
                         </div>
                         <div>
+                            <label class="block text-xs font-semibold text-[#2f5a77]">Median Stiffness</label>
+                            <input type="text" name="median_stiffness" value="{{ old('median_stiffness', $record->median_stiffness ?? '') }}"
+                                placeholder="kPa"
+                                class="w-full rounded-xl border border-[#d3dfea] px-3 py-2 text-sm input-focus">
+                        </div>
+                        <div>
                             <label class="block text-xs font-semibold text-[#2f5a77]">USG</label>
                             <input type="text" name="usg" value="{{ old('usg', $record->usg ?? '') }}"
                                 placeholder="Findings"

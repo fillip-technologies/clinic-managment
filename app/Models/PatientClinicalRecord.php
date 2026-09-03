@@ -53,6 +53,7 @@ class PatientClinicalRecord extends Model
         'hcv',
         'fib_score',
         'fib_scan',
+        'median_stiffness',
         'temprature',
         'usg',
         'chol',

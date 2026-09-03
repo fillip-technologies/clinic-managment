@@ -393,6 +393,9 @@
                     <div><label class="block text-xs font-semibold text-[#2f5a77]">Fib Scan</label>
                         <input type="text" name="fib_scan" value="{{ old('fib_scan') }}" placeholder="kPa"
                             class="w-full rounded-xl border border-[#d3dfea] px-3 py-2 text-sm input-focus"></div>
+                    <div><label class="block text-xs font-semibold text-[#2f5a77]">Median Stiffness</label>
+                        <input type="text" name="median_stiffness" value="{{ old('median_stiffness') }}" placeholder="kPa"
+                            class="w-full rounded-xl border border-[#d3dfea] px-3 py-2 text-sm input-focus"></div>
                     <div><label class="block text-xs font-semibold text-[#2f5a77]">USG</label>
                         <input type="text" name="usg" value="{{ old('usg') }}" placeholder="Findings"
                             class="w-full rounded-xl border border-[#d3dfea] px-3 py-2 text-sm input-focus"></div>

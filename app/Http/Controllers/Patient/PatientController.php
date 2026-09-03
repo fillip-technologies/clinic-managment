@@ -87,6 +87,7 @@ class PatientController extends Controller
             'hcv' => 'nullable|in:Negative,Positive',
             'fib_score' => 'nullable|string|max:20',
             'fib_scan' => 'nullable|string|max:20',
+            'median_stiffness' => 'nullable|string|max:50',
             'usg' => 'nullable|string|max:255',
             'chol' => 'nullable|string|max:20',
             'tg' => 'nullable|string|max:20',
@@ -219,6 +220,7 @@ class PatientController extends Controller
             'hcv' => $request->hcv,
             'fib_score' => $request->fib_score,
             'fib_scan' => $request->fib_scan,
+            'median_stiffness' => $request->median_stiffness,
             'usg' => $request->usg,
             'chol' => $request->cholesterol,
             'tg' => $request->tg,
@@ -379,6 +381,7 @@ class PatientController extends Controller
             'hcv' => 'nullable|in:Negative,Positive',
             'fib_score' => 'nullable|string|max:20',
             'fib_scan' => 'nullable|string|max:20',
+            'median_stiffness' => 'nullable|string|max:50',
             'usg' => 'nullable|string|max:255',
             'chol' => 'nullable|string|max:20',
             'tg' => 'nullable|string|max:20',
@@ -508,6 +511,7 @@ class PatientController extends Controller
                 'hcv' => $request->hcv,
                 'fib_score' => $request->fib_score,
                 'fib_scan' => $request->fib_scan,
+                'median_stiffness' => $request->median_stiffness,
                 'usg' => $request->usg,
                 'chol' => $request->cholesterol,
                 'tg' => $request->tg,
@@ -653,6 +657,7 @@ class PatientController extends Controller
             'hcv' => 'nullable|in:Negative,Positive',
             'fib_score' => 'nullable|string|max:20',
             'fib_scan' => 'nullable|string|max:20',
+            'median_stiffness' => 'nullable|string|max:50',
             'usg' => 'nullable|string|max:255',
             'chol' => 'nullable|string|max:20',
             'tg' => 'nullable|string|max:20',
@@ -742,6 +747,7 @@ class PatientController extends Controller
             'hcv' => $request->hcv,
             'fib_score' => $request->fib_score,
             'fib_scan' => $request->fib_scan,
+            'median_stiffness' => $request->median_stiffness,
             'usg' => $request->usg,
             'chol' => $request->cholesterol,
             'tg' => $request->tg,
@@ -1123,7 +1129,7 @@ class PatientController extends Controller
                     'Physical Activity', 'Diet (Veg/Non-Veg)', 'Social Class', 'Income Class',
                     'SBP (mmHg)', 'DBP (mmHg)', 'HbA1c (%)', 'Fasting Blood Sugar (BSF)',
                     'Total Cholesterol', 'Triglycerides', 'SGPT (ALT U/L)', 'SGOT (AST U/L)', 'ALKP',
-                    'FibroScan Score', 'USG Findings'
+                    'FibroScan Score', 'Median Stiffness', 'USG Findings'
                 ]);
 
                 foreach ($records as $r) {
@@ -1162,6 +1168,7 @@ class PatientController extends Controller
                         $r->sgot ?: '-',
                         $r->alkp ?: '-',
                         $r->fib_score ?: '-',
+                        $r->median_stiffness ?: '-',
                         $r->usg ?: '-'
                     ]);
                 }
@@ -1267,7 +1274,7 @@ class PatientController extends Controller
                     'Infection Classification', 'Body Temp (°F)', 'Infection Notes', 'HIV', 'HBsAg', 'HCV', 'Urine Cast Cells',
                     'Hb (%)', 'Platelet Count', 'MCV',
                     'Creatinine (mg/dL)', 'eGFR (mL/min)', 'ACR', 'Uric Acid', 'Na+', 'K+', 'Ionized Calcium', 'Phosphorus',
-                    'SGPT (ALT)', 'SGOT (AST)', 'ALKP', 'FibroScan Score', 'USG Notes',
+                    'SGPT (ALT)', 'SGOT (AST)', 'ALKP', 'FibroScan Score', 'Median Stiffness', 'USG Notes',
                     'Total Cholesterol', 'Triglycerides', 'HDL', 'LDL',
                     'TSH', 'T3', 'T4', 'Vitamin D25', 'Vitamin B12', 'Serum Cortisol', 'Dexamethasone Test',
                     'Ophthalmic Exam', 'Foot Exam', 'Echo Exam'
@@ -1330,6 +1337,7 @@ class PatientController extends Controller
                         $r->sgot ?: '-',
                         $r->alkp ?: '-',
                         $r->fib_score ?: '-',
+                        $r->median_stiffness ?: '-',
                         $r->usg ?: '-',
                         $r->chol ?: '-',
                         $r->tg ?: '-',
@@ -1439,6 +1447,7 @@ class PatientController extends Controller
                 'SGOT AST (U/L)',
                 'Alkaline Phosphatase ALKP (U/L)',
                 'FibroScan Score',
+                'Median Stiffness',
                 'USG Findings',
                 'Total Cholesterol (mg/dL)',
                 'Triglycerides TG (mg/dL)',
@@ -1524,6 +1533,7 @@ class PatientController extends Controller
                     $r->sgot ?: '-',
                     $r->alkp ?: '-',
                     $r->fib_score ?: '-',
+                    $r->median_stiffness ?: '-',
                     $r->usg ?: '-',
                     $r->chol ?: '-',
                     $r->tg ?: '-',
