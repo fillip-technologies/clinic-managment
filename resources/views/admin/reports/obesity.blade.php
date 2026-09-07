@@ -6,6 +6,7 @@
         'title' => 'Obesity Patient Registry',
         'icon' => 'fa-weight-scale text-amber-500',
         'exportType' => 'obesity',
+        'showAtRisk' => false,
         'subtitle' => 'Targeted cohort report for patients with BMI ≥ 25 or obesity indicators'
     ])
 @endsection

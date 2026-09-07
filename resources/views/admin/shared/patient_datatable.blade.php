@@ -13,6 +13,7 @@
     $pageIcon = $icon ?? 'fa-table text-[#1f6e96]';
     $pageSubtitle = $subtitle ?? 'Live clinical tracking & patient management';
     $exportTypeKey = $exportType ?? 'all';
+    $showAtRisk = isset($showAtRisk) ? (bool)$showAtRisk : ($exportTypeKey === 'all');
 @endphp
 
 <!-- DataTables CSS & JS Assets -->
@@ -309,7 +310,7 @@
     <!-- Table Container -->
     <div class="table-container">
         <!-- Stats Row -->
-        <div class="grid grid-cols-2 sm:grid-cols-5 gap-3 mb-5 pb-4 border-b border-[#e9eff5]">
+        <div class="grid grid-cols-2 {{ $showAtRisk ? 'sm:grid-cols-5' : 'sm:grid-cols-4' }} gap-3 mb-5 pb-4 border-b border-[#e9eff5]">
             <div class="bg-[#f8fcff] rounded-xl p-3 text-center border border-slate-100">
                 <span class="text-xs text-[#5a7e9a] uppercase font-semibold">Total Patients</span>
                 <p class="text-xl font-bold text-[#0b2a3f]" id="totalRecords">{{ $records->count() }}</p>
@@ -332,12 +333,14 @@
                     {{ $records->filter(fn($p) => ($p->latestRecord?->htn ?? $p->htn) == 'Yes' || ($p->latestRecord?->hypertension ?? $p->hypertension) == 'Hypertension' || floatval($p->latestRecord?->sbp ?? $p->sbp) >= 140 || floatval($p->latestRecord?->dbp ?? $p->dbp) >= 90)->count() }}
                 </p>
             </div>
-            <div class="bg-[#f8fcff] rounded-xl p-3 text-center border border-slate-100">
-                <span class="text-xs text-[#5a7e9a] uppercase font-semibold">At Risk</span>
-                <p class="text-xl font-bold text-[#f59e0b]" id="atRisk">
-                    {{ $records->filter(fn($p) => floatval($p->latestRecord?->bmi ?? $p->bmi) > 25 || floatval($p->latestRecord?->hba1c ?? $p->hba1c) > 6.5 || floatval($p->latestRecord?->sbp ?? $p->sbp) > 140 || floatval($p->latestRecord?->dbp ?? $p->dbp) > 90)->count() }}
-                </p>
-            </div>
+            @if ($showAtRisk)
+                <div class="bg-[#f8fcff] rounded-xl p-3 text-center border border-slate-100">
+                    <span class="text-xs text-[#5a7e9a] uppercase font-semibold">At Risk</span>
+                    <p class="text-xl font-bold text-[#f59e0b]" id="atRisk">
+                        {{ $records->filter(fn($p) => floatval($p->latestRecord?->bmi ?? $p->bmi) > 25 || floatval($p->latestRecord?->hba1c ?? $p->hba1c) > 6.5 || floatval($p->latestRecord?->sbp ?? $p->sbp) > 140 || floatval($p->latestRecord?->dbp ?? $p->dbp) > 90)->count() }}
+                    </p>
+                </div>
+            @endif
         </div>
 
         <!-- DataTable (table wrapped by DataTables dom so controls stay fixed) -->

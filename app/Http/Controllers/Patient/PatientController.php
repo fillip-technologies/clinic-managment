@@ -33,40 +33,49 @@ class PatientController extends Controller
             'record_date' => 'required|date',
             'patient_name' => 'required|string|max:255',
             'age' => 'nullable|integer|min:0|max:150',
-            'gender' => 'nullable|in:Male,Female,Other',
+            'gender' => 'nullable|string|max:50',
+            'guardian_name' => 'nullable|string|max:255',
             'father_husband_name' => 'nullable|string|max:255',
             'rcdho_grade' => 'nullable|string|max:50',
             'address' => 'nullable|string|max:500',
+            'mobile' => 'nullable|string|max:20',
             'mobile_no' => 'nullable|string|max:20',
             'registration_no' => 'nullable|string|max:50|unique:patients,registration_no',
 
-
-            'newly_detected' => 'nullable|in:Yes,No',
+            'has_diabetes' => 'nullable',
+            'newly_detected' => 'nullable|string|max:50',
+            'diabetes_duration' => 'nullable|string|max:50',
             'duration_of_diabetes' => 'nullable|string|max:50',
+            'insulin_start_date' => 'nullable|date',
             'start_insulin_date' => 'nullable|date',
-            'stop_insulin_date' => 'nullable|date|after_or_equal:start_insulin_date',
-            'attachment' => 'nullable|file',
+            'insulin_stop_date' => 'nullable|date',
+            'stop_insulin_date' => 'nullable|date',
+            'attachment' => 'nullable|file|max:10240',
 
-
+            'height' => 'nullable|numeric|min:0|max:300',
             'height_cm' => 'nullable|numeric|min:0|max:300',
+            'weight' => 'nullable|numeric|min:0|max:500',
             'weight_kg' => 'nullable|numeric|min:0|max:500',
             'bmi' => 'nullable|numeric|min:0|max:100',
             'waist_height_ratio' => 'nullable|numeric|min:0|max:5',
-            'bmi_group' => 'nullable|in:Normal,Overweight,Obese',
+            'bmi_group' => 'nullable|string|max:50',
+            'waist' => 'nullable|numeric|min:0|max:300',
             'waist_cm' => 'nullable|numeric|min:0|max:300',
+            'hip' => 'nullable|numeric|min:0|max:300',
             'hip_cm' => 'nullable|numeric|min:0|max:300',
             'waist_hip_ratio' => 'nullable|numeric|min:0|max:5',
 
+            'social_class' => 'nullable|string|max:50',
+            'income_class' => 'nullable|string|max:50',
+            'education' => 'nullable|string|max:100',
+            'physical_activity' => 'nullable|string|max:50',
+            'diet_type' => 'nullable|string|max:50',
+            'veg_nonveg' => 'nullable|string|max:50',
 
-            'social_class' => 'nullable|in:Upper,Middle,Lower',
-            'income_class' => 'nullable|in:High,Medium,Low',
-            'education' => 'nullable|in:Graduate,Post-grad,School',
-            'physical_activity' => 'nullable|in:Sedentary,Moderate,Active',
-            'veg_nonveg' => 'nullable|in:Vegetarian,Non-vegetarian,Vegan',
-
-            'htn' => 'nullable|in:Yes,No',
+            'htn' => 'nullable|string|max:50',
             'sbp' => 'nullable|numeric|min:0|max:300',
             'dbp' => 'nullable|numeric|min:0|max:200',
+            'hb' => 'nullable|string|max:20',
             'hb_percent' => 'nullable|string|max:20',
             'plt' => 'nullable|string|max:20',
             'mcv' => 'nullable|string|max:20',
@@ -74,23 +83,28 @@ class PatientController extends Controller
             'egfr' => 'nullable|string|max:20',
             'acr' => 'nullable|string|max:20',
             'uric_acid' => 'nullable|string|max:20',
-            'urine_cast_cell' => 'nullable|string|max:20',
+            'urine_cast_cell' => 'nullable|string|max:50',
+            'sodium' => 'nullable|string|max:20',
             'na_plus' => 'nullable|string|max:20',
+            'potassium' => 'nullable|string|max:20',
             'k_plus' => 'nullable|string|max:20',
+            'ionized_calcium' => 'nullable|string|max:20',
             'i_calcium' => 'nullable|string|max:20',
             'phosphorus' => 'nullable|string|max:20',
             'sgpt' => 'nullable|string|max:20',
             'sgot' => 'nullable|string|max:20',
             'alkp' => 'nullable|string|max:20',
-            'hiv' => 'nullable|in:Negative,Positive',
-            'hbsag' => 'nullable|in:Negative,Positive',
-            'hcv' => 'nullable|in:Negative,Positive',
+            'hiv' => 'nullable|string|max:50',
+            'hbsag' => 'nullable|string|max:50',
+            'hcv' => 'nullable|string|max:50',
             'fib_score' => 'nullable|string|max:20',
-            'fib_scan' => 'nullable|string|max:20',
+            'fib_scan' => 'nullable|string|max:50',
             'median_stiffness' => 'nullable|string|max:50',
-            'usg' => 'nullable|string|max:255',
+            'usg' => 'nullable|string|max:500',
             'chol' => 'nullable|string|max:20',
+            'cholesterol' => 'nullable|string|max:20',
             'tg' => 'nullable|string|max:20',
+            'triglycerides' => 'nullable|string|max:20',
             'hdl' => 'nullable|string|max:20',
             'ldl' => 'nullable|string|max:20',
             'bsf' => 'nullable|string|max:20',
@@ -102,14 +116,18 @@ class PatientController extends Controller
             'vitamin_d25' => 'nullable|string|max:20',
             'vitamin_b12' => 'nullable|string|max:20',
             's_cortisol' => 'nullable|string|max:20',
-            'dex_skip_test' => 'nullable|string|max:50',
-            'temprature' => 'nullable|string',
+            'cortisol' => 'nullable|string|max:20',
+            'dex_skip_test' => 'nullable|string|max:100',
+            'dex_suppression_test' => 'nullable|string|max:100',
+            'temprature' => 'nullable|string|max:50',
+            'temperature' => 'nullable|string|max:50',
             'ophthalmic_ex' => 'nullable|string|max:500',
+            'ophthalmic_exam' => 'nullable|string|max:500',
             'foot_ev' => 'nullable|string|max:500',
+            'foot_exam' => 'nullable|string|max:500',
             'car_echo_ev' => 'nullable|string|max:500',
+            'echo_exam' => 'nullable|string|max:500',
         ]);
-
-
 
         if ($validator->fails()) {
             return redirect()->back()
@@ -122,40 +140,48 @@ class PatientController extends Controller
         $infection = "Normal";
         $obesity = "Normal";
 
+        $hba1c = $request->hba1c;
+        $bsf = $request->bsf ?? $request->fbs;
+        $bspp = $request->bspp ?? $request->rbs;
+
         if (
-            $request->hba1c >= 6.5 ||
-            $request->fbs >= 126 ||
-            $request->rbs >= 200
+            $request->has_diabetes ||
+            $request->newly_detected === 'Yes' ||
+            ($request->filled('hba1c') && (float)$hba1c >= 6.5) ||
+            ($request->filled('bsf') && (float)$bsf >= 126) ||
+            ($request->filled('fbs') && (float)$bsf >= 126) ||
+            ($request->filled('bspp') && (float)$bspp >= 200) ||
+            ($request->filled('rbs') && (float)$bspp >= 200)
         ) {
             $diabetes = "Diabetes";
         }
 
-
         if (
-            $request->sbp >= 130 ||
-            $request->dbp >= 90
+            $request->htn === 'Yes' ||
+            ($request->filled('sbp') && (float)$request->sbp >= 130) ||
+            ($request->filled('dbp') && (float)$request->dbp >= 90)
         ) {
             $hypertension = "Hypertension";
         }
 
+        $temperatureVal = $request->temprature ?? $request->temperature;
         if (
-            $request->temprature >= 99.4 ||
-            $request->wbc > 11000 ||
-            $request->crp > 10
+            ($request->filled('temprature') && (float)$temperatureVal >= 99.4) ||
+            ($request->filled('temperature') && (float)$temperatureVal >= 99.4) ||
+            ($request->filled('wbc') && (float)$request->wbc > 11000) ||
+            ($request->filled('crp') && (float)$request->crp > 10)
         ) {
             $infection = "Infection";
         }
 
+        $waistVal = $request->waist ?? $request->waist_cm;
         if (
-            $request->bmi >= 25 ||
-            ($request->gender == 'Male' && $request->waist > 90) ||
-            ($request->gender == 'Female' && $request->waist > 80)
+            ($request->filled('bmi') && (float)$request->bmi >= 25) ||
+            ($request->gender === 'Male' && !empty($waistVal) && (float)$waistVal > 90) ||
+            ($request->gender === 'Female' && !empty($waistVal) && (float)$waistVal > 80)
         ) {
             $obesity = "Obesity";
         }
-
-
-
 
         $attachmentPath = null;
         if ($request->hasFile('attachment')) {
@@ -164,43 +190,49 @@ class PatientController extends Controller
             $attachmentPath = $file->storeAs('patient-attachments', $filename, 'public');
         }
 
+        $registrationNo = $request->registration_no;
+        if (empty($registrationNo)) {
+            $nextId = (Patient::max('id') ?? 0) + 1;
+            $registrationNo = 'REG-' . date('Y') . '-' . str_pad($nextId, 4, '0', STR_PAD_LEFT);
+        }
+
         $patient = Patient::create([
             'record_date' => $request->record_date,
             'patient_name' => $request->patient_name,
             'age' => $request->age,
             'gender' => $request->gender,
-            'father_husband_name' => $request->guardian_name,
+            'father_husband_name' => $request->guardian_name ?? $request->father_husband_name,
             'rcdho_grade' => $request->rcdho_grade,
             'address' => $request->address,
-            'mobile_no' => $request->mobile,
-            'registration_no' => $request->registration_no,
+            'mobile_no' => $request->mobile ?? $request->mobile_no,
+            'registration_no' => $registrationNo,
         ]);
 
         PatientClinicalRecord::create([
             "patient_id" => $patient->id,
             'newly_detected' => $request->newly_detected,
-            'duration_of_diabetes' => $request->diabetes_duration,
-            'start_insulin_date' => $request->insulin_start_date,
-            'stop_insulin_date' => $request->insulin_stop_date,
+            'duration_of_diabetes' => $request->diabetes_duration ?? $request->duration_of_diabetes,
+            'start_insulin_date' => $request->insulin_start_date ?? $request->start_insulin_date,
+            'stop_insulin_date' => $request->insulin_stop_date ?? $request->stop_insulin_date,
             'attachment' => $attachmentPath,
-            'height_cm' => $request->height,
-            'weight_kg' => $request->weight,
+            'height_cm' => $request->height ?? $request->height_cm,
+            'weight_kg' => $request->weight ?? $request->weight_kg,
             'bmi' => $request->bmi,
-            'temprature' => $request->temprature,
+            'temprature' => $request->temprature ?? $request->temperature,
             'waist_height_ratio' => $request->waist_height_ratio,
             'bmi_group' => $request->bmi_group,
-            'waist_cm' => $request->waist,
-            'hip_cm' => $request->hip,
+            'waist_cm' => $request->waist ?? $request->waist_cm,
+            'hip_cm' => $request->hip ?? $request->hip_cm,
             'waist_hip_ratio' => $request->waist_hip_ratio,
             'social_class' => $request->social_class,
             'income_class' => $request->income_class,
             'education' => $request->education,
             'physical_activity' => $request->physical_activity,
-            'veg_nonveg' => $request->veg_nonveg,
+            'veg_nonveg' => $request->veg_nonveg ?? $request->diet_type,
             'htn' => $request->htn,
             'sbp' => $request->sbp,
             'dbp' => $request->dbp,
-            'hb_percent' => $request->hb,
+            'hb_percent' => $request->hb ?? $request->hb_percent,
             'plt' => $request->plt,
             'mcv' => $request->mcv,
             'creatinine' => $request->creatinine,
@@ -208,9 +240,9 @@ class PatientController extends Controller
             'acr' => $request->acr,
             'uric_acid' => $request->uric_acid,
             'urine_cast_cell' => $request->urine_cast_cell,
-            'na_plus' => $request->sodium,
-            'k_plus' => $request->potassium,
-            'i_calcium' => $request->ionized_calcium,
+            'na_plus' => $request->sodium ?? $request->na_plus,
+            'k_plus' => $request->potassium ?? $request->k_plus,
+            'i_calcium' => $request->ionized_calcium ?? $request->i_calcium,
             'phosphorus' => $request->phosphorus,
             'sgpt' => $request->sgpt,
             'sgot' => $request->sgot,
@@ -222,8 +254,8 @@ class PatientController extends Controller
             'fib_scan' => $request->fib_scan,
             'median_stiffness' => $request->median_stiffness,
             'usg' => $request->usg,
-            'chol' => $request->cholesterol,
-            'tg' => $request->tg,
+            'chol' => $request->cholesterol ?? $request->chol,
+            'tg' => $request->triglycerides ?? $request->tg,
             'hdl' => $request->hdl,
             'ldl' => $request->ldl,
             'bsf' => $request->bsf,
@@ -234,11 +266,11 @@ class PatientController extends Controller
             't4' => $request->t4,
             'vitamin_d25' => $request->vitamin_d25,
             'vitamin_b12' => $request->vitamin_b12,
-            's_cortisol' => $request->cortisol,
-            'dex_skip_test' => $request->dex_suppression_test,
-            'ophthalmic_ex' => $request->ophthalmic_exam,
-            'foot_ev' => $request->foot_exam,
-            'car_echo_ev' => $request->echo_exam,
+            's_cortisol' => $request->cortisol ?? $request->s_cortisol,
+            'dex_skip_test' => $request->dex_suppression_test ?? $request->dex_skip_test,
+            'ophthalmic_ex' => $request->ophthalmic_exam ?? $request->ophthalmic_ex,
+            'foot_ev' => $request->foot_exam ?? $request->foot_ev,
+            'car_echo_ev' => $request->echo_exam ?? $request->car_echo_ev,
             'diabetes' => $diabetes,
             'hypertension' => $hypertension,
             'obesity' => $obesity,
@@ -324,10 +356,12 @@ class PatientController extends Controller
             'record_date' => 'required|date',
             'patient_name' => 'required|string|max:255',
             'age' => 'nullable|integer|min:0|max:150',
-            'gender' => 'nullable|in:Male,Female,Other',
+            'gender' => 'nullable|string|max:50',
+            'guardian_name' => 'nullable|string|max:255',
             'father_husband_name' => 'nullable|string|max:255',
             'rcdho_grade' => 'nullable|string|max:50',
             'address' => 'nullable|string|max:500',
+            'mobile' => 'nullable|string|max:20',
             'mobile_no' => 'nullable|string|max:20',
 
             'registration_no' => [
@@ -337,30 +371,40 @@ class PatientController extends Controller
                 Rule::unique('patients', 'registration_no')->ignore($patient->id),
             ],
 
-            'newly_detected' => 'nullable|in:Yes,No',
+            'has_diabetes' => 'nullable',
+            'newly_detected' => 'nullable|string|max:50',
+            'diabetes_duration' => 'nullable|string|max:50',
             'duration_of_diabetes' => 'nullable|string|max:50',
+            'insulin_start_date' => 'nullable|date',
             'start_insulin_date' => 'nullable|date',
-            'stop_insulin_date' => 'nullable|date|after_or_equal:start_insulin_date',
-            'attachment' => 'nullable|file',
+            'insulin_stop_date' => 'nullable|date',
+            'stop_insulin_date' => 'nullable|date',
+            'attachment' => 'nullable|file|max:10240',
 
+            'height' => 'nullable|numeric|min:0|max:300',
             'height_cm' => 'nullable|numeric|min:0|max:300',
+            'weight' => 'nullable|numeric|min:0|max:500',
             'weight_kg' => 'nullable|numeric|min:0|max:500',
             'bmi' => 'nullable|numeric|min:0|max:100',
             'waist_height_ratio' => 'nullable|numeric|min:0|max:5',
-            'bmi_group' => 'nullable|in:Normal,Overweight,Obese',
+            'bmi_group' => 'nullable|string|max:50',
+            'waist' => 'nullable|numeric|min:0|max:300',
             'waist_cm' => 'nullable|numeric|min:0|max:300',
+            'hip' => 'nullable|numeric|min:0|max:300',
             'hip_cm' => 'nullable|numeric|min:0|max:300',
             'waist_hip_ratio' => 'nullable|numeric|min:0|max:5',
 
-            'social_class' => 'nullable|in:Upper,Middle,Lower',
-            'income_class' => 'nullable|in:High,Medium,Low',
-            'education' => 'nullable|in:Graduate,Post-grad,School',
-            'physical_activity' => 'nullable|in:Sedentary,Moderate,Active',
-            'veg_nonveg' => 'nullable|in:Vegetarian,Non-vegetarian,Vegan',
+            'social_class' => 'nullable|string|max:50',
+            'income_class' => 'nullable|string|max:50',
+            'education' => 'nullable|string|max:100',
+            'physical_activity' => 'nullable|string|max:50',
+            'diet_type' => 'nullable|string|max:50',
+            'veg_nonveg' => 'nullable|string|max:50',
 
-            'htn' => 'nullable|in:Yes,No',
+            'htn' => 'nullable|string|max:50',
             'sbp' => 'nullable|numeric|min:0|max:300',
             'dbp' => 'nullable|numeric|min:0|max:200',
+            'hb' => 'nullable|string|max:20',
             'hb_percent' => 'nullable|string|max:20',
             'plt' => 'nullable|string|max:20',
             'mcv' => 'nullable|string|max:20',
@@ -368,23 +412,28 @@ class PatientController extends Controller
             'egfr' => 'nullable|string|max:20',
             'acr' => 'nullable|string|max:20',
             'uric_acid' => 'nullable|string|max:20',
-            'urine_cast_cell' => 'nullable|string|max:20',
+            'urine_cast_cell' => 'nullable|string|max:50',
+            'sodium' => 'nullable|string|max:20',
             'na_plus' => 'nullable|string|max:20',
+            'potassium' => 'nullable|string|max:20',
             'k_plus' => 'nullable|string|max:20',
+            'ionized_calcium' => 'nullable|string|max:20',
             'i_calcium' => 'nullable|string|max:20',
             'phosphorus' => 'nullable|string|max:20',
             'sgpt' => 'nullable|string|max:20',
             'sgot' => 'nullable|string|max:20',
             'alkp' => 'nullable|string|max:20',
-            'hiv' => 'nullable|in:Negative,Positive',
-            'hbsag' => 'nullable|in:Negative,Positive',
-            'hcv' => 'nullable|in:Negative,Positive',
+            'hiv' => 'nullable|string|max:50',
+            'hbsag' => 'nullable|string|max:50',
+            'hcv' => 'nullable|string|max:50',
             'fib_score' => 'nullable|string|max:20',
-            'fib_scan' => 'nullable|string|max:20',
+            'fib_scan' => 'nullable|string|max:50',
             'median_stiffness' => 'nullable|string|max:50',
-            'usg' => 'nullable|string|max:255',
+            'usg' => 'nullable|string|max:500',
             'chol' => 'nullable|string|max:20',
+            'cholesterol' => 'nullable|string|max:20',
             'tg' => 'nullable|string|max:20',
+            'triglycerides' => 'nullable|string|max:20',
             'hdl' => 'nullable|string|max:20',
             'ldl' => 'nullable|string|max:20',
             'bsf' => 'nullable|string|max:20',
@@ -396,48 +445,75 @@ class PatientController extends Controller
             'vitamin_d25' => 'nullable|string|max:20',
             'vitamin_b12' => 'nullable|string|max:20',
             's_cortisol' => 'nullable|string|max:20',
-            'dex_skip_test' => 'nullable|string|max:50',
-            'temprature' => 'nullable|string',
+            'cortisol' => 'nullable|string|max:20',
+            'dex_skip_test' => 'nullable|string|max:100',
+            'dex_suppression_test' => 'nullable|string|max:100',
+            'temprature' => 'nullable|string|max:50',
+            'temperature' => 'nullable|string|max:50',
             'ophthalmic_ex' => 'nullable|string|max:500',
+            'ophthalmic_exam' => 'nullable|string|max:500',
             'foot_ev' => 'nullable|string|max:500',
+            'foot_exam' => 'nullable|string|max:500',
             'car_echo_ev' => 'nullable|string|max:500',
+            'echo_exam' => 'nullable|string|max:500',
         ]);
 
         if ($validator->fails()) {
             return back()->withErrors($validator)->withInput();
         }
 
-
         $diabetes = "Normal";
         $hypertension = "Normal";
         $infection = "Normal";
         $obesity = "Normal";
 
-        if ($request->hba1c >= 6.5 || $request->fbs >= 126 || $request->rbs >= 200) {
+        $hba1c = $request->hba1c;
+        $bsf = $request->bsf ?? $request->fbs;
+        $bspp = $request->bspp ?? $request->rbs;
+
+        if (
+            $request->has_diabetes ||
+            $request->newly_detected === 'Yes' ||
+            ($request->filled('hba1c') && (float)$hba1c >= 6.5) ||
+            ($request->filled('bsf') && (float)$bsf >= 126) ||
+            ($request->filled('fbs') && (float)$bsf >= 126) ||
+            ($request->filled('bspp') && (float)$bspp >= 200) ||
+            ($request->filled('rbs') && (float)$bspp >= 200)
+        ) {
             $diabetes = "Diabetes";
         }
 
-        if ($request->sbp >= 130 || $request->dbp >= 90) {
+        if (
+            $request->htn === 'Yes' ||
+            ($request->filled('sbp') && (float)$request->sbp >= 130) ||
+            ($request->filled('dbp') && (float)$request->dbp >= 90)
+        ) {
             $hypertension = "Hypertension";
         }
 
-        if ($request->temprature >= 99.4 || $request->wbc > 11000 || $request->crp > 10) {
+        $temperatureVal = $request->temprature ?? $request->temperature;
+        if (
+            ($request->filled('temprature') && (float)$temperatureVal >= 99.4) ||
+            ($request->filled('temperature') && (float)$temperatureVal >= 99.4) ||
+            ($request->filled('wbc') && (float)$request->wbc > 11000) ||
+            ($request->filled('crp') && (float)$request->crp > 10)
+        ) {
             $infection = "Infection";
         }
 
+        $waistVal = $request->waist ?? $request->waist_cm;
+        $genderVal = $request->gender ?? $patient->gender ?? null;
         if (
-            $request->bmi >= 25 ||
-            ($request->gender == 'Male' && $request->waist_cm > 90) ||
-            ($request->gender == 'Female' && $request->waist_cm > 80)
+            ($request->filled('bmi') && (float)$request->bmi >= 25) ||
+            ($genderVal === 'Male' && !empty($waistVal) && (float)$waistVal > 90) ||
+            ($genderVal === 'Female' && !empty($waistVal) && (float)$waistVal > 80)
         ) {
             $obesity = "Obesity";
         }
 
-
         $attachmentPath = $record?->attachment;
 
         if ($request->hasFile('attachment')) {
-
             if ($attachmentPath && Storage::disk('public')->exists($attachmentPath)) {
                 Storage::disk('public')->delete($attachmentPath);
             }
@@ -447,19 +523,17 @@ class PatientController extends Controller
             $attachmentPath = $file->storeAs('patient-attachments', $filename, 'public');
         }
 
-
         $patient->update([
             'record_date' => $request->record_date,
             'patient_name' => $request->patient_name,
             'age' => $request->age,
             'gender' => $request->gender,
-            'father_husband_name' => $request->guardian_name,
+            'father_husband_name' => $request->guardian_name ?? $request->father_husband_name,
             'rcdho_grade' => $request->rcdho_grade,
             'address' => $request->address,
-            'mobile_no' => $request->mobile,
-            'registration_no' => $request->registration_no,
+            'mobile_no' => $request->mobile ?? $request->mobile_no,
+            'registration_no' => $request->registration_no ?? $patient->registration_no,
         ]);
-
 
         $matchAttributes = ['patient_id' => $patient->id];
         if (!empty($record?->id)) {
@@ -470,28 +544,28 @@ class PatientController extends Controller
             $matchAttributes,
             [
                 'newly_detected' => $request->newly_detected,
-                'duration_of_diabetes' => $request->diabetes_duration,
-                'start_insulin_date' => $request->insulin_start_date,
-                'stop_insulin_date' => $request->insulin_stop_date,
+                'duration_of_diabetes' => $request->diabetes_duration ?? $request->duration_of_diabetes,
+                'start_insulin_date' => $request->insulin_start_date ?? $request->start_insulin_date,
+                'stop_insulin_date' => $request->insulin_stop_date ?? $request->stop_insulin_date,
                 'attachment' => $attachmentPath,
-                'height_cm' => $request->height,
-                'weight_kg' => $request->weight,
+                'height_cm' => $request->height ?? $request->height_cm,
+                'weight_kg' => $request->weight ?? $request->weight_kg,
                 'bmi' => $request->bmi,
-                'temprature' => $request->temprature,
+                'temprature' => $request->temprature ?? $request->temperature,
                 'waist_height_ratio' => $request->waist_height_ratio,
                 'bmi_group' => $request->bmi_group,
-                'waist_cm' => $request->waist,
-                'hip_cm' => $request->hip,
+                'waist_cm' => $request->waist ?? $request->waist_cm,
+                'hip_cm' => $request->hip ?? $request->hip_cm,
                 'waist_hip_ratio' => $request->waist_hip_ratio,
                 'social_class' => $request->social_class,
                 'income_class' => $request->income_class,
                 'education' => $request->education,
                 'physical_activity' => $request->physical_activity,
-                'veg_nonveg' => $request->veg_nonveg,
+                'veg_nonveg' => $request->veg_nonveg ?? $request->diet_type,
                 'htn' => $request->htn,
                 'sbp' => $request->sbp,
                 'dbp' => $request->dbp,
-                'hb_percent' => $request->hb,
+                'hb_percent' => $request->hb ?? $request->hb_percent,
                 'plt' => $request->plt,
                 'mcv' => $request->mcv,
                 'creatinine' => $request->creatinine,
@@ -499,9 +573,9 @@ class PatientController extends Controller
                 'acr' => $request->acr,
                 'uric_acid' => $request->uric_acid,
                 'urine_cast_cell' => $request->urine_cast_cell,
-                'na_plus' => $request->sodium,
-                'k_plus' => $request->potassium,
-                'i_calcium' => $request->ionized_calcium,
+                'na_plus' => $request->sodium ?? $request->na_plus,
+                'k_plus' => $request->potassium ?? $request->k_plus,
+                'i_calcium' => $request->ionized_calcium ?? $request->i_calcium,
                 'phosphorus' => $request->phosphorus,
                 'sgpt' => $request->sgpt,
                 'sgot' => $request->sgot,
@@ -513,8 +587,8 @@ class PatientController extends Controller
                 'fib_scan' => $request->fib_scan,
                 'median_stiffness' => $request->median_stiffness,
                 'usg' => $request->usg,
-                'chol' => $request->cholesterol,
-                'tg' => $request->tg,
+                'chol' => $request->cholesterol ?? $request->chol,
+                'tg' => $request->triglycerides ?? $request->tg,
                 'hdl' => $request->hdl,
                 'ldl' => $request->ldl,
                 'bsf' => $request->bsf,
@@ -525,11 +599,11 @@ class PatientController extends Controller
                 't4' => $request->t4,
                 'vitamin_d25' => $request->vitamin_d25,
                 'vitamin_b12' => $request->vitamin_b12,
-                's_cortisol' => $request->cortisol,
-                'dex_skip_test' => $request->dex_suppression_test,
-                'ophthalmic_ex' => $request->ophthalmic_exam,
-                'foot_ev' => $request->foot_exam,
-                'car_echo_ev' => $request->echo_exam,
+                's_cortisol' => $request->cortisol ?? $request->s_cortisol,
+                'dex_skip_test' => $request->dex_suppression_test ?? $request->dex_skip_test,
+                'ophthalmic_ex' => $request->ophthalmic_exam ?? $request->ophthalmic_ex,
+                'foot_ev' => $request->foot_exam ?? $request->foot_ev,
+                'car_echo_ev' => $request->echo_exam ?? $request->car_echo_ev,
                 'diabetes' => $diabetes,
                 'hypertension' => $hypertension,
                 'obesity' => $obesity,
@@ -611,32 +685,41 @@ class PatientController extends Controller
 
     public function createNewRecord(Request $request, $id)
     {
-
         $request->validate([
-            'newly_detected' => 'nullable|in:Yes,No',
+            'has_diabetes' => 'nullable',
+            'newly_detected' => 'nullable|string|max:50',
+            'diabetes_duration' => 'nullable|string|max:50',
             'duration_of_diabetes' => 'nullable|string|max:50',
+            'insulin_start_date' => 'nullable|date',
             'start_insulin_date' => 'nullable|date',
-            'stop_insulin_date' => 'nullable|date|after_or_equal:start_insulin_date',
-            'attachment' => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:5120',
+            'insulin_stop_date' => 'nullable|date',
+            'stop_insulin_date' => 'nullable|date',
+            'attachment' => 'nullable|file|max:10240',
 
-
+            'height' => 'nullable|numeric|min:0|max:300',
             'height_cm' => 'nullable|numeric|min:0|max:300',
+            'weight' => 'nullable|numeric|min:0|max:500',
             'weight_kg' => 'nullable|numeric|min:0|max:500',
             'bmi' => 'nullable|numeric|min:0|max:100',
             'waist_height_ratio' => 'nullable|numeric|min:0|max:5',
-            'bmi_group' => 'nullable|in:Normal,Overweight,Obese',
+            'bmi_group' => 'nullable|string|max:50',
+            'waist' => 'nullable|numeric|min:0|max:300',
             'waist_cm' => 'nullable|numeric|min:0|max:300',
+            'hip' => 'nullable|numeric|min:0|max:300',
             'hip_cm' => 'nullable|numeric|min:0|max:300',
             'waist_hip_ratio' => 'nullable|numeric|min:0|max:5',
-            'social_class' => 'nullable|in:Upper,Middle,Lower',
-            'income_class' => 'nullable|in:High,Medium,Low',
-            'education' => 'nullable|in:Graduate,Post-grad,School',
-            'physical_activity' => 'nullable|in:Sedentary,Moderate,Active',
-            'veg_nonveg' => 'nullable|in:Vegetarian,Non-vegetarian,Vegan',
 
-            'htn' => 'nullable|in:Yes,No',
+            'social_class' => 'nullable|string|max:50',
+            'income_class' => 'nullable|string|max:50',
+            'education' => 'nullable|string|max:100',
+            'physical_activity' => 'nullable|string|max:50',
+            'diet_type' => 'nullable|string|max:50',
+            'veg_nonveg' => 'nullable|string|max:50',
+
+            'htn' => 'nullable|string|max:50',
             'sbp' => 'nullable|numeric|min:0|max:300',
             'dbp' => 'nullable|numeric|min:0|max:200',
+            'hb' => 'nullable|string|max:20',
             'hb_percent' => 'nullable|string|max:20',
             'plt' => 'nullable|string|max:20',
             'mcv' => 'nullable|string|max:20',
@@ -644,23 +727,28 @@ class PatientController extends Controller
             'egfr' => 'nullable|string|max:20',
             'acr' => 'nullable|string|max:20',
             'uric_acid' => 'nullable|string|max:20',
-            'urine_cast_cell' => 'nullable|string|max:20',
+            'urine_cast_cell' => 'nullable|string|max:50',
+            'sodium' => 'nullable|string|max:20',
             'na_plus' => 'nullable|string|max:20',
+            'potassium' => 'nullable|string|max:20',
             'k_plus' => 'nullable|string|max:20',
+            'ionized_calcium' => 'nullable|string|max:20',
             'i_calcium' => 'nullable|string|max:20',
             'phosphorus' => 'nullable|string|max:20',
             'sgpt' => 'nullable|string|max:20',
             'sgot' => 'nullable|string|max:20',
             'alkp' => 'nullable|string|max:20',
-            'hiv' => 'nullable|in:Negative,Positive',
-            'hbsag' => 'nullable|in:Negative,Positive',
-            'hcv' => 'nullable|in:Negative,Positive',
+            'hiv' => 'nullable|string|max:50',
+            'hbsag' => 'nullable|string|max:50',
+            'hcv' => 'nullable|string|max:50',
             'fib_score' => 'nullable|string|max:20',
-            'fib_scan' => 'nullable|string|max:20',
+            'fib_scan' => 'nullable|string|max:50',
             'median_stiffness' => 'nullable|string|max:50',
-            'usg' => 'nullable|string|max:255',
+            'usg' => 'nullable|string|max:500',
             'chol' => 'nullable|string|max:20',
+            'cholesterol' => 'nullable|string|max:20',
             'tg' => 'nullable|string|max:20',
+            'triglycerides' => 'nullable|string|max:20',
             'hdl' => 'nullable|string|max:20',
             'ldl' => 'nullable|string|max:20',
             'bsf' => 'nullable|string|max:20',
@@ -672,20 +760,21 @@ class PatientController extends Controller
             'vitamin_d25' => 'nullable|string|max:20',
             'vitamin_b12' => 'nullable|string|max:20',
             's_cortisol' => 'nullable|string|max:20',
-            'dex_skip_test' => 'nullable|string|max:50',
+            'cortisol' => 'nullable|string|max:20',
+            'dex_skip_test' => 'nullable|string|max:100',
+            'dex_suppression_test' => 'nullable|string|max:100',
+            'temprature' => 'nullable|string|max:50',
+            'temperature' => 'nullable|string|max:50',
             'ophthalmic_ex' => 'nullable|string|max:500',
+            'ophthalmic_exam' => 'nullable|string|max:500',
             'foot_ev' => 'nullable|string|max:500',
+            'foot_exam' => 'nullable|string|max:500',
             'car_echo_ev' => 'nullable|string|max:500',
+            'echo_exam' => 'nullable|string|max:500',
         ]);
-        $results = [
-            'HbA1c'       => checkReport('hba1c', $request->hba1c),
-            'SBP'         => checkReport('sbp', $request->sbp),
-            'DBP'         => checkReport('dbp', $request->dbp),
-            'BMI'         => checkReport('bmi', $request->bmi),
-            'Temperature' => checkReport('temperature', $request->temperature),
-        ];
 
         $patientId = $request->patient_id;
+        $patient = null;
         if (!$patientId) {
             $patient = Patient::find($id);
             if ($patient) {
@@ -693,7 +782,59 @@ class PatientController extends Controller
             } else {
                 $rec = PatientClinicalRecord::find($id);
                 $patientId = $rec?->patient_id;
+                $patient = $rec?->patient;
             }
+        } else {
+            $patient = Patient::find($patientId);
+        }
+
+        $diabetes = "Normal";
+        $hypertension = "Normal";
+        $infection = "Normal";
+        $obesity = "Normal";
+
+        $hba1c = $request->hba1c;
+        $bsf = $request->bsf ?? $request->fbs;
+        $bspp = $request->bspp ?? $request->rbs;
+
+        if (
+            $request->has_diabetes ||
+            $request->newly_detected === 'Yes' ||
+            ($request->filled('hba1c') && (float)$hba1c >= 6.5) ||
+            ($request->filled('bsf') && (float)$bsf >= 126) ||
+            ($request->filled('fbs') && (float)$bsf >= 126) ||
+            ($request->filled('bspp') && (float)$bspp >= 200) ||
+            ($request->filled('rbs') && (float)$bspp >= 200)
+        ) {
+            $diabetes = "Diabetes";
+        }
+
+        if (
+            $request->htn === 'Yes' ||
+            ($request->filled('sbp') && (float)$request->sbp >= 130) ||
+            ($request->filled('dbp') && (float)$request->dbp >= 90)
+        ) {
+            $hypertension = "Hypertension";
+        }
+
+        $temperatureVal = $request->temprature ?? $request->temperature;
+        if (
+            ($request->filled('temprature') && (float)$temperatureVal >= 99.4) ||
+            ($request->filled('temperature') && (float)$temperatureVal >= 99.4) ||
+            ($request->filled('wbc') && (float)$request->wbc > 11000) ||
+            ($request->filled('crp') && (float)$request->crp > 10)
+        ) {
+            $infection = "Infection";
+        }
+
+        $waistVal = $request->waist ?? $request->waist_cm;
+        $genderVal = $request->gender ?? $patient?->gender ?? null;
+        if (
+            ($request->filled('bmi') && (float)$request->bmi >= 25) ||
+            ($genderVal === 'Male' && !empty($waistVal) && (float)$waistVal > 90) ||
+            ($genderVal === 'Female' && !empty($waistVal) && (float)$waistVal > 80)
+        ) {
+            $obesity = "Obesity";
         }
 
         $attachmentPath = null;
@@ -702,32 +843,32 @@ class PatientController extends Controller
             $filename = time() . '_' . $file->getClientOriginalName();
             $attachmentPath = $file->storeAs('patient-attachments', $filename, 'public');
         }
+
         PatientClinicalRecord::create([
             "patient_id" => $patientId,
             'newly_detected' => $request->newly_detected,
-            'duration_of_diabetes' => $request->duration_of_diabetes,
-            'start_insulin_date' => $request->start_insulin_date,
-            'stop_insulin_date' => $request->stop_insulin_date,
+            'duration_of_diabetes' => $request->diabetes_duration ?? $request->duration_of_diabetes,
+            'start_insulin_date' => $request->insulin_start_date ?? $request->start_insulin_date,
+            'stop_insulin_date' => $request->insulin_stop_date ?? $request->stop_insulin_date,
             'attachment' => $attachmentPath,
-            'height_cm' => $request->height_cm,
-            'weight_kg' => $request->weight_kg,
+            'height_cm' => $request->height ?? $request->height_cm,
+            'weight_kg' => $request->weight ?? $request->weight_kg,
             'bmi' => $request->bmi,
+            'temprature' => $request->temprature ?? $request->temperature,
             'waist_height_ratio' => $request->waist_height_ratio,
             'bmi_group' => $request->bmi_group,
-            'waist_cm' => $request->waist_cm,
-            'hip_cm' => $request->hip_cm,
+            'waist_cm' => $request->waist ?? $request->waist_cm,
+            'hip_cm' => $request->hip ?? $request->hip_cm,
             'waist_hip_ratio' => $request->waist_hip_ratio,
-
             'social_class' => $request->social_class,
             'income_class' => $request->income_class,
             'education' => $request->education,
             'physical_activity' => $request->physical_activity,
-            'veg_nonveg' => $request->veg_nonveg,
-
+            'veg_nonveg' => $request->veg_nonveg ?? $request->diet_type,
             'htn' => $request->htn,
             'sbp' => $request->sbp,
             'dbp' => $request->dbp,
-            'hb_percent' => $request->hb,
+            'hb_percent' => $request->hb ?? $request->hb_percent,
             'plt' => $request->plt,
             'mcv' => $request->mcv,
             'creatinine' => $request->creatinine,
@@ -735,9 +876,9 @@ class PatientController extends Controller
             'acr' => $request->acr,
             'uric_acid' => $request->uric_acid,
             'urine_cast_cell' => $request->urine_cast_cell,
-            'na_plus' => $request->sodium,
-            'k_plus' => $request->potassium,
-            'i_calcium' => $request->ionized_calcium,
+            'na_plus' => $request->sodium ?? $request->na_plus,
+            'k_plus' => $request->potassium ?? $request->k_plus,
+            'i_calcium' => $request->ionized_calcium ?? $request->i_calcium,
             'phosphorus' => $request->phosphorus,
             'sgpt' => $request->sgpt,
             'sgot' => $request->sgot,
@@ -749,8 +890,8 @@ class PatientController extends Controller
             'fib_scan' => $request->fib_scan,
             'median_stiffness' => $request->median_stiffness,
             'usg' => $request->usg,
-            'chol' => $request->cholesterol,
-            'tg' => $request->tg,
+            'chol' => $request->cholesterol ?? $request->chol,
+            'tg' => $request->triglycerides ?? $request->tg,
             'hdl' => $request->hdl,
             'ldl' => $request->ldl,
             'bsf' => $request->bsf,
@@ -761,11 +902,15 @@ class PatientController extends Controller
             't4' => $request->t4,
             'vitamin_d25' => $request->vitamin_d25,
             'vitamin_b12' => $request->vitamin_b12,
-            's_cortisol' => $request->cortisol,
-            'dex_skip_test' => $request->dex_suppression_test,
-            'ophthalmic_ex' => $request->ophthalmic_exam,
-            'foot_ev' => $request->foot_exam,
-            'car_echo_ev' => $request->echo_exam,
+            's_cortisol' => $request->cortisol ?? $request->s_cortisol,
+            'dex_skip_test' => $request->dex_suppression_test ?? $request->dex_skip_test,
+            'ophthalmic_ex' => $request->ophthalmic_exam ?? $request->ophthalmic_ex,
+            'foot_ev' => $request->foot_exam ?? $request->foot_ev,
+            'car_echo_ev' => $request->echo_exam ?? $request->car_echo_ev,
+            'diabetes' => $diabetes,
+            'hypertension' => $hypertension,
+            'obesity' => $obesity,
+            'infection' => $infection,
         ]);
 
         return redirect()->route('list.patient')
@@ -1554,6 +1699,24 @@ class PatientController extends Controller
 
             fclose($handle);
         }, 200, $headers);
+    }
+
+    public function viewAttachment($id)
+    {
+        $record = PatientClinicalRecord::find($id);
+
+        if (!$record) {
+            $record = PatientClinicalRecord::where('patient_id', $id)
+                ->whereNotNull('attachment')
+                ->latest('id')
+                ->first();
+        }
+
+        if (!$record || empty($record->attachment) || !Storage::disk('public')->exists($record->attachment)) {
+            return back()->with('error', 'The requested attachment file was not found on the server.');
+        }
+
+        return Storage::disk('public')->response($record->attachment);
     }
 }
 

@@ -40,6 +40,7 @@ Route::prefix('admin')->middleware(['super_admin'])->group(function () {
         Route::delete('/delete/patient/{id}', 'destroy')->name('patient.delete');
         Route::get('/analytics/disease','diseaseAnalytics')->name('analytics.disease');
         Route::get('/analytics/disease/export', 'exportDiseaseAnalytics')->name('analytics.disease.export');
+        Route::get('/patient/attachment/{id}', 'viewAttachment')->name('patient.attachment');
     });
 
     Route::controller(ReportController::class)->group(function () {

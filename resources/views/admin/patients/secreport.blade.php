@@ -193,44 +193,80 @@
                 </div>
             </div>
 
+            @php
+                $hasDiabetes = (
+                    old('has_diabetes') == '1' ||
+                    old('newly_detected') == 'Yes' ||
+                    !empty(old('diabetes_duration')) ||
+                    !empty(old('insulin_start_date')) ||
+                    !empty(old('insulin_stop_date')) ||
+                    ($data->newly_detected ?? 'No') == 'Yes' ||
+                    !empty($data->duration_of_diabetes) ||
+                    !empty($data->start_insulin_date) ||
+                    !empty($data->stop_insulin_date) ||
+                    ($data->diabetes ?? '') == 'Diabetes'
+                );
+            @endphp
+
             <!-- === SECTION 2: Diabetes & Insulin === -->
             <div>
-                <div class="flex items-center gap-2 text-[#124263] font-semibold text-base mb-3">
-                    <i class="fas fa-syringe text-[#1f6e96]"></i>
-                    <span>Diabetes & Insulin</span>
+                <div class="flex items-center gap-2.5 text-[#124263] font-semibold text-base mb-3">
+                    <input type="checkbox" id="diabetes_toggle" name="has_diabetes" value="1" {{ $hasDiabetes ? 'checked' : '' }}
+                        class="w-4 h-4 text-[#1f6e96] rounded border-[#94a3b8] focus:ring-[#1f6e96] cursor-pointer">
+                    <label for="diabetes_toggle" class="cursor-pointer flex items-center gap-2 text-[#124263] font-semibold text-base select-none">
+                        <i class="fas fa-syringe text-[#1f6e96]"></i>
+                        <span>Diabetes & Insulin</span>
+                    </label>
                     <span class="h-[2px] flex-1 bg-gradient-to-r from-[#d3e2f0] to-transparent ml-2"></span>
                 </div>
 
-                <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
-                    <div><label class="block text-xs font-semibold uppercase text-[#2f5a77] mb-1"><i
-                                class="far fa-check-circle"></i> Newly detected</label>
-                        <select name="newly_detected"
-                            class="w-full rounded-xl border border-[#d3dfea] px-4 py-2.5 text-sm bg-[#fafdff] input-focus">
-                            <option value="No" {{ old('newly_detected') == 'No' ? 'selected' : '' }}>No</option>
-                            <option value="Yes" {{ old('newly_detected') == 'Yes' ? 'selected' : '' }}>Yes</option>
-                        </select>
-                    </div>
-                    <div><label class="block text-xs font-semibold uppercase text-[#2f5a77] mb-1"><i
-                                class="far fa-clock"></i> Duration of Diabetes</label>
-                        <input type="text" name="diabetes_duration" value="{{ old('diabetes_duration') }}"
-                            placeholder="e.g. 5 yrs"
-                            class="w-full rounded-xl border border-[#d3dfea] px-4 py-2.5 text-sm bg-[#fafdff] input-focus">
-                    </div>
-                    <div><label class="block text-xs font-semibold uppercase text-[#2f5a77] mb-1"><i
-                                class="fas fa-play"></i> START INSULIN DATE</label>
-                        <input type="date" name="insulin_start_date" value="{{ old('insulin_start_date') }}"
-                            class="w-full rounded-xl border border-[#d3dfea] px-4 py-2.5 text-sm bg-[#fafdff] input-focus">
-                    </div>
-                    <div><label class="block text-xs font-semibold uppercase text-[#2f5a77] mb-1"><i
-                                class="fas fa-stop"></i> STOP INSULIN DATE</label>
-                        <input type="date" name="insulin_stop_date" value="{{ old('insulin_stop_date') }}"
-                            class="w-full rounded-xl border border-[#d3dfea] px-4 py-2.5 text-sm bg-[#fafdff] input-focus">
+                <div id="diabetes_fields" class="{{ $hasDiabetes ? '' : 'hidden' }}">
+                    <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
+                        <div><label class="block text-xs font-semibold uppercase text-[#2f5a77] mb-1"><i
+                                    class="far fa-check-circle"></i> Newly detected</label>
+                            <select name="newly_detected"
+                                class="w-full rounded-xl border border-[#d3dfea] px-4 py-2.5 text-sm bg-[#fafdff] input-focus">
+                                <option value="">Select</option>
+                                <option value="No" {{ old('newly_detected', $data->newly_detected ?? '') == 'No' ? 'selected' : '' }}>No</option>
+                                <option value="Yes" {{ old('newly_detected', $data->newly_detected ?? '') == 'Yes' ? 'selected' : '' }}>Yes</option>
+                            </select>
+                        </div>
+                        <div><label class="block text-xs font-semibold uppercase text-[#2f5a77] mb-1"><i
+                                    class="far fa-clock"></i> Duration of Diabetes</label>
+                            <input type="text" name="diabetes_duration" value="{{ old('diabetes_duration', $data->duration_of_diabetes ?? '') }}"
+                                placeholder="e.g. 5 yrs"
+                                class="w-full rounded-xl border border-[#d3dfea] px-4 py-2.5 text-sm bg-[#fafdff] input-focus">
+                        </div>
+                        <div><label class="block text-xs font-semibold uppercase text-[#2f5a77] mb-1"><i
+                                    class="fas fa-play"></i> START INSULIN DATE</label>
+                            <input type="date" name="insulin_start_date" value="{{ old('insulin_start_date', $data->start_insulin_date ?? '') }}"
+                                class="w-full rounded-xl border border-[#d3dfea] px-4 py-2.5 text-sm bg-[#fafdff] input-focus">
+                        </div>
+                        <div><label class="block text-xs font-semibold uppercase text-[#2f5a77] mb-1"><i
+                                    class="fas fa-stop"></i> STOP INSULIN DATE</label>
+                            <input type="date" name="insulin_stop_date" value="{{ old('insulin_stop_date', $data->stop_insulin_date ?? '') }}"
+                                class="w-full rounded-xl border border-[#d3dfea] px-4 py-2.5 text-sm bg-[#fafdff] input-focus">
+                        </div>
                     </div>
                 </div>
-                <!-- ATTACHMENT -->
-                <div class="mt-3">
-                    <label class="block text-xs font-semibold uppercase text-[#2f5a77] mb-1"><i
-                            class="fas fa-paperclip"></i> ATTACHMENT</label>
+            </div>
+
+            <!-- === ATTACHMENT === -->
+            <div>
+                <div class="flex items-center gap-2 text-[#124263] font-semibold text-base mb-3">
+                    <i class="fas fa-paperclip text-[#1f6e96]"></i>
+                    <span>Attachment</span>
+                    <span class="h-[2px] flex-1 bg-gradient-to-r from-[#d3e2f0] to-transparent ml-2"></span>
+                </div>
+                <div>
+                    @if ($data->attachment ?? false)
+                        <div class="mb-2 text-sm text-[#1f6e96]">
+                            <a href="{{ route('patient.attachment', $data->id) }}" target="_blank" class="hover:underline inline-flex items-center gap-1.5 font-medium">
+                                <i class="fas fa-file-pdf text-red-500"></i> Current: {{ basename($data->attachment) }}
+                                <i class="fas fa-external-link-alt text-xs"></i>
+                            </a>
+                        </div>
+                    @endif
                     <input type="file" name="attachment"
                         class="w-full rounded-xl border border-[#d3dfea] px-4 py-2 text-sm bg-[#fafdff] input-focus file:mr-4 file:rounded-full file:border-0 file:bg-[#d7e5f0] file:px-4 file:py-1.5 file:text-sm file:font-medium file:text-[#115073] hover:file:bg-[#c2d8e9]">
                 </div>
@@ -267,6 +303,7 @@
                     <div><label class="block text-xs font-semibold text-[#2f5a77]">BMI Group</label>
                         <select name="bmi_group"
                             class="w-full rounded-xl border border-[#d3dfea] px-3 py-2 text-sm input-focus">
+                            <option value="">Select</option>
                             <option value="Normal" {{ old('bmi_group') == 'Normal' ? 'selected' : '' }}>Normal</option>
                             <option value="Overweight" {{ old('bmi_group') == 'Overweight' ? 'selected' : '' }}>Overweight
                             </option>
@@ -302,6 +339,7 @@
                     <div><label class="block text-xs font-semibold text-[#2f5a77]">Social class</label>
                         <select name="social_class"
                             class="w-full rounded-xl border border-[#d3dfea] px-3 py-2 text-sm input-focus">
+                            <option value="">Select</option>
                             <option value="Upper" {{ old('social_class') == 'Upper' ? 'selected' : '' }}>Upper</option>
                             <option value="Middle" {{ old('social_class') == 'Middle' ? 'selected' : '' }}>Middle</option>
                             <option value="Lower" {{ old('social_class') == 'Lower' ? 'selected' : '' }}>Lower</option>
@@ -310,6 +348,7 @@
                     <div><label class="block text-xs font-semibold text-[#2f5a77]">Income class</label>
                         <select name="income_class"
                             class="w-full rounded-xl border border-[#d3dfea] px-3 py-2 text-sm input-focus">
+                            <option value="">Select</option>
                             <option value="High" {{ old('income_class') == 'High' ? 'selected' : '' }}>High</option>
                             <option value="Medium" {{ old('income_class') == 'Medium' ? 'selected' : '' }}>Medium</option>
                             <option value="Low" {{ old('income_class') == 'Low' ? 'selected' : '' }}>Low</option>
@@ -318,6 +357,7 @@
                     <div><label class="block text-xs font-semibold text-[#2f5a77]">Education</label>
                         <select name="education"
                             class="w-full rounded-xl border border-[#d3dfea] px-3 py-2 text-sm input-focus">
+                            <option value="">Select</option>
                             <option value="Graduate" {{ old('education') == 'Graduate' ? 'selected' : '' }}>Graduate
                             </option>
                             <option value="Post-grad" {{ old('education') == 'Post-grad' ? 'selected' : '' }}>Post-grad
@@ -328,6 +368,7 @@
                     <div><label class="block text-xs font-semibold text-[#2f5a77]">Physical activity</label>
                         <select name="physical_activity"
                             class="w-full rounded-xl border border-[#d3dfea] px-3 py-2 text-sm input-focus">
+                            <option value="">Select</option>
                             <option value="Sedentary" {{ old('physical_activity') == 'Sedentary' ? 'selected' : '' }}>
                                 Sedentary</option>
                             <option value="Moderate" {{ old('physical_activity') == 'Moderate' ? 'selected' : '' }}>Moderate
@@ -339,6 +380,7 @@
                     <div><label class="block text-xs font-semibold text-[#2f5a77]">Veg / Non-veg</label>
                         <select name="diet_type"
                             class="w-full rounded-xl border border-[#d3dfea] px-3 py-2 text-sm input-focus">
+                            <option value="">Select</option>
                             <option value="Vegetarian" {{ old('diet_type') == 'Vegetarian' ? 'selected' : '' }}>Vegetarian
                             </option>
                             <option value="Non-vegetarian" {{ old('diet_type') == 'Non-vegetarian' ? 'selected' : '' }}>
@@ -360,6 +402,7 @@
                     <div><label class="block text-xs font-semibold text-[#2f5a77]">HTN</label>
                         <select name="htn"
                             class="w-full rounded-xl border border-[#d3dfea] px-3 py-2 text-sm input-focus">
+                            <option value="">Select</option>
                             <option value="No" {{ old('htn') == 'No' ? 'selected' : '' }}>No</option>
                             <option value="Yes" {{ old('htn') == 'Yes' ? 'selected' : '' }}>Yes</option>
                         </select>
@@ -437,22 +480,28 @@
                     <div><label class="block text-xs font-semibold text-[#2f5a77]">HIV</label>
                         <select name="hiv"
                             class="w-full rounded-xl border border-[#d3dfea] px-3 py-2 text-sm input-focus">
+                            <option value="">Select</option>
                             <option value="Negative" {{ old('hiv') == 'Negative' ? 'selected' : '' }}>Negative</option>
                             <option value="Positive" {{ old('hiv') == 'Positive' ? 'selected' : '' }}>Positive</option>
+                            <option value="Not Tested" {{ old('hiv') == 'Not Tested' ? 'selected' : '' }}>Not Tested</option>
                         </select>
                     </div>
                     <div><label class="block text-xs font-semibold text-[#2f5a77]">Hbsag</label>
                         <select name="hbsag"
                             class="w-full rounded-xl border border-[#d3dfea] px-3 py-2 text-sm input-focus">
+                            <option value="">Select</option>
                             <option value="Negative" {{ old('hbsag') == 'Negative' ? 'selected' : '' }}>Negative</option>
                             <option value="Positive" {{ old('hbsag') == 'Positive' ? 'selected' : '' }}>Positive</option>
+                            <option value="Not Tested" {{ old('hbsag') == 'Not Tested' ? 'selected' : '' }}>Not Tested</option>
                         </select>
                     </div>
                     <div><label class="block text-xs font-semibold text-[#2f5a77]">HCV</label>
                         <select name="hcv"
                             class="w-full rounded-xl border border-[#d3dfea] px-3 py-2 text-sm input-focus">
+                            <option value="">Select</option>
                             <option value="Negative" {{ old('hcv') == 'Negative' ? 'selected' : '' }}>Negative</option>
                             <option value="Positive" {{ old('hcv') == 'Positive' ? 'selected' : '' }}>Positive</option>
+                            <option value="Not Tested" {{ old('hcv') == 'Not Tested' ? 'selected' : '' }}>Not Tested</option>
                         </select>
                     </div>
                     <div><label class="block text-xs font-semibold text-[#2f5a77]">Fib score</label>
@@ -579,18 +628,19 @@
         </form>
     </div>
 
-    <!-- minimal JS for demo (console log) -->
     <script>
-        (function() {
-            const form = document.getElementById('patientForm');
-            form.addEventListener('submit', function(e) {
-                e.preventDefault();
-                // professional demo: gather data & log
-                const formData = new FormData(form);
-                const entries = Object.fromEntries(formData.entries());
-                console.log('📋 Patient Form Data:', entries);
-                alert('✅ Form submitted (check console for data).');
-            });
-        })();
+        document.addEventListener('DOMContentLoaded', function() {
+            const toggle = document.getElementById('diabetes_toggle');
+            const fields = document.getElementById('diabetes_fields');
+            if (toggle && fields) {
+                toggle.addEventListener('change', function() {
+                    if (this.checked) {
+                        fields.classList.remove('hidden');
+                    } else {
+                        fields.classList.add('hidden');
+                    }
+                });
+            }
+        });
     </script>
 @endsection

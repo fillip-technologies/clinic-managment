@@ -663,7 +663,7 @@
                                     {{ basename($record->attachment) }}
                                 </span>
                             </div>
-                            <a href="{{ asset('storage/' . $record->attachment) }}" target="_blank"
+                            <a href="{{ route('patient.attachment', $record->id) }}" target="_blank"
                                 class="px-3 py-1.5 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold transition flex items-center gap-1 shadow-sm">
                                 <i class="fas fa-external-link-alt text-[10px]"></i> View
                             </a>

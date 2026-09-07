@@ -295,67 +295,96 @@
                     </div>
                 </div>
 
+                @php
+                    $hasDiabetes = (
+                        old('has_diabetes') == '1' ||
+                        old('newly_detected') == 'Yes' ||
+                        !empty(old('diabetes_duration')) ||
+                        !empty(old('insulin_start_date')) ||
+                        !empty(old('insulin_stop_date')) ||
+                        ($record->newly_detected ?? 'No') == 'Yes' ||
+                        !empty($record->duration_of_diabetes) ||
+                        !empty($record->start_insulin_date) ||
+                        !empty($record->stop_insulin_date) ||
+                        ($record->diabetes ?? '') == 'Diabetes'
+                    );
+                @endphp
+
                 <!-- === SECTION 2: Diabetes & Insulin === -->
                 <div>
-                    <div class="flex items-center gap-2 text-[#124263] font-semibold text-base mb-3">
-                        <i class="fas fa-syringe text-[#1f6e96]"></i>
-                        <span>Diabetes & Insulin</span>
+                    <div class="flex items-center gap-2.5 text-[#124263] font-semibold text-base mb-3">
+                        <input type="checkbox" id="diabetes_toggle" name="has_diabetes" value="1" {{ $hasDiabetes ? 'checked' : '' }}
+                            class="w-4 h-4 text-[#1f6e96] rounded border-[#94a3b8] focus:ring-[#1f6e96] cursor-pointer">
+                        <label for="diabetes_toggle" class="cursor-pointer flex items-center gap-2 text-[#124263] font-semibold text-base select-none">
+                            <i class="fas fa-syringe text-[#1f6e96]"></i>
+                            <span>Diabetes & Insulin</span>
+                        </label>
                         <span class="h-[2px] flex-1 bg-gradient-to-r from-[#d3e2f0] to-transparent ml-2"></span>
                     </div>
 
-                    <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
-                        <div>
-                            <label class="block text-xs font-semibold uppercase text-[#2f5a77] mb-1">
-                                <i class="far fa-check-circle"></i> Newly detected
-                            </label>
-                            <select name="newly_detected"
-                                class="w-full rounded-xl border border-[#d3dfea] px-4 py-2.5 text-sm bg-[#fafdff] input-focus">
-                                <option value="No"
-                                    {{ old('newly_detected', $record->newly_detected ?? 'No') == 'No' ? 'selected' : '' }}>
-                                    No</option>
-                                <option value="Yes"
-                                    {{ old('newly_detected', $record->newly_detected ?? 'No') == 'Yes' ? 'selected' : '' }}>
-                                    Yes</option>
-                            </select>
-                        </div>
+                    <div id="diabetes_fields" class="{{ $hasDiabetes ? '' : 'hidden' }}">
+                        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
+                            <div>
+                                <label class="block text-xs font-semibold uppercase text-[#2f5a77] mb-1">
+                                    <i class="far fa-check-circle"></i> Newly detected
+                                </label>
+                                <select name="newly_detected"
+                                    class="w-full rounded-xl border border-[#d3dfea] px-4 py-2.5 text-sm bg-[#fafdff] input-focus">
+                                    <option value="">Select</option>
+                                    <option value="No"
+                                        {{ old('newly_detected', $record->newly_detected ?? '') == 'No' ? 'selected' : '' }}>
+                                        No</option>
+                                    <option value="Yes"
+                                        {{ old('newly_detected', $record->newly_detected ?? '') == 'Yes' ? 'selected' : '' }}>
+                                        Yes</option>
+                                </select>
+                            </div>
 
-                        <div>
-                            <label class="block text-xs font-semibold uppercase text-[#2f5a77] mb-1">
-                                <i class="far fa-clock"></i> Duration of Diabetes
-                            </label>
-                            <input type="text" name="diabetes_duration"
-                                value="{{ old('diabetes_duration', $record->duration_of_diabetes ?? '') }}"
-                                placeholder="e.g. 5 yrs"
-                                class="w-full rounded-xl border border-[#d3dfea] px-4 py-2.5 text-sm bg-[#fafdff] input-focus">
-                        </div>
+                            <div>
+                                <label class="block text-xs font-semibold uppercase text-[#2f5a77] mb-1">
+                                    <i class="far fa-clock"></i> Duration of Diabetes
+                                </label>
+                                <input type="text" name="diabetes_duration"
+                                    value="{{ old('diabetes_duration', $record->duration_of_diabetes ?? '') }}"
+                                    placeholder="e.g. 5 yrs"
+                                    class="w-full rounded-xl border border-[#d3dfea] px-4 py-2.5 text-sm bg-[#fafdff] input-focus">
+                            </div>
 
-                        <div>
-                            <label class="block text-xs font-semibold uppercase text-[#2f5a77] mb-1">
-                                <i class="fas fa-play"></i> START INSULIN DATE
-                            </label>
-                            <input type="date" name="insulin_start_date"
-                                value="{{ old('insulin_start_date', $record->start_insulin_date ?? '') }}"
-                                class="w-full rounded-xl border border-[#d3dfea] px-4 py-2.5 text-sm bg-[#fafdff] input-focus">
-                        </div>
+                            <div>
+                                <label class="block text-xs font-semibold uppercase text-[#2f5a77] mb-1">
+                                    <i class="fas fa-play"></i> START INSULIN DATE
+                                </label>
+                                <input type="date" name="insulin_start_date"
+                                    value="{{ old('insulin_start_date', $record->start_insulin_date ?? '') }}"
+                                    class="w-full rounded-xl border border-[#d3dfea] px-4 py-2.5 text-sm bg-[#fafdff] input-focus">
+                            </div>
 
-                        <div>
-                            <label class="block text-xs font-semibold uppercase text-[#2f5a77] mb-1">
-                                <i class="fas fa-stop"></i> STOP INSULIN DATE
-                            </label>
-                            <input type="date" name="insulin_stop_date"
-                                value="{{ old('insulin_stop_date', $record->stop_insulin_date ?? '') }}"
-                                class="w-full rounded-xl border border-[#d3dfea] px-4 py-2.5 text-sm bg-[#fafdff] input-focus">
+                            <div>
+                                <label class="block text-xs font-semibold uppercase text-[#2f5a77] mb-1">
+                                    <i class="fas fa-stop"></i> STOP INSULIN DATE
+                                </label>
+                                <input type="date" name="insulin_stop_date"
+                                    value="{{ old('insulin_stop_date', $record->stop_insulin_date ?? '') }}"
+                                    class="w-full rounded-xl border border-[#d3dfea] px-4 py-2.5 text-sm bg-[#fafdff] input-focus">
+                            </div>
                         </div>
                     </div>
+                </div>
 
-                    <!-- ATTACHMENT -->
-                    <div class="mt-3">
-                        <label class="block text-xs font-semibold uppercase text-[#2f5a77] mb-1">
-                            <i class="fas fa-paperclip"></i> ATTACHMENT
-                        </label>
+                <!-- === ATTACHMENT === -->
+                <div>
+                    <div class="flex items-center gap-2 text-[#124263] font-semibold text-base mb-3">
+                        <i class="fas fa-paperclip text-[#1f6e96]"></i>
+                        <span>Attachment</span>
+                        <span class="h-[2px] flex-1 bg-gradient-to-r from-[#d3e2f0] to-transparent ml-2"></span>
+                    </div>
+                    <div>
                         @if ($record->attachment ?? false)
                             <div class="mb-2 text-sm text-[#1f6e96]">
-                                <i class="fas fa-file mr-1"></i> Current: {{ $record->attachment }}
+                                <a href="{{ route('patient.attachment', $record->id) }}" target="_blank" class="hover:underline inline-flex items-center gap-1.5 font-medium">
+                                    <i class="fas fa-file-pdf text-red-500"></i> Current: {{ basename($record->attachment) }}
+                                    <i class="fas fa-external-link-alt text-xs"></i>
+                                </a>
                             </div>
                         @endif
                         <input type="file" name="attachment"
@@ -400,6 +429,7 @@
                             <label class="block text-xs font-semibold text-[#2f5a77]">BMI Group</label>
                             <select name="bmi_group"
                                 class="w-full rounded-xl border border-[#d3dfea] px-3 py-2 text-sm input-focus">
+                                <option value="">Select</option>
                                 <option value="Normal"
                                     {{ old('bmi_group', $record->bmi_group ?? '') == 'Normal' ? 'selected' : '' }}>Normal
                                 </option>
@@ -444,6 +474,7 @@
                             <label class="block text-xs font-semibold text-[#2f5a77]">Social class</label>
                             <select name="social_class"
                                 class="w-full rounded-xl border border-[#d3dfea] px-3 py-2 text-sm input-focus">
+                                <option value="">Select</option>
                                 <option value="Upper"
                                     {{ old('social_class', $record->social_class ?? '') == 'Upper' ? 'selected' : '' }}>
                                     Upper</option>
@@ -459,6 +490,7 @@
                             <label class="block text-xs font-semibold text-[#2f5a77]">Income class</label>
                             <select name="income_class"
                                 class="w-full rounded-xl border border-[#d3dfea] px-3 py-2 text-sm input-focus">
+                                <option value="">Select</option>
                                 <option value="High"
                                     {{ old('income_class', $record->income_class ?? '') == 'High' ? 'selected' : '' }}>High
                                 </option>
@@ -474,6 +506,7 @@
                             <label class="block text-xs font-semibold text-[#2f5a77]">Education</label>
                             <select name="education"
                                 class="w-full rounded-xl border border-[#d3dfea] px-3 py-2 text-sm input-focus">
+                                <option value="">Select</option>
                                 <option value="Graduate"
                                     {{ old('education', $record->education ?? '') == 'Graduate' ? 'selected' : '' }}>
                                     Graduate</option>
@@ -489,6 +522,7 @@
                             <label class="block text-xs font-semibold text-[#2f5a77]">Physical activity</label>
                             <select name="physical_activity"
                                 class="w-full rounded-xl border border-[#d3dfea] px-3 py-2 text-sm input-focus">
+                                <option value="">Select</option>
                                 <option value="Sedentary"
                                     {{ old('physical_activity', $record->physical_activity ?? '') == 'Sedentary' ? 'selected' : '' }}>
                                     Sedentary</option>
@@ -504,6 +538,7 @@
                             <label class="block text-xs font-semibold text-[#2f5a77]">Veg / Non-veg</label>
                             <select name="veg_nonveg"
                                 class="w-full rounded-xl border border-[#d3dfea] px-3 py-2 text-sm input-focus">
+                                <option value="">Select</option>
                                 <option value="Vegetarian"
                                     {{ old('veg_nonveg', $record->veg_nonveg ?? '') == 'Vegetarian' ? 'selected' : '' }}>
                                     Vegetarian</option>
@@ -530,9 +565,10 @@
                             <label class="block text-xs font-semibold text-[#2f5a77]">HTN</label>
                             <select name="htn"
                                 class="w-full rounded-xl border border-[#d3dfea] px-3 py-2 text-sm input-focus">
-                                <option value="No" {{ old('htn', $record->htn ?? 'No') == 'No' ? 'selected' : '' }}>No
+                                <option value="">Select</option>
+                                <option value="No" {{ old('htn', $record->htn ?? '') == 'No' ? 'selected' : '' }}>No
                                 </option>
-                                <option value="Yes" {{ old('htn', $record->htn ?? 'No') == 'Yes' ? 'selected' : '' }}>
+                                <option value="Yes" {{ old('htn', $record->htn ?? '') == 'Yes' ? 'selected' : '' }}>
                                     Yes</option>
                             </select>
                         </div>
@@ -642,11 +678,15 @@
                             <label class="block text-xs font-semibold text-[#2f5a77]">HIV</label>
                             <select name="hiv"
                                 class="w-full rounded-xl border border-[#d3dfea] px-3 py-2 text-sm input-focus">
+                                <option value="">Select</option>
                                 <option value="Negative"
-                                    {{ old('hiv', $record->hiv ?? 'Negative') == 'Negative' ? 'selected' : '' }}>Negative
+                                    {{ old('hiv', $record->hiv ?? '') == 'Negative' ? 'selected' : '' }}>Negative
                                 </option>
                                 <option value="Positive"
-                                    {{ old('hiv', $record->hiv ?? 'Negative') == 'Positive' ? 'selected' : '' }}>Positive
+                                    {{ old('hiv', $record->hiv ?? '') == 'Positive' ? 'selected' : '' }}>Positive
+                                </option>
+                                <option value="Not Tested"
+                                    {{ old('hiv', $record->hiv ?? '') == 'Not Tested' ? 'selected' : '' }}>Not Tested
                                 </option>
                             </select>
                         </div>
@@ -654,23 +694,31 @@
                             <label class="block text-xs font-semibold text-[#2f5a77]">Hbsag</label>
                             <select name="hbsag"
                                 class="w-full rounded-xl border border-[#d3dfea] px-3 py-2 text-sm input-focus">
+                                <option value="">Select</option>
                                 <option value="Negative"
-                                    {{ old('hbsag', $record->hbsag ?? 'Negative') == 'Negative' ? 'selected' : '' }}>
+                                    {{ old('hbsag', $record->hbsag ?? '') == 'Negative' ? 'selected' : '' }}>
                                     Negative</option>
                                 <option value="Positive"
-                                    {{ old('hbsag', $record->hbsag ?? 'Negative') == 'Positive' ? 'selected' : '' }}>
+                                    {{ old('hbsag', $record->hbsag ?? '') == 'Positive' ? 'selected' : '' }}>
                                     Positive</option>
+                                <option value="Not Tested"
+                                    {{ old('hbsag', $record->hbsag ?? '') == 'Not Tested' ? 'selected' : '' }}>
+                                    Not Tested</option>
                             </select>
                         </div>
                         <div>
                             <label class="block text-xs font-semibold text-[#2f5a77]">HCV</label>
                             <select name="hcv"
                                 class="w-full rounded-xl border border-[#d3dfea] px-3 py-2 text-sm input-focus">
+                                <option value="">Select</option>
                                 <option value="Negative"
-                                    {{ old('hcv', $record->hcv ?? 'Negative') == 'Negative' ? 'selected' : '' }}>Negative
+                                    {{ old('hcv', $record->hcv ?? '') == 'Negative' ? 'selected' : '' }}>Negative
                                 </option>
                                 <option value="Positive"
-                                    {{ old('hcv', $record->hcv ?? 'Negative') == 'Positive' ? 'selected' : '' }}>Positive
+                                    {{ old('hcv', $record->hcv ?? '') == 'Positive' ? 'selected' : '' }}>Positive
+                                </option>
+                                <option value="Not Tested"
+                                    {{ old('hcv', $record->hcv ?? '') == 'Not Tested' ? 'selected' : '' }}>Not Tested
                                 </option>
                             </select>
                         </div>
@@ -885,6 +933,19 @@
 
             heightInput.addEventListener('input', calculateBMI);
             weightInput.addEventListener('input', calculateBMI);
+
+            // Toggle Diabetes & Insulin section
+            const diabetesToggle = document.getElementById('diabetes_toggle');
+            const diabetesFields = document.getElementById('diabetes_fields');
+            if (diabetesToggle && diabetesFields) {
+                diabetesToggle.addEventListener('change', function() {
+                    if (this.checked) {
+                        diabetesFields.classList.remove('hidden');
+                    } else {
+                        diabetesFields.classList.add('hidden');
+                    }
+                });
+            }
         });
     </script>
 @endsection
