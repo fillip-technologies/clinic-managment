@@ -1,14 +1,11 @@
 @extends('admin.loyout.master')
 @section('content')
-    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-6 mb-8">
         <div class="stat-card glass-card rounded-2xl p-6 shadow-sm">
             <div class="flex items-center justify-between">
                 <div>
-                    <p class="text-slate-500 text-sm font-medium">Total Doctor</p>
-                    <p class="text-3xl font-bold text-slate-800 mt-1">{{ $doctors ?? 0 }}</p>
-                    <span
-                        class="inline-flex items-center text-xs text-emerald-600 bg-emerald-100/70 px-2 py-0.5 rounded-full mt-2"><i
-                            class="fas fa-arrow-up mr-1"></i> +12.5%</span>
+                    <p class="text-slate-500 text-sm font-medium">Total Patients</p>
+                    <p class="text-3xl font-bold text-slate-800 mt-1">{{ $patients ?? 0 }}</p>
                 </div>
                 <div class="w-12 h-12 rounded-2xl bg-indigo-100 flex items-center justify-center text-indigo-600">
                     <i class="fas fa-users text-xl"></i>
@@ -18,28 +15,12 @@
         <div class="stat-card glass-card rounded-2xl p-6 shadow-sm">
             <div class="flex items-center justify-between">
                 <div>
-                    <p class="text-slate-500 text-sm font-medium">Total Patients</p>
-                    <p class="text-3xl font-bold text-slate-800 mt-1">{{ $patients ?? 0 }}</p>
-                    <span
-                        class="inline-flex items-center text-xs text-emerald-600 bg-emerald-100/70 px-2 py-0.5 rounded-full mt-2"><i
-                            class="fas fa-arrow-up mr-1"></i> +8.2%</span>
-                </div>
-                <div class="w-12 h-12 rounded-2xl bg-amber-100 flex items-center justify-center text-amber-600">
-                    <i class="fas fa-user-plus text-xl"></i>
-                </div>
-            </div>
-        </div>
-        <div class="stat-card glass-card rounded-2xl p-6 shadow-sm">
-            <div class="flex items-center justify-between">
-                <div>
                     <p class="text-slate-500 text-sm font-medium">Total Diabetes Patient</p>
                     <p class="text-3xl font-bold text-slate-800 mt-1">{{ $diabetes ?? 0 }}</p>
-                    <span
-                        class="inline-flex items-center text-xs text-rose-600 bg-rose-100/70 px-2 py-0.5 rounded-full mt-2"><i
-                            class="fas fa-arrow-down mr-1"></i> -3.1%</span>
+             
                 </div>
                 <div class="w-12 h-12 rounded-2xl bg-rose-100 flex items-center justify-center text-rose-600">
-                    <i class="fas fa-droplet text-xl text-blue-500"></i>
+                    <i class="fas fa-droplet text-xl text-rose-500"></i>
                 </div>
             </div>
         </div>
@@ -48,12 +29,34 @@
                 <div>
                     <p class="text-slate-500 text-sm font-medium">Total Hypertension Patient</p>
                     <p class="text-3xl font-bold text-slate-800 mt-1">{{ $hypertension ?? 0 }}</p>
-                    <span
-                        class="inline-flex items-center text-xs text-emerald-600 bg-emerald-100/70 px-2 py-0.5 rounded-full mt-2"><i
-                            class="fas fa-arrow-up mr-1"></i> +2.3%</span>
+                  
                 </div>
                 <div class="w-12 h-12 rounded-2xl bg-emerald-100 flex items-center justify-center text-emerald-600">
-                    <i class="fas fa-heart-pulse text-xl text-red-500"></i>
+                    <i class="fas fa-heart-pulse text-xl text-emerald-600"></i>
+                </div>
+            </div>
+        </div>
+        <div class="stat-card glass-card rounded-2xl p-6 shadow-sm">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-slate-500 text-sm font-medium">Total Obesity Patients</p>
+                    <p class="text-3xl font-bold text-slate-800 mt-1">{{ $obesity ?? 0 }}</p>
+                   
+                </div>
+                <div class="w-12 h-12 rounded-2xl bg-amber-100 flex items-center justify-center text-amber-600">
+                    <i class="fas fa-weight-scale text-xl text-amber-600"></i>
+                </div>
+            </div>
+        </div>
+        <div class="stat-card glass-card rounded-2xl p-6 shadow-sm">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-slate-500 text-sm font-medium">Total Infection Patients</p>
+                    <p class="text-3xl font-bold text-slate-800 mt-1">{{ $infection ?? 0 }}</p>
+                  
+                </div>
+                <div class="w-12 h-12 rounded-2xl bg-purple-100 flex items-center justify-center text-purple-600">
+                    <i class="fas fa-virus text-xl text-purple-600"></i>
                 </div>
             </div>
         </div>
@@ -124,7 +127,7 @@
                             </td>
 
                             <td class="py-3 px-4">
-                                {{ Str::limit($data->address, 30) }}
+                                {{ Str::limit($data->address ?? '', 30) }}
                             </td>
 
                             <td class="py-3 px-4">

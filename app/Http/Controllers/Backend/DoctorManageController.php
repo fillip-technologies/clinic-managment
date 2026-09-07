@@ -4,7 +4,7 @@ namespace App\Http\Controllers\Backend;
 
 use App\Events\DoctorRegEvent;
 use App\Http\Controllers\Controller;
-use App\Models\Appoinment;
+use App\Models\OnSiteAppointment;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
@@ -110,13 +110,15 @@ class DoctorManageController extends Controller
             'patient_name' => 'required|string|max:255',
             'patient_type' => 'required|string|max:255',
             'phone'        => 'required|string|max:20',
+            'mail'         => 'nullable|email|max:255',
             'message'      => 'nullable|string',
         ]);
 
-        $appointment = Appoinment::create([
+        $appointment = OnSiteAppointment::create([
             'patient_name' => $request->patient_name,
             'patient_type' => $request->patient_type,
             'phone'        => $request->phone,
+            'mail'         => $request->mail,
             'message'      => $request->message,
         ]);
         return redirect()->back()->with('success','Appointment created successfully');
@@ -125,13 +127,13 @@ class DoctorManageController extends Controller
 
     public function listappoinment()
     {
-       $appointments = Appoinment::latest()->paginate(10);
+       $appointments = OnSiteAppointment::latest()->paginate(10);
        return view('listing.aapoinment',compact('appointments'));
     }
 
     public function deleteAppointment($id)
     {
-        $appointment = Appoinment::findOrFail($id);
+        $appointment = OnSiteAppointment::findOrFail($id);
         $appointment->delete();
 
         return redirect()->back()->with('success', 'Appointment deleted successfully.');

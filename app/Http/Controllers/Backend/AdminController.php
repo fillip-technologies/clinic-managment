@@ -61,10 +61,10 @@ class AdminController extends Controller
         $allPatient = Patient::paginate(10);
         $diabetes = PatientClinicalRecord::where('diabetes', 'Diabetes')->count();
         $hypertension = PatientClinicalRecord::where('hypertension', 'Hypertension')->count();
+        $obesity = PatientClinicalRecord::where('obesity', 'Obesity')->count();
+        $infection = PatientClinicalRecord::where('infection', 'Infection')->count();
 
-        //patient
-
-        return view('admin.backend.dashboard', compact('doctors', 'patients', 'diabetes', 'hypertension', 'allPatient'));
+        return view('admin.backend.dashboard', compact('doctors', 'patients', 'diabetes', 'hypertension', 'obesity', 'infection', 'allPatient'));
     }
 
     public function AdminLogout(Request $request)

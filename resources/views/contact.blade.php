@@ -52,6 +52,10 @@ border-red-600
 border-red-600
                     @enderror">
                     </div>
+                    <input type="email" name="mail" placeholder="Email address (optional)"
+                        class="w-full px-4 py-3 rounded-lg border border-emerald-100 outline-none focus:border-emerald-600 @error('mail')
+border-red-600
+                    @enderror">
                     <select name="patient_type"
                         class="w-full px-4 py-3 rounded-lg border border-emerald-100 outline-none focus:border-emerald-600 @error('patient_type')
 border-rred-600

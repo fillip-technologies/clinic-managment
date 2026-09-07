@@ -14,6 +14,8 @@ class PatientClinicalRecord extends Model
         'patient_id',
         'newly_detected',
         'duration_of_diabetes',
+        'insuline_brand',
+        'insuline_unit',
         'start_insulin_date',
         'stop_insulin_date',
         'attachment',

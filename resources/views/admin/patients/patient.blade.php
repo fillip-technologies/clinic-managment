@@ -183,6 +183,8 @@
                     old('newly_detected') == 'Yes' ||
                     !empty(old('diabetes_duration')) ||
                     !empty(old('duration_of_diabetes')) ||
+                    !empty(old('insuline_brand')) ||
+                    !empty(old('insuline_unit')) ||
                     !empty(old('insulin_start_date')) ||
                     !empty(old('insulin_stop_date'))
                 );
@@ -201,7 +203,7 @@
                 </div>
 
                 <div id="diabetes_fields" class="{{ $hasDiabetes ? '' : 'hidden' }}">
-                    <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
+                    <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
                         <div><label class="block text-xs font-semibold uppercase text-[#2f5a77] mb-1"><i
                                     class="far fa-check-circle"></i> Newly detected</label>
                             <select name="newly_detected"
@@ -217,6 +219,16 @@
                                 class="w-full rounded-xl border border-[#d3dfea] px-4 py-2.5 text-sm bg-[#fafdff] input-focus">
                         </div>
                         <div><label class="block text-xs font-semibold uppercase text-[#2f5a77] mb-1"><i
+                                    class="fas fa-tag"></i> Insulin Brand</label>
+                            <input type="text" name="insuline_brand" value="{{ old('insuline_brand') }}" placeholder="e.g. Lantus, Humalog"
+                                class="w-full rounded-xl border border-[#d3dfea] px-4 py-2.5 text-sm bg-[#fafdff] input-focus">
+                        </div>
+                        <div><label class="block text-xs font-semibold uppercase text-[#2f5a77] mb-1"><i
+                                    class="fas fa-prescription-bottle"></i> Insulin Unit</label>
+                            <input type="text" name="insuline_unit" value="{{ old('insuline_unit') }}" placeholder="e.g. 10 Units, 20 IU"
+                                class="w-full rounded-xl border border-[#d3dfea] px-4 py-2.5 text-sm bg-[#fafdff] input-focus">
+                        </div>
+                        <div><label class="block text-xs font-semibold uppercase text-[#2f5a77] mb-1"><i
                                     class="fas fa-play"></i> START INSULIN DATE</label>
                             <input type="date" name="insulin_start_date" value="{{ old('insulin_start_date') }}"
                                 class="w-full rounded-xl border border-[#d3dfea] px-4 py-2.5 text-sm bg-[#fafdff] input-focus">
@@ -225,6 +237,7 @@
                                     class="fas fa-stop"></i> STOP INSULIN DATE</label>
                             <input type="date" name="insulin_stop_date" value="{{ old('insulin_stop_date') }}"
                                 class="w-full rounded-xl border border-[#d3dfea] px-4 py-2.5 text-sm bg-[#fafdff] input-focus">
+                        </div>
                     </div>
                 </div>
             </div>
@@ -305,14 +318,16 @@
                             <option value="High" {{ old('income_class')=='High' ? 'selected' : '' }}>High</option>
                             <option value="Medium" {{ old('income_class')=='Medium' ? 'selected' : '' }}>Medium</option>
                             <option value="Low" {{ old('income_class')=='Low' ? 'selected' : '' }}>Low</option>
+                            <option value="Dependent" {{ old('income_class')=='Dependent' ? 'selected' : '' }}>Dependent</option>
                         </select></div>
                     <div><label class="block text-xs font-semibold text-[#2f5a77]">Education</label>
                         <select name="education"
                             class="w-full rounded-xl border border-[#d3dfea] px-3 py-2 text-sm input-focus">
                             <option value="">Select</option>
+                            <option value="Illiterate" {{ old('education')=='Illiterate' ? 'selected' : '' }}>Illiterate</option>
+                            <option value="School" {{ old('education')=='School' ? 'selected' : '' }}>School</option>
                             <option value="Graduate" {{ old('education')=='Graduate' ? 'selected' : '' }}>Graduate</option>
                             <option value="Post-grad" {{ old('education')=='Post-grad' ? 'selected' : '' }}>Post-grad</option>
-                            <option value="School" {{ old('education')=='School' ? 'selected' : '' }}>School</option>
                         </select></div>
                     <div><label class="block text-xs font-semibold text-[#2f5a77]">Physical activity</label>
                         <select name="physical_activity"

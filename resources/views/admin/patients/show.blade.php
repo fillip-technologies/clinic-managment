@@ -416,11 +416,19 @@
                                 {{ $record->start_insulin_date ? \Carbon\Carbon::parse($record->start_insulin_date)->format('d M Y') : 'N/A' }}
                             </span>
                         </div>
-                        <div class="flex items-center justify-between">
+                        <div class="flex items-center justify-between pb-2 border-b border-slate-100">
                             <span class="text-xs text-slate-600 font-medium">Stop Insulin Date:</span>
                             <span class="text-xs font-bold text-slate-800">
                                 {{ $record->stop_insulin_date ? \Carbon\Carbon::parse($record->stop_insulin_date)->format('d M Y') : 'N/A' }}
                             </span>
+                        </div>
+                        <div class="flex items-center justify-between pb-2 border-b border-slate-100">
+                            <span class="text-xs text-slate-600 font-medium">Insulin Brand:</span>
+                            <span class="text-xs font-bold text-slate-800">{{ $record->insuline_brand ?: 'N/A' }}</span>
+                        </div>
+                        <div class="flex items-center justify-between">
+                            <span class="text-xs text-slate-600 font-medium">Insulin Unit:</span>
+                            <span class="text-xs font-bold text-slate-800">{{ $record->insuline_unit ?: 'N/A' }}</span>
                         </div>
                     </div>
                 </div>

@@ -282,14 +282,14 @@
                                 placeholder="+91 98765 43210"
                                 class="w-full rounded-xl border border-[#d3dfea] px-4 py-2.5 text-sm bg-[#fafdff] input-focus">
                         </div>
-                        <!-- New Registration No. -->
+                        <!-- Registration No. -->
                         <div class="col-span-1">
                             <label class="block text-xs font-semibold uppercase tracking-wide text-[#2f5a77] mb-1">
-                                <i class="fas fa-id-card"></i> New Reg. No.
+                                <i class="fas fa-id-card"></i> Reg. No.
                             </label>
-                            <input type="text" name="registration_no" readonly
-                                value="{{ old('registration_no', $record->registration_no ?? 'REG-2026-001') }}"
-                                placeholder="REG-2026-001"
+                            <input type="text" name="registration_no"
+                                value="{{ old('registration_no', $patient->registration_no ?? $record->patient->registration_no ?? '') }}"
+                                placeholder="Registration No."
                                 class="w-full rounded-xl border border-[#d3dfea] px-4 py-2.5 text-sm bg-[#fafdff] input-focus">
                         </div>
                     </div>
@@ -300,10 +300,14 @@
                         old('has_diabetes') == '1' ||
                         old('newly_detected') == 'Yes' ||
                         !empty(old('diabetes_duration')) ||
+                        !empty(old('insuline_brand')) ||
+                        !empty(old('insuline_unit')) ||
                         !empty(old('insulin_start_date')) ||
                         !empty(old('insulin_stop_date')) ||
                         ($record->newly_detected ?? 'No') == 'Yes' ||
                         !empty($record->duration_of_diabetes) ||
+                        !empty($record->insuline_brand) ||
+                        !empty($record->insuline_unit) ||
                         !empty($record->start_insulin_date) ||
                         !empty($record->stop_insulin_date) ||
                         ($record->diabetes ?? '') == 'Diabetes'
@@ -323,7 +327,7 @@
                     </div>
 
                     <div id="diabetes_fields" class="{{ $hasDiabetes ? '' : 'hidden' }}">
-                        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
+                        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
                             <div>
                                 <label class="block text-xs font-semibold uppercase text-[#2f5a77] mb-1">
                                     <i class="far fa-check-circle"></i> Newly detected
@@ -347,6 +351,26 @@
                                 <input type="text" name="diabetes_duration"
                                     value="{{ old('diabetes_duration', $record->duration_of_diabetes ?? '') }}"
                                     placeholder="e.g. 5 yrs"
+                                    class="w-full rounded-xl border border-[#d3dfea] px-4 py-2.5 text-sm bg-[#fafdff] input-focus">
+                            </div>
+
+                            <div>
+                                <label class="block text-xs font-semibold uppercase text-[#2f5a77] mb-1">
+                                    <i class="fas fa-tag"></i> Insulin Brand
+                                </label>
+                                <input type="text" name="insuline_brand"
+                                    value="{{ old('insuline_brand', $record->insuline_brand ?? '') }}"
+                                    placeholder="e.g. Lantus, Humalog"
+                                    class="w-full rounded-xl border border-[#d3dfea] px-4 py-2.5 text-sm bg-[#fafdff] input-focus">
+                            </div>
+
+                            <div>
+                                <label class="block text-xs font-semibold uppercase text-[#2f5a77] mb-1">
+                                    <i class="fas fa-prescription-bottle"></i> Insulin Unit
+                                </label>
+                                <input type="text" name="insuline_unit"
+                                    value="{{ old('insuline_unit', $record->insuline_unit ?? '') }}"
+                                    placeholder="e.g. 10 Units, 20 IU"
                                     class="w-full rounded-xl border border-[#d3dfea] px-4 py-2.5 text-sm bg-[#fafdff] input-focus">
                             </div>
 
@@ -500,6 +524,9 @@
                                 <option value="Low"
                                     {{ old('income_class', $record->income_class ?? '') == 'Low' ? 'selected' : '' }}>Low
                                 </option>
+                                <option value="Dependent"
+                                    {{ old('income_class', $record->income_class ?? '') == 'Dependent' ? 'selected' : '' }}>
+                                    Dependent</option>
                             </select>
                         </div>
                         <div>
@@ -507,15 +534,18 @@
                             <select name="education"
                                 class="w-full rounded-xl border border-[#d3dfea] px-3 py-2 text-sm input-focus">
                                 <option value="">Select</option>
+                                <option value="Illiterate"
+                                    {{ old('education', $record->education ?? '') == 'Illiterate' ? 'selected' : '' }}>
+                                    Illiterate</option>
+                                <option value="School"
+                                    {{ old('education', $record->education ?? '') == 'School' ? 'selected' : '' }}>School
+                                </option>
                                 <option value="Graduate"
                                     {{ old('education', $record->education ?? '') == 'Graduate' ? 'selected' : '' }}>
                                     Graduate</option>
                                 <option value="Post-grad"
                                     {{ old('education', $record->education ?? '') == 'Post-grad' ? 'selected' : '' }}>
                                     Post-grad</option>
-                                <option value="School"
-                                    {{ old('education', $record->education ?? '') == 'School' ? 'selected' : '' }}>School
-                                </option>
                             </select>
                         </div>
                         <div>

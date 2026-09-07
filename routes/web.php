@@ -8,6 +8,7 @@ Route::get('/', function () {
     return view('welcome');
 });
  Route::post('/appoinmentstore',[DoctorManageController::class, 'appoinmentstore'])->name('appoinmentstore');
+ Route::post('/on-site-appointment/store',[DoctorManageController::class, 'appoinmentstore'])->name('on_site_appointment.public_store');
  Route::get('/clinics', function () {
     return view('clinics');
 });

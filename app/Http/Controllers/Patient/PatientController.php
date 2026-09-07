@@ -46,6 +46,8 @@ class PatientController extends Controller
             'newly_detected' => 'nullable|string|max:50',
             'diabetes_duration' => 'nullable|string|max:50',
             'duration_of_diabetes' => 'nullable|string|max:50',
+            'insuline_brand' => 'nullable|string|max:100',
+            'insuline_unit' => 'nullable|string|max:100',
             'insulin_start_date' => 'nullable|date',
             'start_insulin_date' => 'nullable|date',
             'insulin_stop_date' => 'nullable|date',
@@ -212,6 +214,8 @@ class PatientController extends Controller
             "patient_id" => $patient->id,
             'newly_detected' => $request->newly_detected,
             'duration_of_diabetes' => $request->diabetes_duration ?? $request->duration_of_diabetes,
+            'insuline_brand' => $request->insuline_brand,
+            'insuline_unit' => $request->insuline_unit,
             'start_insulin_date' => $request->insulin_start_date ?? $request->start_insulin_date,
             'stop_insulin_date' => $request->insulin_stop_date ?? $request->stop_insulin_date,
             'attachment' => $attachmentPath,
@@ -352,6 +356,11 @@ class PatientController extends Controller
             $record = new PatientClinicalRecord(['patient_id' => $patient->id]);
         }
 
+        $regNoRules = ['nullable', 'string', 'max:50'];
+        if ($request->filled('registration_no') && trim((string)$request->registration_no) !== trim((string)$patient->registration_no)) {
+            $regNoRules[] = Rule::unique('patients', 'registration_no')->ignore($patient->id);
+        }
+
         $validator = Validator::make($request->all(), [
             'record_date' => 'required|date',
             'patient_name' => 'required|string|max:255',
@@ -364,17 +373,14 @@ class PatientController extends Controller
             'mobile' => 'nullable|string|max:20',
             'mobile_no' => 'nullable|string|max:20',
 
-            'registration_no' => [
-                'nullable',
-                'string',
-                'max:50',
-                Rule::unique('patients', 'registration_no')->ignore($patient->id),
-            ],
+            'registration_no' => $regNoRules,
 
             'has_diabetes' => 'nullable',
             'newly_detected' => 'nullable|string|max:50',
             'diabetes_duration' => 'nullable|string|max:50',
             'duration_of_diabetes' => 'nullable|string|max:50',
+            'insuline_brand' => 'nullable|string|max:100',
+            'insuline_unit' => 'nullable|string|max:100',
             'insulin_start_date' => 'nullable|date',
             'start_insulin_date' => 'nullable|date',
             'insulin_stop_date' => 'nullable|date',
@@ -523,6 +529,22 @@ class PatientController extends Controller
             $attachmentPath = $file->storeAs('patient-attachments', $filename, 'public');
         }
 
+        $registrationNo = $request->filled('registration_no') ? trim($request->registration_no) : $patient->registration_no;
+        if (empty($registrationNo)) {
+            $currentYear = date('Y');
+            $latestPatient = Patient::whereYear('created_at', $currentYear)
+                ->where('registration_no', 'like', "REG-{$currentYear}-%")
+                ->orderBy('id', 'desc')
+                ->first();
+
+            $nextSequence = 1;
+            if ($latestPatient && preg_match('/REG-\d{4}-(\d+)/', $latestPatient->registration_no, $matches)) {
+                $nextSequence = (int)$matches[1] + 1;
+            }
+
+            $registrationNo = sprintf("REG-%s-%03d", $currentYear, $nextSequence);
+        }
+
         $patient->update([
             'record_date' => $request->record_date,
             'patient_name' => $request->patient_name,
@@ -532,7 +554,7 @@ class PatientController extends Controller
             'rcdho_grade' => $request->rcdho_grade,
             'address' => $request->address,
             'mobile_no' => $request->mobile ?? $request->mobile_no,
-            'registration_no' => $request->registration_no ?? $patient->registration_no,
+            'registration_no' => $registrationNo,
         ]);
 
         $matchAttributes = ['patient_id' => $patient->id];
@@ -545,6 +567,8 @@ class PatientController extends Controller
             [
                 'newly_detected' => $request->newly_detected,
                 'duration_of_diabetes' => $request->diabetes_duration ?? $request->duration_of_diabetes,
+                'insuline_brand' => $request->insuline_brand,
+                'insuline_unit' => $request->insuline_unit,
                 'start_insulin_date' => $request->insulin_start_date ?? $request->start_insulin_date,
                 'stop_insulin_date' => $request->insulin_stop_date ?? $request->stop_insulin_date,
                 'attachment' => $attachmentPath,
@@ -690,6 +714,8 @@ class PatientController extends Controller
             'newly_detected' => 'nullable|string|max:50',
             'diabetes_duration' => 'nullable|string|max:50',
             'duration_of_diabetes' => 'nullable|string|max:50',
+            'insuline_brand' => 'nullable|string|max:100',
+            'insuline_unit' => 'nullable|string|max:100',
             'insulin_start_date' => 'nullable|date',
             'start_insulin_date' => 'nullable|date',
             'insulin_stop_date' => 'nullable|date',
@@ -848,6 +874,8 @@ class PatientController extends Controller
             "patient_id" => $patientId,
             'newly_detected' => $request->newly_detected,
             'duration_of_diabetes' => $request->diabetes_duration ?? $request->duration_of_diabetes,
+            'insuline_brand' => $request->insuline_brand,
+            'insuline_unit' => $request->insuline_unit,
             'start_insulin_date' => $request->insulin_start_date ?? $request->start_insulin_date,
             'stop_insulin_date' => $request->insulin_stop_date ?? $request->stop_insulin_date,
             'attachment' => $attachmentPath,
@@ -1175,6 +1203,7 @@ class PatientController extends Controller
                     'Record ID', 'Patient ID', 'Patient Name', 'Age', 'Gender', 'Mobile', 'Address', 'Consultation Date',
                     'Diagnostic Status', 'HbA1c (%)', 'Fasting Blood Sugar (BSF mg/dL)', 'Postprandial Sugar (BSPP mg/dL)',
                     'Newly Detected', 'Duration of Diabetes (Yrs)', 'Insulin Start Date', 'Insulin Stop Date',
+                    'Insulin Brand', 'Insulin Unit',
                     'BMI (kg/m²)', 'Weight (kg)', 'SBP (mmHg)', 'DBP (mmHg)',
                     'Serum Creatinine (mg/dL)', 'eGFR (mL/min)', 'Microalbuminuria ACR',
                     'Total Cholesterol', 'Triglycerides', 'HDL', 'LDL',
@@ -1203,6 +1232,8 @@ class PatientController extends Controller
                         $r->duration_of_diabetes ?: '-',
                         $r->start_insulin_date ?: '-',
                         $r->stop_insulin_date ?: '-',
+                        $r->insuline_brand ?: '-',
+                        $r->insuline_unit ?: '-',
                         $r->bmi ?: '-',
                         $r->weight_kg ?: '-',
                         $r->sbp ?: '-',
@@ -1413,7 +1444,7 @@ class PatientController extends Controller
                 // Master All-Variables Comprehensive Clinical Research Export
                 fputcsv($handle, [
                     'Record ID', 'Patient ID', 'Patient Name', 'Age', 'Gender', 'Mobile', 'Address', 'Consultation Date',
-                    'Diabetes Classification', 'HbA1c (%)', 'Fasting Blood Sugar (BSF)', 'Postprandial Sugar (BSPP)', 'Newly Detected Diab', 'Duration Diab (Yrs)', 'Insulin Start', 'Insulin Stop',
+                    'Diabetes Classification', 'HbA1c (%)', 'Fasting Blood Sugar (BSF)', 'Postprandial Sugar (BSPP)', 'Newly Detected Diab', 'Duration Diab (Yrs)', 'Insulin Start', 'Insulin Stop', 'Insulin Brand', 'Insulin Unit',
                     'Hypertension Classification', 'Known HTN', 'SBP (mmHg)', 'DBP (mmHg)',
                     'Obesity Classification', 'Height (cm)', 'Weight (kg)', 'BMI (kg/m²)', 'BMI Group', 'Waist (cm)', 'Hip (cm)', 'WHR', 'WHtR', 'Diet', 'Activity', 'Social Class', 'Income Class',
                     'Infection Classification', 'Body Temp (°F)', 'Infection Notes', 'HIV', 'HBsAg', 'HCV', 'Urine Cast Cells',
@@ -1443,6 +1474,8 @@ class PatientController extends Controller
                         $r->duration_of_diabetes ?: '-',
                         $r->start_insulin_date ?: '-',
                         $r->stop_insulin_date ?: '-',
+                        $r->insuline_brand ?: '-',
+                        $r->insuline_unit ?: '-',
                         $r->hypertension ?? 'Normal',
                         $r->htn ?: '-',
                         $r->sbp ?: '-',
@@ -1551,6 +1584,8 @@ class PatientController extends Controller
                 'Duration of Diabetes (Yrs)',
                 'Insulin Start Date',
                 'Insulin Stop Date',
+                'Insulin Brand',
+                'Insulin Unit',
                 'Hypertension Classification',
                 'Known HTN History',
                 'Systolic BP SBP (mmHg)',
@@ -1637,6 +1672,8 @@ class PatientController extends Controller
                     $r->duration_of_diabetes ?: '-',
                     $r->start_insulin_date ?: '-',
                     $r->stop_insulin_date ?: '-',
+                    $r->insuline_brand ?: '-',
+                    $r->insuline_unit ?: '-',
                     $r->hypertension ?? 'Normal',
                     $r->htn ?: '-',
                     $r->sbp ?: '-',

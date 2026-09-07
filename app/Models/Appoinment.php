@@ -4,9 +4,6 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 
-class Appoinment extends Model
+class Appoinment extends OnSiteAppointment
 {
-    protected $primaryKey = 'id';
-    protected $fillable = ['patient_name','phone','patient_type','message'];
-    protected $table = "appoinments";
 }
