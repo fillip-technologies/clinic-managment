@@ -272,11 +272,13 @@
                     </div>
                 </div>
 
+                @if(empty($isOnlyOnSite))
                 <!-- Add Appointment Button -->
                 <button type="button" onclick="openAppointmentModal()" class="h-10 bg-indigo-600 hover:bg-indigo-700 text-white font-medium px-4 rounded-xl transition shadow-sm hover:shadow-md flex items-center gap-2 text-sm">
                     <i class="fas fa-plus"></i>
                     <span>New Appointment</span>
                 </button>
+                @endif
             </div>
         </div>
 
