@@ -1,64 +1,97 @@
 @extends('admin.loyout.master')
 @section('content')
-    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-6 mb-8">
-        <div class="stat-card glass-card rounded-2xl p-6 shadow-sm">
-            <div class="flex items-center justify-between">
-                <div>
-                    <p class="text-slate-500 text-sm font-medium">Total Patients</p>
-                    <p class="text-3xl font-bold text-slate-800 mt-1">{{ $patients ?? 0 }}</p>
+    @php
+        $totalP = $patients ?? 0;
+        $diabPct = $totalP > 0 ? round((($diabetes ?? 0) / $totalP) * 100, 1) : 0;
+        $htnPct = $totalP > 0 ? round((($hypertension ?? 0) / $totalP) * 100, 1) : 0;
+        $obePct = $totalP > 0 ? round((($obesity ?? 0) / $totalP) * 100, 1) : 0;
+        $infPct = $totalP > 0 ? round((($infection ?? 0) / $totalP) * 100, 1) : 0;
+    @endphp
+
+    <!-- Unified Hospital EHR Clinical Metric Bar -->
+    <div class="glass-card rounded-2xl border border-slate-200/80 shadow-sm mb-8 overflow-hidden bg-white/90 backdrop-blur-md">
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5">
+            
+            <!-- 1. Total Patients -->
+            <a href="{{ route('list.patient') }}"
+                class="group p-5 border-b sm:border-b-0 sm:border-r border-slate-100 hover:bg-slate-50/80 transition-all duration-200 flex flex-col justify-between relative">
+                <div class="h-1 w-full bg-indigo-500 absolute top-0 left-0"></div>
+                <div class="flex items-center justify-between">
+                    <span class="text-[11px] font-bold uppercase tracking-wider text-slate-400">Total Registry</span>
+                    <div class="w-9 h-9 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center group-hover:scale-110 group-hover:bg-indigo-600 group-hover:text-white transition-all shadow-sm">
+                        <i class="fas fa-users text-sm"></i>
+                    </div>
                 </div>
-                <div class="w-12 h-12 rounded-2xl bg-indigo-100 flex items-center justify-center text-indigo-600">
-                    <i class="fas fa-users text-xl"></i>
+                <div class="mt-3">
+                    <p class="text-3xl font-extrabold text-slate-800 tracking-tight">{{ $totalP }}</p>
+                    <p class="text-xs text-slate-500 mt-0.5">Total Registered Patients</p>
                 </div>
-            </div>
-        </div>
-        <div class="stat-card glass-card rounded-2xl p-6 shadow-sm">
-            <div class="flex items-center justify-between">
-                <div>
-                    <p class="text-slate-500 text-sm font-medium">Total Diabetes Patient</p>
-                    <p class="text-3xl font-bold text-slate-800 mt-1">{{ $diabetes ?? 0 }}</p>
-             
+            </a>
+
+            <!-- 2. Diabetes -->
+            <a href="{{ route('report.diabetesReport') }}"
+                class="group p-5 border-b sm:border-b-0 sm:border-r border-slate-100 hover:bg-slate-50/80 transition-all duration-200 flex flex-col justify-between relative">
+                <div class="h-1 w-full bg-rose-500 absolute top-0 left-0"></div>
+                <div class="flex items-center justify-between">
+                    <span class="text-[11px] font-bold uppercase tracking-wider text-slate-400">Diabetes Patients</span>
+                    <div class="w-9 h-9 rounded-xl bg-rose-50 text-rose-600 flex items-center justify-center group-hover:scale-110 group-hover:bg-rose-600 group-hover:text-white transition-all shadow-sm">
+                        <i class="fas fa-droplet text-sm"></i>
+                    </div>
                 </div>
-                <div class="w-12 h-12 rounded-2xl bg-rose-100 flex items-center justify-center text-rose-600">
-                    <i class="fas fa-droplet text-xl text-rose-500"></i>
+                <div class="mt-3">
+                    <p class="text-3xl font-extrabold text-slate-800 tracking-tight">{{ $diabetes ?? 0 }}</p>
+                    <p class="text-xs text-slate-500 mt-0.5">{{ $diabPct }}% of total cohort</p>
                 </div>
-            </div>
-        </div>
-        <div class="stat-card glass-card rounded-2xl p-6 shadow-sm">
-            <div class="flex items-center justify-between">
-                <div>
-                    <p class="text-slate-500 text-sm font-medium">Total Hypertension Patient</p>
-                    <p class="text-3xl font-bold text-slate-800 mt-1">{{ $hypertension ?? 0 }}</p>
-                  
+            </a>
+
+            <!-- 3. Hypertension -->
+            <a href="{{ route('report.hypertensioReport') }}"
+                class="group p-5 border-b sm:border-b-0 lg:border-r border-slate-100 hover:bg-slate-50/80 transition-all duration-200 flex flex-col justify-between relative">
+                <div class="h-1 w-full bg-emerald-500 absolute top-0 left-0"></div>
+                <div class="flex items-center justify-between">
+                    <span class="text-[11px] font-bold uppercase tracking-wider text-slate-400">Hypertension</span>
+                    <div class="w-9 h-9 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center group-hover:scale-110 group-hover:bg-emerald-600 group-hover:text-white transition-all shadow-sm">
+                        <i class="fas fa-heart-pulse text-sm"></i>
+                    </div>
                 </div>
-                <div class="w-12 h-12 rounded-2xl bg-emerald-100 flex items-center justify-center text-emerald-600">
-                    <i class="fas fa-heart-pulse text-xl text-emerald-600"></i>
+                <div class="mt-3">
+                    <p class="text-3xl font-extrabold text-slate-800 tracking-tight">{{ $hypertension ?? 0 }}</p>
+                    <p class="text-xs text-slate-500 mt-0.5">{{ $htnPct }}% of total cohort</p>
                 </div>
-            </div>
-        </div>
-        <div class="stat-card glass-card rounded-2xl p-6 shadow-sm">
-            <div class="flex items-center justify-between">
-                <div>
-                    <p class="text-slate-500 text-sm font-medium">Total Obesity Patients</p>
-                    <p class="text-3xl font-bold text-slate-800 mt-1">{{ $obesity ?? 0 }}</p>
-                   
+            </a>
+
+            <!-- 4. Obesity -->
+            <a href="{{ route('report.obesityReport') }}"
+                class="group p-5 border-b sm:border-b-0 sm:border-r border-slate-100 hover:bg-slate-50/80 transition-all duration-200 flex flex-col justify-between relative sm:col-span-1">
+                <div class="h-1 w-full bg-amber-500 absolute top-0 left-0"></div>
+                <div class="flex items-center justify-between">
+                    <span class="text-[11px] font-bold uppercase tracking-wider text-slate-400">Obesity Patients</span>
+                    <div class="w-9 h-9 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center group-hover:scale-110 group-hover:bg-amber-600 group-hover:text-white transition-all shadow-sm">
+                        <i class="fas fa-weight-scale text-sm"></i>
+                    </div>
                 </div>
-                <div class="w-12 h-12 rounded-2xl bg-amber-100 flex items-center justify-center text-amber-600">
-                    <i class="fas fa-weight-scale text-xl text-amber-600"></i>
+                <div class="mt-3">
+                    <p class="text-3xl font-extrabold text-slate-800 tracking-tight">{{ $obesity ?? 0 }}</p>
+                    <p class="text-xs text-slate-500 mt-0.5">{{ $obePct }}% of total cohort</p>
                 </div>
-            </div>
-        </div>
-        <div class="stat-card glass-card rounded-2xl p-6 shadow-sm">
-            <div class="flex items-center justify-between">
-                <div>
-                    <p class="text-slate-500 text-sm font-medium">Total Infection Patients</p>
-                    <p class="text-3xl font-bold text-slate-800 mt-1">{{ $infection ?? 0 }}</p>
-                  
+            </a>
+
+            <!-- 5. Infection -->
+            <a href="{{ route('report.InfectionReport') }}"
+                class="group p-5 hover:bg-slate-50/80 transition-all duration-200 flex flex-col justify-between relative sm:col-span-2 lg:col-span-1">
+                <div class="h-1 w-full bg-purple-500 absolute top-0 left-0"></div>
+                <div class="flex items-center justify-between">
+                    <span class="text-[11px] font-bold uppercase tracking-wider text-slate-400">Infection Patients</span>
+                    <div class="w-9 h-9 rounded-xl bg-purple-50 text-purple-600 flex items-center justify-center group-hover:scale-110 group-hover:bg-purple-600 group-hover:text-white transition-all shadow-sm">
+                        <i class="fas fa-virus text-sm"></i>
+                    </div>
                 </div>
-                <div class="w-12 h-12 rounded-2xl bg-purple-100 flex items-center justify-center text-purple-600">
-                    <i class="fas fa-virus text-xl text-purple-600"></i>
+                <div class="mt-3">
+                    <p class="text-3xl font-extrabold text-slate-800 tracking-tight">{{ $infection ?? 0 }}</p>
+                    <p class="text-xs text-slate-500 mt-0.5">{{ $infPct }}% of total cohort</p>
                 </div>
-            </div>
+            </a>
+
         </div>
     </div>
 
