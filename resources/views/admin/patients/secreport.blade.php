@@ -202,12 +202,18 @@
                     !empty(old('insuline_unit')) ||
                     !empty(old('insulin_start_date')) ||
                     !empty(old('insulin_stop_date')) ||
+                    !empty(old('c_peptide')) ||
+                    !empty(old('insulin_antibodies')) ||
+                    !empty(old('mody_biomarkers')) ||
                     ($data->newly_detected ?? 'No') == 'Yes' ||
                     !empty($data->duration_of_diabetes) ||
                     !empty($data->insuline_brand) ||
                     !empty($data->insuline_unit) ||
                     !empty($data->start_insulin_date) ||
                     !empty($data->stop_insulin_date) ||
+                    !empty($data->c_peptide) ||
+                    !empty($data->insulin_antibodies) ||
+                    !empty($data->mody_biomarkers) ||
                     ($data->diabetes ?? '') == 'Diabetes'
                 );
             @endphp
@@ -261,6 +267,24 @@
                         <div><label class="block text-xs font-semibold uppercase text-[#2f5a77] mb-1"><i
                                     class="fas fa-stop"></i> STOP INSULIN DATE</label>
                             <input type="date" name="insulin_stop_date" value="{{ old('insulin_stop_date', $data->stop_insulin_date ?? '') }}"
+                                class="w-full rounded-xl border border-[#d3dfea] px-4 py-2.5 text-sm bg-[#fafdff] input-focus">
+                        </div>
+                        <div><label class="block text-xs font-semibold uppercase text-[#2f5a77] mb-1"><i
+                                    class="fas fa-flask"></i> C PEPTIDE</label>
+                            <input type="text" name="c_peptide" value="{{ old('c_peptide', $data->c_peptide ?? '') }}"
+                                placeholder="e.g. 1.5 ng/mL"
+                                class="w-full rounded-xl border border-[#d3dfea] px-4 py-2.5 text-sm bg-[#fafdff] input-focus">
+                        </div>
+                        <div><label class="block text-xs font-semibold uppercase text-[#2f5a77] mb-1"><i
+                                    class="fas fa-shield-virus"></i> Insulin antibodies</label>
+                            <input type="text" name="insulin_antibodies" value="{{ old('insulin_antibodies', $data->insulin_antibodies ?? '') }}"
+                                placeholder="e.g. Negative / Positive"
+                                class="w-full rounded-xl border border-[#d3dfea] px-4 py-2.5 text-sm bg-[#fafdff] input-focus">
+                        </div>
+                        <div><label class="block text-xs font-semibold uppercase text-[#2f5a77] mb-1"><i
+                                    class="fas fa-dna"></i> Mody Biomarkers</label>
+                            <input type="text" name="mody_biomarkers" value="{{ old('mody_biomarkers', $data->mody_biomarkers ?? '') }}"
+                                placeholder="e.g. HNF1A, GCK"
                                 class="w-full rounded-xl border border-[#d3dfea] px-4 py-2.5 text-sm bg-[#fafdff] input-focus">
                         </div>
                     </div>

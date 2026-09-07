@@ -138,7 +138,7 @@
                     <div class="col-span-1">
                         <label class="block text-xs font-semibold uppercase tracking-wide text-[#2f5a77] mb-1"><i
                                 class="fas fa-user-friends"></i> Father / Husband</label>
-                        <input type="text" name="guardian_name" value="{{ old('guardian_name') }}" placeholder="Name"
+                        <input type="text" name="guardian_name" value="{{ old('guardian_name', request('guardian_name', request('father_name'))) }}" placeholder="Name"
                             class="w-full rounded-xl border border-[#d3dfea] px-4 py-2.5 text-sm bg-[#fafdff] input-focus">
                     </div>
                     <!-- RCDHO GRADE -->
@@ -157,7 +157,7 @@
                     <div class="col-span-1 sm:col-span-2">
                         <label class="block text-xs font-semibold uppercase tracking-wide text-[#2f5a77] mb-1"><i
                                 class="fas fa-map-pin"></i> Address</label>
-                        <input type="text" name="address" value="{{ old('address') }}" placeholder="Street, city, state"
+                        <input type="text" name="address" value="{{ old('address', request('address')) }}" placeholder="Street, city, state"
                             class="w-full rounded-xl border border-[#d3dfea] px-4 py-2.5 text-sm bg-[#fafdff] input-focus">
                     </div>
                     <!-- Mobile No -->
@@ -193,7 +193,10 @@
                     !empty(old('insuline_brand')) ||
                     !empty(old('insuline_unit')) ||
                     !empty(old('insulin_start_date')) ||
-                    !empty(old('insulin_stop_date'))
+                    !empty(old('insulin_stop_date')) ||
+                    !empty(old('c_peptide')) ||
+                    !empty(old('insulin_antibodies')) ||
+                    !empty(old('mody_biomarkers'))
                 );
             @endphp
 
@@ -243,6 +246,21 @@
                         <div><label class="block text-xs font-semibold uppercase text-[#2f5a77] mb-1"><i
                                     class="fas fa-stop"></i> STOP INSULIN DATE</label>
                             <input type="date" name="insulin_stop_date" value="{{ old('insulin_stop_date') }}"
+                                class="w-full rounded-xl border border-[#d3dfea] px-4 py-2.5 text-sm bg-[#fafdff] input-focus">
+                        </div>
+                        <div><label class="block text-xs font-semibold uppercase text-[#2f5a77] mb-1"><i
+                                    class="fas fa-flask"></i> C PEPTIDE</label>
+                            <input type="text" name="c_peptide" value="{{ old('c_peptide') }}" placeholder="e.g. 1.5 ng/mL"
+                                class="w-full rounded-xl border border-[#d3dfea] px-4 py-2.5 text-sm bg-[#fafdff] input-focus">
+                        </div>
+                        <div><label class="block text-xs font-semibold uppercase text-[#2f5a77] mb-1"><i
+                                    class="fas fa-shield-virus"></i> Insulin antibodies</label>
+                            <input type="text" name="insulin_antibodies" value="{{ old('insulin_antibodies') }}" placeholder="e.g. Negative / Positive"
+                                class="w-full rounded-xl border border-[#d3dfea] px-4 py-2.5 text-sm bg-[#fafdff] input-focus">
+                        </div>
+                        <div><label class="block text-xs font-semibold uppercase text-[#2f5a77] mb-1"><i
+                                    class="fas fa-dna"></i> Mody Biomarkers</label>
+                            <input type="text" name="mody_biomarkers" value="{{ old('mody_biomarkers') }}" placeholder="e.g. HNF1A, GCK"
                                 class="w-full rounded-xl border border-[#d3dfea] px-4 py-2.5 text-sm bg-[#fafdff] input-focus">
                         </div>
                     </div>

@@ -287,14 +287,16 @@
 
         <!-- Table -->
         <div class="rounded-xl border border-slate-200/80 bg-white/60 shadow-sm p-4">
-            <table id="appointmentTable" class="w-full text-sm text-left text-slate-700 {{ !empty($isOnlyAdmin) ? 'min-w-[980px]' : 'min-w-[1100px]' }} stripe hover">
+            <table id="appointmentTable" class="w-full text-sm text-left text-slate-700 {{ !empty($isOnlyAdmin) ? 'min-w-[1250px]' : 'min-w-[1400px]' }} stripe hover">
                 <thead class="bg-slate-50/80 text-xs uppercase tracking-wider text-slate-500 border-b border-slate-200/70">
                     <tr>
                         <th scope="col" class="no-sort px-5 py-3.5 font-semibold min-w-[70px] whitespace-nowrap">Sr no.</th>
                         <th scope="col" class="px-5 py-3.5 font-semibold min-w-[180px] whitespace-nowrap">Patient Name</th>
                         <th scope="col" class="px-5 py-3.5 font-semibold min-w-[90px] whitespace-nowrap">Age</th>
+                        <th scope="col" class="px-5 py-3.5 font-semibold min-w-[150px] whitespace-nowrap">Father's Name</th>
                         <th scope="col" class="px-5 py-3.5 font-semibold min-w-[140px] whitespace-nowrap">Phone</th>
                         <th scope="col" class="px-5 py-3.5 font-semibold min-w-[180px] whitespace-nowrap">Email</th>
+                        <th scope="col" class="px-5 py-3.5 font-semibold min-w-[180px]">Address</th>
                         <th scope="col" class="px-5 py-3.5 font-semibold min-w-[130px] whitespace-nowrap">Visit Type</th>
                         @if(empty($isOnlyAdmin))
                         <th scope="col" class="px-5 py-3.5 font-semibold min-w-[220px]">Note / Message</th>
@@ -308,8 +310,10 @@
                     <tr class="table-row-transition hover:bg-indigo-50/40 group" 
                         data-name="{{ $appointment->patient_name ?? '' }}" 
                         data-age="{{ $appointment->age ?? '' }}"
+                        data-father="{{ $appointment->father_name ?? '' }}"
                         data-phone="{{ $appointment->phone ?? '' }}" 
                         data-mail="{{ $appointment->mail ?? '' }}" 
+                        data-address="{{ $appointment->address ?? '' }}"
                         data-type="{{ $appointment->patient_type ?? '' }}" 
                         data-source="{{ $appointment->appointment_type ?? '' }}"
                         data-message="{{ $appointment->message ?? '' }}">
@@ -329,6 +333,9 @@
                                 <span class="text-slate-400">-</span>
                             @endif
                         </td>
+                        <td class="px-5 py-3.5 text-slate-700 text-xs min-w-[150px] whitespace-nowrap">
+                            {{ $appointment->father_name ?: '-' }}
+                        </td>
                         <td class="px-5 py-3.5 text-slate-600 font-mono text-xs whitespace-nowrap min-w-[140px]">
                             <i class="fas fa-phone-alt text-slate-400 mr-1 text-[11px]"></i>
                             {{ $appointment->phone ?? 'N/A' }}
@@ -342,6 +349,9 @@
                             @else
                                 <span class="text-slate-400">-</span>
                             @endif
+                        </td>
+                        <td class="px-5 py-3.5 text-slate-600 text-xs min-w-[180px] max-w-xs break-words">
+                            {{ $appointment->address ?: '-' }}
                         </td>
                         <td class="px-5 py-3.5 min-w-[130px] whitespace-nowrap">
                             @php
@@ -395,8 +405,8 @@
                         </td>
                         <td class="px-5 py-3.5 text-center whitespace-nowrap min-w-[150px]">
                             <div class="flex items-center justify-center gap-1.5">
-                                <a href="{{ route('patient.form') }}?name={{ urlencode($appointment->patient_name ?? '') }}&number={{ urlencode($appointment->phone ?? '') }}&age={{ urlencode($appointment->age ?? '') }}&mail={{ urlencode($appointment->mail ?? '') }}"
-                                   title="Register Patient (Pass {{ $appointment->patient_name }}, {{ $appointment->phone }}, {{ $appointment->age }}, {{ $appointment->mail }})"
+                                <a href="{{ route('patient.form') }}?name={{ urlencode($appointment->patient_name ?? '') }}&father_name={{ urlencode($appointment->father_name ?? '') }}&guardian_name={{ urlencode($appointment->father_name ?? '') }}&number={{ urlencode($appointment->phone ?? '') }}&age={{ urlencode($appointment->age ?? '') }}&mail={{ urlencode($appointment->mail ?? '') }}&address={{ urlencode($appointment->address ?? '') }}"
+                                   title="Register Patient (Pass details to form)"
                                    class="inline-flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-semibold text-xs transition shadow-sm hover:shadow-md group/btn">
                                     <i class="fas fa-plus text-xs group-hover/btn:scale-125 transition-transform"></i>
                                     <span>Add Patient</span>
@@ -470,26 +480,52 @@
                     </div>
                 </div>
 
-                <!-- Phone Number -->
+                <!-- Father's Name -->
                 <div>
-                    <label for="phone" class="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1.5">
-                        <i class="fas fa-phone-alt text-indigo-500 mr-1"></i> Mobile Number <span class="text-red-500">*</span>
+                    <label for="father_name" class="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1.5">
+                        <i class="fas fa-user-friends text-indigo-500 mr-1"></i> Father's Name
                     </label>
-                    <input type="tel" id="phone" name="phone" placeholder="e.g. +91 98765 43210" required
+                    <input type="text" id="father_name" name="father_name" placeholder="Enter father's name (optional)"
                         class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-sm text-slate-800 placeholder:text-slate-400 focus:ring-2 focus:ring-indigo-400 focus:border-indigo-400 outline-none transition bg-slate-50/50">
-                    @error('phone')
+                    @error('father_name')
                         <p class="text-xs text-red-500 mt-1">{{ $message }}</p>
                     @enderror
                 </div>
 
-                <!-- Email Address -->
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <!-- Phone Number -->
+                    <div>
+                        <label for="phone" class="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1.5">
+                            <i class="fas fa-phone-alt text-indigo-500 mr-1"></i> Mobile Number <span class="text-red-500">*</span>
+                        </label>
+                        <input type="tel" id="phone" name="phone" placeholder="e.g. +91 98765 43210" required
+                            class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-sm text-slate-800 placeholder:text-slate-400 focus:ring-2 focus:ring-indigo-400 focus:border-indigo-400 outline-none transition bg-slate-50/50">
+                        @error('phone')
+                            <p class="text-xs text-red-500 mt-1">{{ $message }}</p>
+                        @enderror
+                    </div>
+
+                    <!-- Email Address -->
+                    <div>
+                        <label for="mail" class="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1.5">
+                            <i class="fas fa-envelope text-indigo-500 mr-1"></i> Email Address
+                        </label>
+                        <input type="email" id="mail" name="mail" placeholder="e.g. patient@example.com (optional)"
+                            class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-sm text-slate-800 placeholder:text-slate-400 focus:ring-2 focus:ring-indigo-400 focus:border-indigo-400 outline-none transition bg-slate-50/50">
+                        @error('mail')
+                            <p class="text-xs text-red-500 mt-1">{{ $message }}</p>
+                        @enderror
+                    </div>
+                </div>
+
+                <!-- Address -->
                 <div>
-                    <label for="mail" class="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1.5">
-                        <i class="fas fa-envelope text-indigo-500 mr-1"></i> Email Address
+                    <label for="address" class="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1.5">
+                        <i class="fas fa-map-marker-alt text-indigo-500 mr-1"></i> Address
                     </label>
-                    <input type="email" id="mail" name="mail" placeholder="e.g. patient@example.com (optional)"
+                    <input type="text" id="address" name="address" placeholder="Enter address (street, city, state)"
                         class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-sm text-slate-800 placeholder:text-slate-400 focus:ring-2 focus:ring-indigo-400 focus:border-indigo-400 outline-none transition bg-slate-50/50">
-                    @error('mail')
+                    @error('address')
                         <p class="text-xs text-red-500 mt-1">{{ $message }}</p>
                     @enderror
                 </div>

@@ -4,7 +4,7 @@
 
 <section class="relative overflow-hidden pt-32 pb-16 lg:pt-40 lg:pb-24" style="background: var(--color-light);">
     <div class="absolute inset-0">
-        <img src="{{ asset('images/doctors-2.jpg') }}" class="w-full h-full object-cover" alt="Clinic care team">
+        <img src="{{ asset('images/doctor_front.jpeg') }}" class="w-full h-full object-cover" alt="Clinic care team">
         <div class="absolute inset-0" style="background: linear-gradient(90deg, rgba(15,118,110,0.96), rgba(244,251,248,0.70));"></div>
     </div>
 

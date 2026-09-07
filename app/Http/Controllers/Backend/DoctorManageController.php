@@ -108,10 +108,12 @@ class DoctorManageController extends Controller
     {
         $request->validate([
             'patient_name'     => 'required|string|max:255',
+            'father_name'      => 'nullable|string|max:255',
             'age'              => 'nullable|numeric|min:0|max:150',
             'patient_type'     => 'required|string|in:N,ON,DMF,NDM,NM,NMDM,complimentry,Complimentry',
             'phone'            => 'required|string|max:20',
             'mail'             => 'nullable|email|max:255',
+            'address'          => 'nullable|string',
             'message'          => 'nullable|string',
             'appointment_type' => 'nullable|string|in:on_site,admin',
         ]);
@@ -125,11 +127,13 @@ class DoctorManageController extends Controller
 
         $appointment = Appoinment::create([
             'patient_name'     => $request->patient_name,
+            'father_name'      => $request->father_name,
             'age'              => $request->age,
             'patient_type'     => $patientType,
             'appointment_type' => $appointmentType,
             'phone'            => $request->phone,
             'mail'             => $request->mail,
+            'address'          => $request->address,
             'message'          => $request->message,
         ]);
         if ($appointmentType === 'admin' || $request->is('admin/*') || str_contains(url()->previous() ?? '', 'admin')) {
@@ -192,8 +196,10 @@ class DoctorManageController extends Controller
                 'Sr No.',
                 'Patient Name',
                 'Age',
+                'Father\'s Name',
                 'Phone',
                 'Email',
+                'Address',
                 'Visit Type',
             ];
             if (!$isAdmin) {
@@ -208,8 +214,10 @@ class DoctorManageController extends Controller
                     $index + 1,
                     $app->patient_name ?? 'N/A',
                     $app->age ? $app->age . ' yrs' : '-',
+                    $app->father_name ?? '-',
                     $app->phone ?? '-',
                     $app->mail ?? '-',
+                    $app->address ?? '-',
                     $app->patient_type ?? '-',
                 ];
                 if (!$isAdmin) {
