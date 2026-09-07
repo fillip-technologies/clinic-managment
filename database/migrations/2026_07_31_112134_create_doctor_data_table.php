@@ -12,7 +12,6 @@ return new class extends Migration
         Schema::create('doctor_data', function (Blueprint $table) {
             $table->id();
             $table->foreignId('user_id')->constrained('users')->cascadeOnDelete();
-            $table->string('file');
             $table->string('report_type');
             $table->timestamps();
         });
