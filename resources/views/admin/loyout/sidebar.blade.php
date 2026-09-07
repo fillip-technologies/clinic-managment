@@ -55,7 +55,8 @@
             $isDoctors = request()->routeIs('doctor.list*') || request()->routeIs('doctor.form*') || request()->routeIs('doctor.edit*') || request()->is('admin/doctor/*') || request()->is('admin/edit/doctor/*');
             $isRooms = request()->routeIs('room.*') || request()->routeIs('indexmember*') || request()->is('admin/listing/room/*') || request()->is('admin/edit/room/*') || request()->is('admin/member/*');
             $isPatients = request()->routeIs('list.patient*') || request()->routeIs('patient.*') || request()->routeIs('store.patient*') || request()->routeIs('addnewReport*') || request()->is('admin/patient/*') || request()->is('admin/single/patient/*') || request()->is('admin/addnewReport/*');
-            $isAppointments = request()->routeIs('listappoinment*', 'on_site_appointment*') || request()->is('admin/listappoinment*', 'admin/on-site-appointment*');
+            $isAppointments = (request()->routeIs('listappoinment*') || request()->is('admin/listappoinment*')) && !request()->routeIs('on_site_appointment*') && !request()->routeIs('appointment.onsite*') && !request()->is('admin/on_site_appointment*') && !request()->is('admin/on-site-appointment*');
+            $isOnSiteAppointments = request()->routeIs('on_site_appointment*') || request()->routeIs('appointment.onsite*') || request()->is('admin/on_site_appointment*') || request()->is('admin/on-site-appointment*');
             $isAnalytics = request()->routeIs('analytics.disease*') || request()->is('admin/analytics/*');
             $isReports = request()->routeIs('report.*') || request()->is('admin/*/report');
             $isSettings = request()->routeIs('admin.settings*') || request()->routeIs('doctor.settings*') || request()->is('admin/settings*') || request()->is('doctor/settings*');
@@ -100,6 +101,14 @@
                 class="sidebar-item flex items-center gap-4 px-4 py-3 rounded-xl transition-all duration-200
                 {{ $isAppointments ? 'bg-indigo-600 text-white font-semibold shadow-lg shadow-indigo-600/30 active' : 'text-slate-300 hover:bg-slate-700/60 hover:text-white' }}">
                 <i class="fas fa-calendar-check w-5 text-center {{ $isAppointments ? 'text-white' : 'text-slate-400' }}"></i>
+                <span class="font-medium">Appointments</span>
+            </a>
+
+            <!-- On-Site Appointments -->
+            <a href="{{ route('on_site_appointment') }}"
+                class="sidebar-item flex items-center gap-4 px-4 py-3 rounded-xl transition-all duration-200
+                {{ $isOnSiteAppointments ? 'bg-indigo-600 text-white font-semibold shadow-lg shadow-indigo-600/30 active' : 'text-slate-300 hover:bg-slate-700/60 hover:text-white' }}">
+                <i class="fas fa-globe w-5 text-center {{ $isOnSiteAppointments ? 'text-white' : 'text-slate-400' }}"></i>
                 <span class="font-medium">On-Site Appointments</span>
             </a>
 

@@ -282,6 +282,16 @@
                                 placeholder="+91 98765 43210"
                                 class="w-full rounded-xl border border-[#d3dfea] px-4 py-2.5 text-sm bg-[#fafdff] input-focus">
                         </div>
+                        <!-- Email Address -->
+                        <div class="col-span-1">
+                            <label class="block text-xs font-semibold uppercase tracking-wide text-[#2f5a77] mb-1">
+                                <i class="fas fa-envelope"></i> Email Address
+                            </label>
+                            <input type="email" name="mail"
+                                value="{{ old('mail', $patient->mail ?? $record->patient->mail ?? '') }}"
+                                placeholder="patient@example.com (optional)"
+                                class="w-full rounded-xl border border-[#d3dfea] px-4 py-2.5 text-sm bg-[#fafdff] input-focus">
+                        </div>
                         <!-- Registration No. -->
                         <div class="col-span-1">
                             <label class="block text-xs font-semibold uppercase tracking-wide text-[#2f5a77] mb-1">

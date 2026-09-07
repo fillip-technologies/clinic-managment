@@ -119,7 +119,7 @@
                     <div class="col-span-1">
                         <label class="block text-xs font-semibold uppercase tracking-wide text-[#2f5a77] mb-1"><i
                                 class="far fa-calendar"></i> Age</label>
-                        <input type="number" name="age" value="{{ old('age') }}" placeholder="Years"
+                        <input type="number" name="age" value="{{ old('age', request('age')) }}" placeholder="Years"
                             class="w-full rounded-xl border border-[#d3dfea] px-4 py-2.5 text-sm bg-[#fafdff] input-focus">
                     </div>
                     <!-- GENDER -->
@@ -165,6 +165,13 @@
                         <label class="block text-xs font-semibold uppercase tracking-wide text-[#2f5a77] mb-1"><i
                                 class="fas fa-phone-alt"></i> Mobile No.</label>
                         <input type="tel" name="mobile" value="{{ old('mobile', request('mobile', request('number', request('phone')))) }}" placeholder="+91 98765 43210"
+                            class="w-full rounded-xl border border-[#d3dfea] px-4 py-2.5 text-sm bg-[#fafdff] input-focus">
+                    </div>
+                    <!-- Email Address -->
+                    <div class="col-span-1">
+                        <label class="block text-xs font-semibold uppercase tracking-wide text-[#2f5a77] mb-1"><i
+                                class="fas fa-envelope"></i> Email Address</label>
+                        <input type="email" name="mail" value="{{ old('mail', request('mail', request('email'))) }}" placeholder="patient@example.com (optional)"
                             class="w-full rounded-xl border border-[#d3dfea] px-4 py-2.5 text-sm bg-[#fafdff] input-focus">
                     </div>
                     <!-- New Registration No. -->

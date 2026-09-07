@@ -142,10 +142,20 @@
                             </div>
                         </div>
 
-                        @if(!empty($patient->address))
-                            <div class="mt-2 text-xs text-slate-400 flex items-center gap-1.5">
-                                <i class="fas fa-map-marker-alt text-indigo-400"></i>
-                                <span>{{ $patient->address }}</span>
+                        @if(!empty($patient->address) || !empty($patient->mail))
+                            <div class="mt-2 text-xs text-slate-300 flex flex-wrap items-center gap-4">
+                                @if(!empty($patient->address))
+                                    <div class="flex items-center gap-1.5">
+                                        <i class="fas fa-map-marker-alt text-indigo-400"></i>
+                                        <span>{{ $patient->address }}</span>
+                                    </div>
+                                @endif
+                                @if(!empty($patient->mail))
+                                    <div class="flex items-center gap-1.5">
+                                        <i class="fas fa-envelope text-indigo-400"></i>
+                                        <a href="mailto:{{ $patient->mail }}" class="text-indigo-300 hover:text-indigo-100 hover:underline">{{ $patient->mail }}</a>
+                                    </div>
+                                @endif
                             </div>
                         @endif
 

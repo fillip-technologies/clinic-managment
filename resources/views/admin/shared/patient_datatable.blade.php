@@ -559,7 +559,12 @@
                             <span class="font-medium text-slate-700">{{ $clinical?->median_stiffness ? (is_numeric($clinical->median_stiffness) ? rtrim(rtrim($clinical->median_stiffness, '0'), '.') : $clinical->median_stiffness) : '-' }}</span>
                         </td>
                         <td>{{ $patient->age ?? '-' }} / {{ $patient->gender ?? '-' }}</td>
-                        <td>{{ $patient->mobile_no ?? '-' }}</td>
+                        <td>
+                            <div>{{ $patient->mobile_no ?? '-' }}</div>
+                            @if(!empty($patient->mail))
+                                <div class="text-[11px] text-slate-400 truncate max-w-[140px]" title="{{ $patient->mail }}">{{ $patient->mail }}</div>
+                            @endif
+                        </td>
                         <td>
                             @if ($clinical?->newly_detected == 'Yes' || $clinical?->newly_detected == 1)
                                 <span class="badge-status bg-blue-100 text-blue-700"><i class="fas fa-bolt mr-1"></i>New</span>

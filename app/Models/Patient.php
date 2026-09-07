@@ -15,6 +15,7 @@ class Patient extends Model
         'record_date',
         'address',
         'mobile_no',
+        'mail',
         'rcdho_grade',
         'registration_no',
         'father_husband_name',

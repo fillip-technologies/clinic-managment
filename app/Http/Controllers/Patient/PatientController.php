@@ -40,6 +40,7 @@ class PatientController extends Controller
             'address' => 'nullable|string|max:500',
             'mobile' => 'nullable|string|max:20',
             'mobile_no' => 'nullable|string|max:20',
+            'mail' => 'nullable|email|max:255',
             'registration_no' => 'nullable|string|max:50|unique:patients,registration_no',
 
             'has_diabetes' => 'nullable',
@@ -207,6 +208,7 @@ class PatientController extends Controller
             'rcdho_grade' => $request->rcdho_grade,
             'address' => $request->address,
             'mobile_no' => $request->mobile ?? $request->mobile_no,
+            'mail' => $request->mail,
             'registration_no' => $registrationNo,
         ]);
 
@@ -372,6 +374,7 @@ class PatientController extends Controller
             'address' => 'nullable|string|max:500',
             'mobile' => 'nullable|string|max:20',
             'mobile_no' => 'nullable|string|max:20',
+            'mail' => 'nullable|email|max:255',
 
             'registration_no' => $regNoRules,
 
@@ -554,6 +557,7 @@ class PatientController extends Controller
             'rcdho_grade' => $request->rcdho_grade,
             'address' => $request->address,
             'mobile_no' => $request->mobile ?? $request->mobile_no,
+            'mail' => $request->mail,
             'registration_no' => $registrationNo,
         ]);
 
@@ -1569,6 +1573,7 @@ class PatientController extends Controller
                 'Age',
                 'Gender',
                 'Mobile',
+                'Email',
                 'Address',
                 'Marital Status',
                 'Occupation',
@@ -1656,7 +1661,8 @@ class PatientController extends Controller
                     $patient->patient_name ?? 'N/A',
                     $patient->age ?? 'N/A',
                     $patient->gender ?? 'N/A',
-                    $patient->mobile ?? 'N/A',
+                    $patient->mobile_no ?? $patient->mobile ?? 'N/A',
+                    $patient->mail ?? 'N/A',
                     $patient->address ?? 'N/A',
                     $patient->marital_status ?? 'N/A',
                     $patient->occupation ?? 'N/A',

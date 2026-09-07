@@ -42,33 +42,32 @@
                 <h2 class="text-2xl font-extrabold mb-6" style="color: var(--color-dark);">Appointment Request</h2>
                 <form action="{{ route('appoinmentstore') }}" method="POST" class="space-y-4">
                     @csrf
+                    <input type="hidden" name="appointment_type" value="on_site">
                     <div class="grid sm:grid-cols-2 gap-4">
-                        <input type="text" name="patient_name" placeholder="Patient name"
-                            class="w-full px-4 py-3 rounded-lg border border-emerald-100 outline-none focus:border-emerald-600 @error('patient_name')
-border-red-600
-                    @enderror">
-                        <input type="tel" name="phone" placeholder="Mobile number"
-                            class="w-full px-4 py-3 rounded-lg border border-emerald-100 outline-none focus:border-emerald-600 @error('phone')
-border-red-600
-                    @enderror">
+                        <input type="text" name="patient_name" placeholder="Patient name" required
+                            class="w-full px-4 py-3 rounded-lg border border-emerald-100 outline-none focus:border-emerald-600 @error('patient_name') border-red-600 @enderror">
+                        <input type="number" name="age" placeholder="Age (optional)" min="0" max="150"
+                            class="w-full px-4 py-3 rounded-lg border border-emerald-100 outline-none focus:border-emerald-600 @error('age') border-red-600 @enderror">
                     </div>
-                    <input type="email" name="mail" placeholder="Email address (optional)"
-                        class="w-full px-4 py-3 rounded-lg border border-emerald-100 outline-none focus:border-emerald-600 @error('mail')
-border-red-600
-                    @enderror">
-                    <select name="patient_type"
-                        class="w-full px-4 py-3 rounded-lg border border-emerald-100 outline-none focus:border-emerald-600 @error('patient_type')
-border-rred-600
-                @enderror">
-                        <option value="New patient">New patient</option>
-                        <option value="Old patient / follow-up">Old patient / follow-up</option>
-                        <option value="Drug evaluation">Drug evaluation</option>
-                        <option value="Investigation / ultrasound">Investigation / ultrasound</option>
+                    <div class="grid sm:grid-cols-2 gap-4">
+                        <input type="tel" name="phone" placeholder="Mobile number" required
+                            class="w-full px-4 py-3 rounded-lg border border-emerald-100 outline-none focus:border-emerald-600 @error('phone') border-red-600 @enderror">
+                        <input type="email" name="mail" placeholder="Email address (optional)"
+                            class="w-full px-4 py-3 rounded-lg border border-emerald-100 outline-none focus:border-emerald-600 @error('mail') border-red-600 @enderror">
+                    </div>
+                    <select name="patient_type" required
+                        class="w-full px-4 py-3 rounded-lg border border-emerald-100 outline-none focus:border-emerald-600 @error('patient_type') border-red-600 @enderror">
+                        <option value="" disabled selected>Select Visit Type</option>
+                        <option value="N">N</option>
+                        <option value="ON">ON</option>
+                        <option value="DMF">DMF</option>
+                        <option value="NDM">NDM</option>
+                        <option value="NM">NM</option>
+                        <option value="NMDM">NMDM</option>
+                        <option value="complimentry">complimentry</option>
                     </select>
-                    <textarea name="message" rows="4" placeholder="Brief concern or appointment note"
-                        class="w-full px-4 py-3 rounded-lg border border-emerald-100 outline-none focus:border-emerald-600 @error('message')
-border-red-600
-                @enderror"></textarea>
+                    <textarea name="message" rows="4" placeholder="Brief concern or appointment note (optional)"
+                        class="w-full px-4 py-3 rounded-lg border border-emerald-100 outline-none focus:border-emerald-600 @error('message') border-red-600 @enderror"></textarea>
                     <button class="w-full py-3 rounded-lg text-white font-bold"
                         style="background: var(--color-primary);">Send Request</button>
                 </form>
