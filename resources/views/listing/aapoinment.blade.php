@@ -475,7 +475,7 @@
             </div>
 
             <!-- Modal Form -->
-            <form action="{{ route('appoinmentstore') }}" method="POST" class="p-6 space-y-4">
+            <form action="{{ route('admin.appoinmentstore') }}" method="POST" class="p-6 space-y-4">
                 @csrf
                 <input type="hidden" name="appointment_type" value="admin">
 
