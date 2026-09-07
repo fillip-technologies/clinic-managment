@@ -15,8 +15,8 @@
 <section class="py-20 px-6" style="background: var(--color-light);">
     <div class="max-w-6xl mx-auto grid md:grid-cols-2 gap-8">
         @foreach ([
-            ['Patna', 'Holding #404, "Sukhadaya", New Yarpur Road #1, Patna - 800001', 'New and old patients: 09:00 AM to 02:00 PM', 'Drug evaluation: 04:00 PM to 06:00 PM'],
-            ['Samastipur', 'Bengali Tola, Samastipur - 848101, Bihar', 'Sunday closed', 'Please call before visiting for availability.'],
+            ['Administrative Office', 'Holding #404, "Sukhadaya", New Yarpur Road #1, Patna - 800001', 'New and old patients: 09:00 AM to 02:00 PM', 'Drug evaluation: 04:00 PM to 06:00 PM'],
+            ['Clinic Address', 'Bengali Tola, Samastipur - 848101, Bihar', 'Sunday closed', 'Please call before visiting for availability.'],
         ] as $clinic)
         <div class="rounded-lg bg-white shadow-sm border border-emerald-100 p-8">
             <div class="h-1.5 rounded-full mb-6" style="background: linear-gradient(90deg, var(--color-primary), var(--color-secondary));"></div>

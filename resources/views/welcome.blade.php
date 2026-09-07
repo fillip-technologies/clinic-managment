@@ -114,13 +114,13 @@
 <section class="py-20 px-6 bg-white">
     <div class="max-w-7xl mx-auto grid md:grid-cols-2 gap-6">
         <div class="rounded-lg p-8 border border-emerald-100" style="background: var(--color-light);">
-            <h3 class="text-2xl font-extrabold mb-3" style="color: var(--color-dark);">Patna</h3>
+            <h3 class="text-2xl font-extrabold mb-3" style="color: var(--color-dark);">Administrative Office</h3>
             <p class="text-gray-700">Holding #404, "Sukhadaya", New Yarpur Road #1, Patna - 800001</p>
             <p class="text-sm font-bold mt-4" style="color: var(--color-primary);">New and old patients: 09:00 AM to 02:00 PM</p>
             <p class="text-sm text-gray-600">Drug evaluation: 04:00 PM to 06:00 PM</p>
         </div>
         <div class="rounded-lg p-8 border border-emerald-100" style="background: var(--color-light);">
-            <h3 class="text-2xl font-extrabold mb-3" style="color: var(--color-dark);">Samastipur</h3>
+            <h3 class="text-2xl font-extrabold mb-3" style="color: var(--color-dark);">Clinic Address</h3>
             <p class="text-gray-700">Bengali Tola, Samastipur - 848101, Bihar</p>
             <p class="text-sm font-bold mt-4" style="color: var(--color-primary);">Sunday closed</p>
             <p class="text-sm text-gray-600">Call service and night service unavailable as per clinic note.</p>

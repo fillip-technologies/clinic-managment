@@ -17,6 +17,11 @@ class Appoinment extends Model
         'address',
         'patient_type',
         'appointment_type',
+        'appointment_scheduled_date',
         'message',
+    ];
+
+    protected $casts = [
+        'appointment_scheduled_date' => 'date',
     ];
 }

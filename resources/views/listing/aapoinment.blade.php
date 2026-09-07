@@ -287,7 +287,7 @@
 
         <!-- Table -->
         <div class="rounded-xl border border-slate-200/80 bg-white/60 shadow-sm p-4">
-            <table id="appointmentTable" class="w-full text-sm text-left text-slate-700 {{ !empty($isOnlyAdmin) ? 'min-w-[1250px]' : 'min-w-[1400px]' }} stripe hover">
+            <table id="appointmentTable" class="w-full text-sm text-left text-slate-700 {{ !empty($isOnlyAdmin) ? 'min-w-[1450px]' : 'min-w-[1650px]' }} stripe hover">
                 <thead class="bg-slate-50/80 text-xs uppercase tracking-wider text-slate-500 border-b border-slate-200/70">
                     <tr>
                         <th scope="col" class="no-sort px-5 py-3.5 font-semibold min-w-[70px] whitespace-nowrap">Sr no.</th>
@@ -301,8 +301,9 @@
                         @if(empty($isOnlyAdmin))
                         <th scope="col" class="px-5 py-3.5 font-semibold min-w-[220px]">Note / Message</th>
                         @endif
-                        <th scope="col" class="col-date px-5 py-3.5 font-semibold min-w-[160px] whitespace-nowrap">Date</th>
-                        <th scope="col" class="no-sort px-5 py-3.5 font-semibold min-w-[150px] text-center whitespace-nowrap no-export">Action</th>
+                        <th scope="col" class="px-5 py-3.5 font-semibold min-w-[150px] whitespace-nowrap">Scheduled Date</th>
+                        <th scope="col" class="col-date px-5 py-3.5 font-semibold min-w-[160px] whitespace-nowrap">Booked On</th>
+                        <th scope="col" class="no-sort px-5 py-3.5 font-semibold min-w-[240px] text-center whitespace-nowrap no-export">Action</th>
                     </tr>
                 </thead>
                 <tbody id="tableBody" class="divide-y divide-slate-100">
@@ -400,11 +401,35 @@
                             @endif
                         </td>
                         @endif
-                        <td class="px-5 py-3.5 text-slate-400 text-xs font-mono whitespace-nowrap min-w-[160px]" data-order="{{ $appointment->created_at ? $appointment->created_at->timestamp : 0 }}">
-                            {{ $appointment->created_at ? $appointment->created_at->format('d M Y, h:i A') : '-' }}
+                        <td class="px-5 py-3.5 min-w-[150px] whitespace-nowrap" data-order="{{ $appointment->appointment_scheduled_date ? \Carbon\Carbon::parse($appointment->appointment_scheduled_date)->timestamp : 0 }}">
+                            @if($appointment->appointment_scheduled_date)
+                                <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200 shadow-sm">
+                                    <i class="fas fa-calendar-check text-emerald-500 text-[11px]"></i>
+                                    <span>{{ \Carbon\Carbon::parse($appointment->appointment_scheduled_date)->format('d M Y') }}</span>
+                                </span>
+                            @else
+                                <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-amber-50 text-amber-700 border border-amber-200">
+                                    <i class="fas fa-clock text-amber-500 text-[11px]"></i>
+                                    <span>Not Scheduled</span>
+                                </span>
+                            @endif
                         </td>
-                        <td class="px-5 py-3.5 text-center whitespace-nowrap min-w-[150px]">
+                        <td class="px-5 py-3.5 text-slate-500 text-xs font-mono whitespace-nowrap min-w-[160px]" data-order="{{ $appointment->created_at ? $appointment->created_at->timestamp : 0 }}">
+                            <div class="flex items-center gap-1.5">
+                                <i class="fas fa-clock text-slate-400 text-[11px]"></i>
+                                <span>{{ $appointment->created_at ? $appointment->created_at->format('d M Y, h:i A') : '-' }}</span>
+                            </div>
+                        </td>
+                        <td class="px-5 py-3.5 text-center whitespace-nowrap min-w-[240px]">
                             <div class="flex items-center justify-center gap-1.5">
+                                <button type="button"
+                                    onclick="openScheduleModal({{ $appointment->id }}, '{{ addslashes($appointment->patient_name ?? '') }}', '{{ $appointment->appointment_scheduled_date ? \Carbon\Carbon::parse($appointment->appointment_scheduled_date)->format('Y-m-d') : '' }}', '{{ addslashes($appointment->mail ?? '') }}', '{{ addslashes($appointment->created_at ? $appointment->created_at->format('d M Y, h:i A') : '') }}')"
+                                    title="{{ $appointment->appointment_scheduled_date ? 'Reschedule Appointment Date' : 'Schedule Appointment Date' }}"
+                                    class="inline-flex items-center justify-center gap-1.5 px-2.5 py-1.5 rounded-xl {{ $appointment->appointment_scheduled_date ? 'bg-emerald-50 hover:bg-emerald-100 text-emerald-700 border border-emerald-200' : 'bg-amber-50 hover:bg-amber-100 text-amber-700 border border-amber-200' }} font-semibold text-xs transition shadow-sm hover:shadow">
+                                    <i class="fas {{ $appointment->appointment_scheduled_date ? 'fa-calendar-check text-emerald-600' : 'fa-calendar-alt text-amber-600' }} text-xs"></i>
+                                    <span>{{ $appointment->appointment_scheduled_date ? 'Reschedule' : 'Schedule' }}</span>
+                                </button>
+
                                 <a href="{{ route('patient.form') }}?name={{ urlencode($appointment->patient_name ?? '') }}&father_name={{ urlencode($appointment->father_name ?? '') }}&guardian_name={{ urlencode($appointment->father_name ?? '') }}&number={{ urlencode($appointment->phone ?? '') }}&age={{ urlencode($appointment->age ?? '') }}&mail={{ urlencode($appointment->mail ?? '') }}&address={{ urlencode($appointment->address ?? '') }}"
                                    title="Register Patient (Pass details to form)"
                                    class="inline-flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-semibold text-xs transition shadow-sm hover:shadow-md group/btn">
@@ -567,6 +592,70 @@
         </div>
     </div>
 
+    <!-- Schedule Appointment Modal -->
+    <div id="scheduleModal" class="modal-overlay">
+        <div class="modal-box w-full max-w-md bg-white rounded-2xl shadow-2xl border border-slate-200 overflow-hidden">
+            <!-- Modal Header -->
+            <div class="flex items-center justify-between px-6 py-4 bg-gradient-to-r from-emerald-50 via-teal-50 to-white border-b border-slate-100">
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 rounded-xl bg-emerald-600 text-white flex items-center justify-center shadow-md shadow-emerald-100">
+                        <i class="fas fa-calendar-check text-base"></i>
+                    </div>
+                    <div>
+                        <h3 class="text-lg font-bold text-slate-800">Schedule Appointment</h3>
+                        <p class="text-xs text-slate-500">Confirm date & send email notification</p>
+                    </div>
+                </div>
+                <button type="button" onclick="closeScheduleModal()" class="w-8 h-8 rounded-lg text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition flex items-center justify-center">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+
+            <!-- Modal Form -->
+            <form id="scheduleAppointmentForm" method="POST" action="" class="p-6 space-y-4">
+                @csrf
+
+                <!-- Patient Summary Card -->
+                <div class="p-3.5 rounded-xl bg-slate-50 border border-slate-200/80 space-y-2 text-xs">
+                    <div class="flex items-center justify-between">
+                        <span class="font-semibold uppercase tracking-wider text-slate-400">Patient:</span>
+                        <span id="modalPatientName" class="font-bold text-slate-800 text-sm"></span>
+                    </div>
+                    <div class="flex items-center justify-between">
+                        <span class="font-semibold uppercase tracking-wider text-slate-400">Booked On:</span>
+                        <span id="modalBookedAt" class="font-mono text-slate-600"></span>
+                    </div>
+                    <div id="modalEmailNotice" class="pt-2 border-t border-slate-200">
+                        <!-- Populated dynamically by JS -->
+                    </div>
+                </div>
+
+                <!-- Scheduled Date Picker -->
+                <div>
+                    <label for="modalScheduledDateInput" class="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1.5">
+                        <i class="fas fa-calendar-day text-emerald-600 mr-1"></i> Scheduled Date <span class="text-red-500">*</span>
+                    </label>
+                    <input type="date" id="modalScheduledDateInput" name="appointment_scheduled_date" required min="{{ date('Y-m-d') }}"
+                        class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-sm text-slate-800 focus:ring-2 focus:ring-emerald-400 focus:border-emerald-400 outline-none transition bg-white">
+                    <p class="text-[11px] text-slate-500 mt-1">Select the confirmed date on which patient should visit the clinic.</p>
+                </div>
+
+                <!-- Modal Actions -->
+                <div class="flex items-center justify-end gap-3 pt-3 border-t border-slate-100">
+                    <button type="button" onclick="closeScheduleModal()"
+                        class="px-4 py-2.5 rounded-xl border border-slate-300 text-slate-600 hover:bg-slate-100 text-sm font-medium transition">
+                        Cancel
+                    </button>
+                    <button type="submit"
+                        class="px-5 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-semibold shadow-md shadow-emerald-100 hover:shadow-lg transition flex items-center gap-2">
+                        <i class="fas fa-paper-plane"></i>
+                        <span>Confirm & Schedule</span>
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
     <script>
         function openAppointmentModal() {
             const modal = document.getElementById('appointmentModal');
@@ -581,11 +670,44 @@
             modal.classList.remove('active');
         }
 
+        function openScheduleModal(id, name, scheduledDate, email, bookedAt) {
+            const modal = document.getElementById('scheduleModal');
+            const form = document.getElementById('scheduleAppointmentForm');
+            
+            form.action = "{{ url('/admin/appointment/schedule') }}/" + id;
+            document.getElementById('modalPatientName').textContent = name || 'Patient';
+            document.getElementById('modalBookedAt').textContent = bookedAt || '-';
+            
+            const emailNotice = document.getElementById('modalEmailNotice');
+            if (email && email.trim() !== '') {
+                emailNotice.innerHTML = `<span class="text-emerald-700 font-medium flex items-center gap-1.5"><i class="fas fa-check-circle text-emerald-500"></i> Confirmation email will be sent to <strong>${email}</strong></span>`;
+            } else {
+                emailNotice.innerHTML = `<span class="text-amber-700 font-medium flex items-center gap-1.5"><i class="fas fa-exclamation-triangle text-amber-500"></i> No email provided. Appointment will be scheduled without email notification.</span>`;
+            }
+            
+            const dateInput = document.getElementById('modalScheduledDateInput');
+            dateInput.value = scheduledDate || '';
+            
+            modal.classList.add('active');
+            setTimeout(() => {
+                dateInput.focus();
+            }, 100);
+        }
+
+        function closeScheduleModal() {
+            const modal = document.getElementById('scheduleModal');
+            modal.classList.remove('active');
+        }
+
         // Close when clicking outside modal box
         window.addEventListener('click', function(e) {
-            const modal = document.getElementById('appointmentModal');
-            if (e.target === modal) {
+            const appointmentModal = document.getElementById('appointmentModal');
+            if (e.target === appointmentModal) {
                 closeAppointmentModal();
+            }
+            const scheduleModal = document.getElementById('scheduleModal');
+            if (e.target === scheduleModal) {
+                closeScheduleModal();
             }
         });
 
@@ -593,6 +715,7 @@
         window.addEventListener('keydown', function(e) {
             if (e.key === 'Escape') {
                 closeAppointmentModal();
+                closeScheduleModal();
             }
         });
 
@@ -617,7 +740,7 @@
         $(document).ready(function() {
             let dateColIndex = $('#appointmentTable thead th.col-date').index();
             if (dateColIndex === -1) {
-                dateColIndex = {{ !empty($isOnlyAdmin) ? 6 : 7 }};
+                dateColIndex = {{ !empty($isOnlyAdmin) ? 9 : 10 }};
             }
 
             appointmentDataTable = $('#appointmentTable').DataTable({

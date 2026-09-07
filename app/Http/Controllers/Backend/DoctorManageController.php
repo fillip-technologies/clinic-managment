@@ -6,8 +6,11 @@ use App\Events\DoctorRegEvent;
 use App\Http\Controllers\Controller;
 use App\Models\Appoinment;
 use App\Models\User;
+use App\Mail\AppointmentScheduledMail;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Mail;
 
 class DoctorManageController extends Controller
 {
@@ -201,6 +204,7 @@ class DoctorManageController extends Controller
                 'Email',
                 'Address',
                 'Visit Type',
+                'Scheduled Date',
             ];
             if (!$isAdmin) {
                 $headers[] = 'Note / Message';
@@ -219,6 +223,7 @@ class DoctorManageController extends Controller
                     $app->mail ?? '-',
                     $app->address ?? '-',
                     $app->patient_type ?? '-',
+                    $app->appointment_scheduled_date ? \Carbon\Carbon::parse($app->appointment_scheduled_date)->format('d M Y') : 'Not Scheduled',
                 ];
                 if (!$isAdmin) {
                     $row[] = $app->message ?? '-';
@@ -230,6 +235,37 @@ class DoctorManageController extends Controller
 
             fclose($handle);
         }, 200, $headers);
+    }
+
+    public function scheduleAppointment(Request $request, $id)
+    {
+        $request->validate([
+            'appointment_scheduled_date' => 'required|date',
+        ]);
+
+        $appointment = Appoinment::findOrFail($id);
+        $appointment->appointment_scheduled_date = $request->appointment_scheduled_date;
+        $appointment->save();
+
+        $mailSent = false;
+        if (!empty($appointment->mail) && filter_var($appointment->mail, FILTER_VALIDATE_EMAIL)) {
+            try {
+                Mail::to($appointment->mail)->send(new AppointmentScheduledMail($appointment));
+                $mailSent = true;
+            } catch (\Throwable $e) {
+                Log::error("Failed to send appointment schedule email to {$appointment->mail}: " . $e->getMessage());
+            }
+        }
+
+        $formattedDate = \Carbon\Carbon::parse($appointment->appointment_scheduled_date)->format('d M Y');
+        $msg = "Appointment for {$appointment->patient_name} scheduled on {$formattedDate}.";
+        if ($mailSent) {
+            $msg .= " Confirmation email sent to {$appointment->mail}.";
+        } elseif (!empty($appointment->mail)) {
+            $msg .= " (Email could not be delivered, please verify mail configuration).";
+        }
+
+        return redirect()->back()->with('success', $msg);
     }
 
     public function deleteAppointment($id)
