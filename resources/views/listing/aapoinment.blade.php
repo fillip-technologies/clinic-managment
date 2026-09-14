@@ -740,7 +740,7 @@
         $(document).ready(function() {
             let dateColIndex = $('#appointmentTable thead th.col-date').index();
             if (dateColIndex === -1) {
-                dateColIndex = {{ !empty($isOnlyAdmin) ? 9 : 10 }};
+                dateColIndex = 1;
             }
 
             appointmentDataTable = $('#appointmentTable').DataTable({

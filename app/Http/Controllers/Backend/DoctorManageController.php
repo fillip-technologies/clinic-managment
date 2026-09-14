@@ -208,6 +208,7 @@ class DoctorManageController extends Controller
 
             $headers = [
                 'Sr No.',
+                'Booked On',
                 'Patient Name',
                 'Age',
                 'Father\'s Name',
@@ -215,18 +216,18 @@ class DoctorManageController extends Controller
                 'Email',
                 'Address',
                 'Visit Type',
-                'Scheduled Date',
             ];
             if (!$isAdmin) {
                 $headers[] = 'Note / Message';
             }
-            $headers[] = 'Booking Date';
+            $headers[] = 'Scheduled Date';
 
             fputcsv($handle, $headers);
 
             foreach ($appointments as $index => $app) {
                 $row = [
                     $index + 1,
+                    $app->created_at ? $app->created_at->format('d M Y, h:i A') : '-',
                     $app->patient_name ?? 'N/A',
                     $app->age ? $app->age . ' yrs' : '-',
                     $app->father_name ?? '-',
@@ -234,12 +235,11 @@ class DoctorManageController extends Controller
                     $app->mail ?? '-',
                     $app->address ?? '-',
                     $app->patient_type ?? '-',
-                    $app->appointment_scheduled_date ? \Carbon\Carbon::parse($app->appointment_scheduled_date)->format('d M Y') : 'Not Scheduled',
                 ];
                 if (!$isAdmin) {
                     $row[] = $app->message ?? '-';
                 }
-                $row[] = $app->created_at ? $app->created_at->format('d M Y, h:i A') : '-';
+                $row[] = $app->appointment_scheduled_date ? \Carbon\Carbon::parse($app->appointment_scheduled_date)->format('d M Y') : 'Not Scheduled';
 
                 fputcsv($handle, $row);
             }
