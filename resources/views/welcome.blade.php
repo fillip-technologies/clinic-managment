@@ -35,6 +35,11 @@
                 <p class="text-xs font-extrabold uppercase tracking-widest mb-3" style="color: var(--color-primary);">Clinical Team</p>
                 <div class="space-y-5">
                     <div>
+                        <div class="text-xs font-extrabold uppercase tracking-widest mb-1.5 leading-snug space-y-0.5" style="color: var(--color-primary);">
+                            <div>RCDHO</div>
+                            <div>DIRECTOR:</div>
+                            <div>PROGRAMME & RESEARCH</div>
+                        </div>
                         <h2 class="text-2xl font-extrabold" style="color: var(--color-dark);">Dr. Supriyo Mukherjee</h2>
                         <ul class="space-y-1.5 text-sm text-gray-600 mt-2">
                             <li>M.D. Internal Medicine, KGMC (Lucknow)</li>
@@ -46,9 +51,13 @@
                         </ul>
                     </div>
                     <div class="border-t border-gray-100 pt-5">
+                        <div class="text-xs font-extrabold uppercase tracking-widest mb-1.5 leading-snug space-y-0.5" style="color: var(--color-primary);">
+                            <div>RCDHO</div>
+                            <div>DIRECTOR:</div>
+                            <div>DIAGNOSTICS & IMAGING</div>
+                        </div>
                         <h2 class="text-2xl font-extrabold" style="color: var(--color-dark);">Dr. Sushmita Mukherjee</h2>
                         <p class="text-sm text-gray-600 mt-1">M.B.B.S. (B.U.), CC.USG</p>
-                        <p class="text-sm font-bold" style="color: var(--color-primary);">Director , Diagnostic & Imaging</p>
                     </div>
                 </div>
             </div>

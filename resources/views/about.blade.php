@@ -20,7 +20,11 @@
                     <img src="{{ asset('images/sir_img.jpeg') }}" alt="Dr. Supriyo Mukherjee"
                         class="w-full h-full object-cover object-top hover:scale-105 transition duration-500">
                 </div>
-                <p class="text-xs font-extrabold uppercase tracking-widest mb-2" style="color: var(--color-primary);">Director, RCDHO Programme & Research</p>
+                <div class="text-xs font-extrabold uppercase tracking-widest mb-2 leading-snug space-y-0.5" style="color: var(--color-primary);">
+                    <div>RCDHO</div>
+                    <div>DIRECTOR:</div>
+                    <div>PROGRAMME & RESEARCH</div>
+                </div>
                 <h2 class="text-2xl sm:text-3xl font-extrabold mb-4" style="color: var(--color-dark);">Dr. Supriyo Mukherjee</h2>
                 <ul class="space-y-2 text-gray-700 text-sm sm:text-base">
                     <li>M.D. Internal Medicine, KGMC (Lucknow)</li>
@@ -42,7 +46,11 @@
                     <img src="{{ asset('images/mam_img.jpeg') }}" alt="Dr. Sushmita Mukherjee"
                         class="w-full h-full object-cover object-top hover:scale-105 transition duration-500">
                 </div>
-                <p class="text-xs font-extrabold uppercase tracking-widest mb-2" style="color: var(--color-primary);">Director, Diagnostic & Imaging</p>
+                <div class="text-xs font-extrabold uppercase tracking-widest mb-2 leading-snug space-y-0.5" style="color: var(--color-primary);">
+                    <div>RCDHO</div>
+                    <div>DIRECTOR:</div>
+                    <div>DIAGNOSTICS & IMAGING</div>
+                </div>
                 <h2 class="text-2xl sm:text-3xl font-extrabold mb-4" style="color: var(--color-dark);">Dr. Sushmita Mukherjee</h2>
                 <ul class="space-y-2 text-gray-700 text-sm sm:text-base">
                     <li>M.B.B.S. (B.U.)</li>
