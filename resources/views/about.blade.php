@@ -15,7 +15,7 @@
 <section class="py-20 px-6 bg-white">
     <div class="max-w-6xl mx-auto grid lg:grid-cols-2 gap-8">
         <div class="rounded-lg border border-emerald-100 p-8 shadow-sm">
-            <p class="text-xs font-extrabold uppercase tracking-widest mb-3" style="color: var(--color-primary);">Director, RCDHO</p>
+            <p class="text-xs font-extrabold uppercase tracking-widest mb-3" style="color: var(--color-primary);">Director, RCDHO Programme & Research</p>
             <h2 class="text-3xl font-extrabold mb-3" style="color: var(--color-dark);">Dr. Supriyo Mukherjee</h2>
             <ul class="space-y-2 text-gray-700">
                 <li>M.D. Internal Medicine, KGMC (Lucknow)</li>
@@ -29,7 +29,7 @@
         </div>
 
         <div class="rounded-lg border border-emerald-100 p-8 shadow-sm" style="background: var(--color-light);">
-            <p class="text-xs font-extrabold uppercase tracking-widest mb-3" style="color: var(--color-primary);">Clinical Ultrasonologist</p>
+            <p class="text-xs font-extrabold uppercase tracking-widest mb-3" style="color: var(--color-primary);">Director , Diagnostic & Imaging</p>
             <h2 class="text-3xl font-extrabold mb-3" style="color: var(--color-dark);">Dr. Sushmita Mukherjee</h2>
             <ul class="space-y-2 text-gray-700">
                 <li>M.B.B.S. (B.U.)</li>

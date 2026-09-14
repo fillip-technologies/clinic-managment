@@ -36,9 +36,14 @@
                 <div class="space-y-5">
                     <div>
                         <h2 class="text-2xl font-extrabold" style="color: var(--color-dark);">Dr. Supriyo Mukherjee</h2>
-                        <p class="text-sm text-gray-600 mt-1">M.D. Internal Medicine, KGMC (Lucknow)</p>
-                        <p class="text-sm text-gray-600">M.Sc. Advancing Diabetes Care (UK), Senior Fellow IDF, FICP, FDI</p>
-                        <p class="text-sm font-bold mt-2" style="color: var(--color-secondary);">Gold Medal in Medicine</p>
+                        <ul class="space-y-1.5 text-sm text-gray-600 mt-2">
+                            <li>M.D. Internal Medicine, KGMC (Lucknow)</li>
+                            <li>M.Sc. (Distinction) Advancing Diabetes Care (UK)</li>
+                            <li>Senior Fellow, International Diabetes Federation (IDF)</li>
+                            <li>Fellow Indian College of Physicians (FICP)</li>
+                            <li>Fellow Diabetes India (FDI)</li>
+                            <li class="font-bold pt-1" style="color: var(--color-secondary);">Gold Medal in Medicine</li>
+                        </ul>
                     </div>
                     <div class="border-t border-gray-100 pt-5">
                         <h2 class="text-2xl font-extrabold" style="color: var(--color-dark);">Dr. Sushmita Mukherjee</h2>
