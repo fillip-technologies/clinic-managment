@@ -2,10 +2,7 @@
     <div class="backdrop-blur-xl bg-white/90 border border-emerald-100 shadow-lg rounded-full">
         <div class="max-w-7xl mx-auto flex items-center justify-between px-5 py-3">
             <a href="{{ url('/') }}" class="flex items-center gap-3 min-w-0">
-                <div class="w-11 h-11 rounded-full flex items-center justify-center text-white font-extrabold shrink-0"
-                    style="background: linear-gradient(135deg, var(--color-primary), var(--color-blue));">
-                    R
-                </div>
+                <img src="{{ asset('images/final logo.jpeg') }}" alt="RCDHO Logo" class="w-11 h-11 rounded-full object-contain shrink-0 bg-white shadow-sm border border-emerald-100">
                 <div class="leading-tight min-w-0">
                     <p class="text-sm font-extrabold truncate" style="color: var(--color-dark);">RCDHO</p>
                     <p class="text-xs text-gray-500 truncate">DrMukherjeeS Clinic Pvt. Ltd.</p>
