@@ -32,6 +32,10 @@ class AdminController extends Controller
             return back()->with('error', 'User not found.');
         }
 
+        Auth::guard('super_admin')->logout();
+        Auth::guard('doctor')->logout();
+        Auth::guard('staff')->logout();
+
         if ($data->role == "super_admin") {
             if (Auth::guard('super_admin')->attempt(['email' => $request->email, 'password' => $request->password])) {
                 $request->session()->regenerate();
@@ -75,11 +79,9 @@ class AdminController extends Controller
 
     public function AdminLogout(Request $request)
     {
-        if (Auth::guard('super_admin')->check()) {
-            Auth::guard('super_admin')->logout();
-        } elseif (Auth::guard('staff')->check()) {
-            Auth::guard('staff')->logout();
-        }
+        Auth::guard('super_admin')->logout();
+        Auth::guard('staff')->logout();
+        Auth::guard('doctor')->logout();
         $request->session()->invalidate();
         $request->session()->regenerateToken();
         return redirect()->route('login');
