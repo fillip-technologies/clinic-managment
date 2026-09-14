@@ -39,18 +39,132 @@
             font-weight: 600;
             color: #1e293b;
         }
+        .print-only {
+            display: none;
+        }
+
+        @page {
+            size: A4 portrait;
+            margin: 12mm 10mm 12mm 10mm;
+        }
+
         @media print {
-            aside, topbar, .no-print {
+            /* 1. Reset Root & Document Constraints */
+            html, body {
+                height: auto !important;
+                min-height: 100% !important;
+                overflow: visible !important;
+                background: #ffffff !important;
+                color: #0f172a !important;
+                font-size: 11px !important;
+                line-height: 1.35 !important;
+            }
+
+            /* 2. Unconstrain all layout wrappers from master layout */
+            .flex.h-screen,
+            .h-screen,
+            .overflow-hidden,
+            .overflow-y-auto,
+            div[class*="h-screen"],
+            main {
+                height: auto !important;
+                min-height: auto !important;
+                max-height: none !important;
+                overflow: visible !important;
+                position: static !important;
+                display: block !important;
+                width: 100% !important;
+                max-width: 100% !important;
+                margin: 0 !important;
+                padding: 0 !important;
+                background: #ffffff !important;
+            }
+
+            /* 3. Hide all non-printable UI elements */
+            aside,
+            nav,
+            header,
+            footer,
+            topbar,
+            .no-print,
+            button,
+            #tab-btn-profile,
+            #tab-btn-analytics,
+            .graph-filter-btn {
                 display: none !important;
             }
-            main {
-                padding: 0 !important;
-                background: white !important;
+
+            /* 4. Display print-only elements */
+            .print-only {
+                display: block !important;
             }
-            .detail-card {
+
+            /* 5. Force exact ink and background colors */
+            * {
+                -webkit-print-color-adjust: exact !important;
+                print-color-adjust: exact !important;
+            }
+
+            /* 6. Ensure Clinical Profile is always displayed on print */
+            #content-profile {
+                display: block !important;
+            }
+
+            /* 7. Avoid cutting cards across pages awkwardly */
+            .detail-card,
+            .rounded-2xl,
+            .rounded-3xl,
+            section,
+            table,
+            tr {
+                break-inside: avoid !important;
+                page-break-inside: avoid !important;
                 box-shadow: none !important;
-                border: 1px solid #ccc !important;
-                break-inside: avoid;
+            }
+
+            /* 8. Refined card borders for print */
+            .detail-card {
+                border: 1px solid #94a3b8 !important;
+                border-radius: 6px !important;
+                padding: 10px 14px !important;
+                margin-bottom: 12px !important;
+                background: #ffffff !important;
+            }
+
+            .detail-card-header {
+                border-bottom: 1.5px solid #0f172a !important;
+                padding-bottom: 5px !important;
+                margin-bottom: 8px !important;
+                font-size: 12px !important;
+                font-weight: 700 !important;
+                color: #0f172a !important;
+            }
+
+            /* 9. Patient Master Identity Card print optimization */
+            .bg-gradient-to-r {
+                background: #0f172a !important;
+                color: #ffffff !important;
+                border: 1.5px solid #334155 !important;
+                border-radius: 8px !important;
+                padding: 12px 16px !important;
+                margin-bottom: 12px !important;
+            }
+
+            /* 10. Table styling for multi-page print */
+            .table-wrap, .overflow-x-auto {
+                overflow: visible !important;
+                width: 100% !important;
+            }
+
+            table {
+                width: 100% !important;
+                border-collapse: collapse !important;
+            }
+
+            th, td {
+                padding: 3px 6px !important;
+                font-size: 10px !important;
+                border: 1px solid #cbd5e1 !important;
             }
         }
     </style>
@@ -97,6 +211,20 @@
             </div>
         </div>
 
+        <!-- Print-Only Medical Header -->
+        <div class="print-only border-b-2 border-slate-800 pb-3 mb-4">
+            <div class="flex justify-between items-end">
+                <div>
+                    <h1 class="text-2xl font-black text-slate-900 tracking-tight">RCDHO CLINICAL REPORT</h1>
+                    <p class="text-xs font-medium text-slate-600">Research Centre for Diabetes, Hypertension and Obesity</p>
+                </div>
+                <div class="text-right">
+                    <span class="text-[11px] font-bold uppercase tracking-wider text-slate-500">Patient Reg. No:</span>
+                    <span class="text-base font-black font-mono text-slate-900 ml-1">{{ $patient->registration_no ?? 'ID #' . ($patient->id ?? $record->patient_id) }}</span>
+                </div>
+            </div>
+        </div>
+
         <!-- Patient Master Identity Card -->
         <div class="bg-gradient-to-r from-slate-900 via-indigo-950 to-slate-900 rounded-3xl p-6 sm:p-8 text-white shadow-xl relative overflow-hidden">
             <!-- Background glow circle -->
@@ -113,6 +241,9 @@
                             <h2 class="text-2xl sm:text-3xl font-extrabold text-white tracking-tight">
                                 {{ $patient->patient_name ?? 'Unnamed Patient' }}
                             </h2>
+                            <span class="px-2.5 py-0.5 rounded-full text-xs font-bold font-mono bg-amber-400/20 text-amber-300 border border-amber-400/40">
+                                Reg No: {{ $patient->registration_no ?? 'ID #' . ($patient->id ?? $record->patient_id) }}
+                            </span>
                             <span class="px-2.5 py-0.5 rounded-full text-xs font-semibold {{ ($patient->gender ?? '') === 'Female' ? 'bg-pink-500/30 text-pink-200 border border-pink-400/30' : 'bg-blue-500/30 text-blue-200 border border-blue-400/30' }}">
                                 {{ $patient->gender ?? 'Not Specified' }}
                             </span>
@@ -123,7 +254,11 @@
                             @endif
                         </div>
 
-                        <div class="grid grid-cols-2 sm:grid-cols-4 gap-x-6 gap-y-1.5 text-xs text-slate-300 mt-2">
+                        <div class="grid grid-cols-2 sm:grid-cols-5 gap-x-6 gap-y-1.5 text-xs text-slate-300 mt-2">
+                            <div>
+                                <span class="text-slate-400">Reg No:</span>
+                                <span class="font-mono font-bold text-amber-300 ml-1">{{ $patient->registration_no ?? 'N/A' }}</span>
+                            </div>
                             <div>
                                 <span class="text-slate-400">Age:</span>
                                 <span class="font-semibold text-white ml-1">{{ $patient->age ? $patient->age . ' yrs' : 'N/A' }}</span>
@@ -192,6 +327,12 @@
 
                 <!-- Record status badges -->
                 <div class="flex md:flex-col items-end gap-2 text-right">
+                    <div class="bg-indigo-900/60 backdrop-blur-md px-3.5 py-2 rounded-xl border border-indigo-400/30 text-xs text-right">
+                        <p class="text-indigo-200 text-[10px] uppercase font-semibold">Patient Reg. No.</p>
+                        <p class="font-mono font-bold text-amber-300 text-sm tracking-wider">
+                            {{ $patient->registration_no ?? 'ID #' . ($patient->id ?? $record->patient_id) }}
+                        </p>
+                    </div>
                     <div class="bg-white/10 backdrop-blur-md px-3.5 py-2 rounded-xl border border-white/10 text-xs">
                         <p class="text-slate-300 text-[10px] uppercase font-semibold">Latest Visit Record</p>
                         <p class="font-bold text-white text-sm">
@@ -786,6 +927,19 @@
                         @endforelse
                     </tbody>
                 </table>
+            <!-- Print Footer -->
+            <div class="print-only mt-8 pt-4 border-t-2 border-slate-700 text-xs text-slate-700">
+                <div class="flex justify-between items-center">
+                    <div>
+                        <span class="font-bold">RCDHO (DrMukherjeeS Clinic Pvt. Ltd.)</span> • Comprehensive Clinical Profile
+                    </div>
+                    <div>
+                        <span class="font-bold">Patient Reg No:</span> <span class="font-mono font-bold">{{ $patient->registration_no ?? 'ID #' . $patient->id }}</span>
+                    </div>
+                    <div>
+                        <span class="font-bold">Printed:</span> {{ date('d M Y, h:i A') }}
+                    </div>
+                </div>
             </div>
         </div>
         <!-- End of #content-profile -->
