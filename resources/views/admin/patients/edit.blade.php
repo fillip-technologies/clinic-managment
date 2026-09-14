@@ -119,10 +119,6 @@
                 </div>
             </div>
             <div class="flex items-center gap-3">
-                <span class="badge-soft">
-                    <i class="far fa-calendar-alt mr-1"></i>
-                    Record #{{ $record->id ?? 'New' }}
-                </span>
                 <span
                     class="bg-[#eaf1f9] px-4 py-1.5 rounded-full text-sm font-medium text-[#1f5a7a] border border-[#c7dae9]">
                     <i class="far fa-clock mr-1"></i>

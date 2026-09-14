@@ -211,64 +211,37 @@
                         x-transition:leave="transition ease-in duration-100"
                         x-transition:leave-start="opacity-100 scale-100 translate-y-0"
                         x-transition:leave-end="opacity-0 scale-95 -translate-y-1"
-                        class="absolute right-0 mt-2 w-52 bg-white rounded-2xl shadow-xl border border-slate-100 py-1.5 z-50 overflow-hidden divide-y divide-slate-100">
+                        class="absolute right-0 mt-2 w-48 bg-white rounded-xl shadow-xl border border-slate-100 py-1.5 z-50 overflow-hidden">
                         
-                        <div class="py-1">
-                            <a href="{{ route('appointment.export', !empty($isOnlyOnSite) ? ['type' => 'on_site'] : (!empty($isOnlyAdmin) ? ['type' => 'admin'] : [])) }}" @click="exportOpen = false"
-                                class="w-full flex items-center gap-3 px-3.5 py-2 text-xs font-semibold text-slate-700 hover:bg-emerald-50 hover:text-emerald-700 transition group">
-                                <span class="w-7 h-7 rounded-lg bg-emerald-100 text-emerald-600 flex items-center justify-center group-hover:bg-emerald-600 group-hover:text-white transition flex-shrink-0">
-                                    <i class="fas fa-file-csv text-xs"></i>
-                                </span>
-                                <div>
-                                    <div class="font-bold text-slate-800 group-hover:text-emerald-700">Export as CSV</div>
-                                    <div class="text-[10px] text-slate-400 font-normal">Direct CSV file download</div>
-                                </div>
-                            </a>
+                        <!-- 1. Export by Date -->
+                        <button type="button" @click="exportOpen = false; openDateExportModal();"
+                            class="w-full flex items-center gap-2.5 px-3.5 py-2 text-xs font-semibold text-indigo-700 hover:bg-indigo-50 transition text-left">
+                            <i class="fas fa-calendar-alt text-indigo-600 w-4 text-center"></i>
+                            <span>Export by Date</span>
+                        </button>
 
-                            <button type="button" @click="exportOpen = false; triggerDtExport('excel');"
-                                class="w-full flex items-center gap-3 px-3.5 py-2 text-xs font-semibold text-slate-700 hover:bg-emerald-50 hover:text-emerald-700 transition group text-left">
-                                <span class="w-7 h-7 rounded-lg bg-emerald-100 text-emerald-600 flex items-center justify-center group-hover:bg-emerald-600 group-hover:text-white transition flex-shrink-0">
-                                    <i class="fas fa-file-excel text-xs"></i>
-                                </span>
-                                <div>
-                                    <div class="font-bold text-slate-800 group-hover:text-emerald-700">Export as Excel</div>
-                                    <div class="text-[10px] text-slate-400 font-normal">Formatted .xlsx file</div>
-                                </div>
-                            </button>
+                        <div class="my-1 border-t border-slate-100"></div>
 
-                            <button type="button" @click="exportOpen = false; triggerDtExport('pdf');"
-                                class="w-full flex items-center gap-3 px-3.5 py-2 text-xs font-semibold text-slate-700 hover:bg-rose-50 hover:text-rose-700 transition group text-left">
-                                <span class="w-7 h-7 rounded-lg bg-rose-100 text-rose-600 flex items-center justify-center group-hover:bg-rose-600 group-hover:text-white transition flex-shrink-0">
-                                    <i class="fas fa-file-pdf text-xs"></i>
-                                </span>
-                                <div>
-                                    <div class="font-bold text-slate-800 group-hover:text-rose-700">Export as PDF</div>
-                                    <div class="text-[10px] text-slate-400 font-normal">Printable PDF document</div>
-                                </div>
-                            </button>
+                        <!-- 2. Export as CSV -->
+                        <a href="{{ route('appointment.export', !empty($isOnlyOnSite) ? ['type' => 'on_site'] : (!empty($isOnlyAdmin) ? ['type' => 'admin'] : [])) }}" @click="exportOpen = false"
+                            class="w-full flex items-center gap-2.5 px-3.5 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-50 hover:text-emerald-700 transition">
+                            <i class="fas fa-file-csv text-emerald-600 w-4 text-center"></i>
+                            <span>Export as CSV</span>
+                        </a>
 
-                            <button type="button" @click="exportOpen = false; triggerDtExport('print');"
-                                class="w-full flex items-center gap-3 px-3.5 py-2 text-xs font-semibold text-slate-700 hover:bg-indigo-50 hover:text-indigo-700 transition group text-left">
-                                <span class="w-7 h-7 rounded-lg bg-indigo-100 text-indigo-600 flex items-center justify-center group-hover:bg-indigo-600 group-hover:text-white transition flex-shrink-0">
-                                    <i class="fas fa-print text-xs"></i>
-                                </span>
-                                <div>
-                                    <div class="font-bold text-slate-800 group-hover:text-indigo-700">Print Table</div>
-                                    <div class="text-[10px] text-slate-400 font-normal">Clean print view</div>
-                                </div>
-                            </button>
+                        <!-- 3. Export as Excel -->
+                        <button type="button" @click="exportOpen = false; triggerDtExport('excel');"
+                            class="w-full flex items-center gap-2.5 px-3.5 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-50 hover:text-emerald-700 transition text-left">
+                            <i class="fas fa-file-excel text-emerald-600 w-4 text-center"></i>
+                            <span>Export as Excel</span>
+                        </button>
 
-                            <button type="button" @click="exportOpen = false; triggerDtExport('copy');"
-                                class="w-full flex items-center gap-3 px-3.5 py-2 text-xs font-semibold text-slate-700 hover:bg-sky-50 hover:text-sky-700 transition group text-left">
-                                <span class="w-7 h-7 rounded-lg bg-sky-100 text-sky-600 flex items-center justify-center group-hover:bg-sky-600 group-hover:text-white transition flex-shrink-0">
-                                    <i class="fas fa-copy text-xs"></i>
-                                </span>
-                                <div>
-                                    <div class="font-bold text-slate-800 group-hover:text-sky-700">Copy to Clipboard</div>
-                                    <div class="text-[10px] text-slate-400 font-normal">Copy table data</div>
-                                </div>
-                            </button>
-                        </div>
+                        <!-- 4. Export as PDF -->
+                        <button type="button" @click="exportOpen = false; triggerDtExport('pdf');"
+                            class="w-full flex items-center gap-2.5 px-3.5 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-50 hover:text-rose-700 transition text-left">
+                            <i class="fas fa-file-pdf text-rose-600 w-4 text-center"></i>
+                            <span>Export as PDF</span>
+                        </button>
                     </div>
                 </div>
 
@@ -291,6 +264,7 @@
                 <thead class="bg-slate-50/80 text-xs uppercase tracking-wider text-slate-500 border-b border-slate-200/70">
                     <tr>
                         <th scope="col" class="no-sort px-5 py-3.5 font-semibold min-w-[70px] whitespace-nowrap">Sr no.</th>
+                        <th scope="col" class="col-date px-5 py-3.5 font-semibold min-w-[160px] whitespace-nowrap">Booked On</th>
                         <th scope="col" class="px-5 py-3.5 font-semibold min-w-[180px] whitespace-nowrap">Patient Name</th>
                         <th scope="col" class="px-5 py-3.5 font-semibold min-w-[90px] whitespace-nowrap">Age</th>
                         <th scope="col" class="px-5 py-3.5 font-semibold min-w-[150px] whitespace-nowrap">Father's Name</th>
@@ -302,7 +276,6 @@
                         <th scope="col" class="px-5 py-3.5 font-semibold min-w-[220px]">Note / Message</th>
                         @endif
                         <th scope="col" class="px-5 py-3.5 font-semibold min-w-[150px] whitespace-nowrap">Scheduled Date</th>
-                        <th scope="col" class="col-date px-5 py-3.5 font-semibold min-w-[160px] whitespace-nowrap">Booked On</th>
                         <th scope="col" class="no-sort px-5 py-3.5 font-semibold min-w-[240px] text-center whitespace-nowrap no-export">Action</th>
                     </tr>
                 </thead>
@@ -317,9 +290,17 @@
                         data-address="{{ $appointment->address ?? '' }}"
                         data-type="{{ $appointment->patient_type ?? '' }}" 
                         data-source="{{ $appointment->appointment_type ?? '' }}"
-                        data-message="{{ $appointment->message ?? '' }}">
+                        data-message="{{ $appointment->message ?? '' }}"
+                        data-booked-date="{{ $appointment->created_at ? $appointment->created_at->format('Y-m-d') : '' }}"
+                        data-scheduled-date="{{ $appointment->appointment_scheduled_date ? \Carbon\Carbon::parse($appointment->appointment_scheduled_date)->format('Y-m-d') : '' }}">
                         <td class="px-5 py-3.5 text-slate-400 font-mono text-xs whitespace-nowrap">
                             {{ $loop->iteration }}
+                        </td>
+                        <td class="px-5 py-3.5 text-slate-500 text-xs font-mono whitespace-nowrap min-w-[160px]" data-order="{{ $appointment->created_at ? $appointment->created_at->timestamp : 0 }}">
+                            <div class="flex items-center gap-1.5">
+                                <i class="fas fa-clock text-slate-400 text-[11px]"></i>
+                                <span>{{ $appointment->created_at ? $appointment->created_at->format('d M Y, h:i A') : '-' }}</span>
+                            </div>
                         </td>
                         <td class="px-5 py-3.5 font-medium text-slate-800 flex items-center gap-3 min-w-[180px] whitespace-nowrap">
                             <span class="w-8 h-8 rounded-full bg-indigo-100 text-indigo-700 flex items-center justify-center text-xs font-semibold uppercase flex-shrink-0">
@@ -413,12 +394,6 @@
                                     <span>Not Scheduled</span>
                                 </span>
                             @endif
-                        </td>
-                        <td class="px-5 py-3.5 text-slate-500 text-xs font-mono whitespace-nowrap min-w-[160px]" data-order="{{ $appointment->created_at ? $appointment->created_at->timestamp : 0 }}">
-                            <div class="flex items-center gap-1.5">
-                                <i class="fas fa-clock text-slate-400 text-[11px]"></i>
-                                <span>{{ $appointment->created_at ? $appointment->created_at->format('d M Y, h:i A') : '-' }}</span>
-                            </div>
                         </td>
                         <td class="px-5 py-3.5 text-center whitespace-nowrap min-w-[240px]">
                             <div class="flex items-center justify-center gap-1.5">
@@ -656,6 +631,110 @@
         </div>
     </div>
 
+    <!-- Export by Date Modal Popup -->
+    <div id="dateExportModal" class="modal-overlay">
+        <div class="modal-box w-full max-w-lg bg-white rounded-2xl shadow-2xl border border-slate-200 overflow-hidden">
+            <!-- Modal Header -->
+            <div class="flex items-center justify-between px-6 py-4 bg-gradient-to-r from-indigo-50 via-white to-emerald-50 border-b border-slate-100">
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 rounded-xl bg-indigo-600 text-white flex items-center justify-center shadow-md shadow-indigo-100">
+                        <i class="fas fa-calendar-alt text-base"></i>
+                    </div>
+                    <div>
+                        <h3 class="text-lg font-bold text-slate-800">Export by Date</h3>
+                        <p class="text-xs text-slate-500">Filter appointment records by date range</p>
+                    </div>
+                </div>
+                <button type="button" onclick="closeDateExportModal()" class="w-8 h-8 rounded-lg text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition flex items-center justify-center">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+
+            <!-- Modal Body Form -->
+            <form id="dateExportForm" method="GET" action="{{ route('appointment.export') }}" class="p-6 space-y-4">
+                <input type="hidden" name="type" value="{{ !empty($isOnlyOnSite) ? 'on_site' : (!empty($isOnlyAdmin) ? 'admin' : '') }}">
+
+                <!-- 1. Select Date Criteria -->
+                <div>
+                    <label class="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-2">
+                        <i class="fas fa-filter text-indigo-500 mr-1"></i> Filter Date By
+                    </label>
+                    <div class="grid grid-cols-2 gap-2.5">
+                        <label class="relative flex items-center gap-2.5 p-3 rounded-xl border border-indigo-200 bg-indigo-50/40 cursor-pointer hover:bg-indigo-50 transition has-[:checked]:border-indigo-600 has-[:checked]:bg-indigo-50/90 has-[:checked]:ring-1 has-[:checked]:ring-indigo-600">
+                            <input type="radio" name="date_field" value="created_at" checked class="text-indigo-600 focus:ring-indigo-500">
+                            <div>
+                                <div class="text-xs font-bold text-slate-800">Booked On</div>
+                                <div class="text-[10px] text-slate-500">Booking / Submission Date</div>
+                            </div>
+                        </label>
+
+                        <label class="relative flex items-center gap-2.5 p-3 rounded-xl border border-slate-200 bg-white cursor-pointer hover:bg-slate-50 transition has-[:checked]:border-indigo-600 has-[:checked]:bg-indigo-50/90 has-[:checked]:ring-1 has-[:checked]:ring-indigo-600">
+                            <input type="radio" name="date_field" value="scheduled_date" class="text-indigo-600 focus:ring-indigo-500">
+                            <div>
+                                <div class="text-xs font-bold text-slate-800">Scheduled Date</div>
+                                <div class="text-[10px] text-slate-500">Confirmed Clinic Visit Date</div>
+                            </div>
+                        </label>
+                    </div>
+                </div>
+
+                <!-- 2. Quick Preset Buttons -->
+                <div>
+                    <label class="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1.5">
+                        <i class="fas fa-bolt text-amber-500 mr-1"></i> Quick Presets
+                    </label>
+                    <div class="flex flex-wrap gap-1.5">
+                        <button type="button" onclick="setDateExportPreset('today')" class="px-2.5 py-1 rounded-lg text-xs font-medium bg-slate-100 hover:bg-indigo-100 hover:text-indigo-700 text-slate-600 transition">Today</button>
+                        <button type="button" onclick="setDateExportPreset('yesterday')" class="px-2.5 py-1 rounded-lg text-xs font-medium bg-slate-100 hover:bg-indigo-100 hover:text-indigo-700 text-slate-600 transition">Yesterday</button>
+                        <button type="button" onclick="setDateExportPreset('last7')" class="px-2.5 py-1 rounded-lg text-xs font-medium bg-slate-100 hover:bg-indigo-100 hover:text-indigo-700 text-slate-600 transition">Last 7 Days</button>
+                        <button type="button" onclick="setDateExportPreset('thisMonth')" class="px-2.5 py-1 rounded-lg text-xs font-medium bg-slate-100 hover:bg-indigo-100 hover:text-indigo-700 text-slate-600 transition">This Month</button>
+                        <button type="button" onclick="setDateExportPreset('lastMonth')" class="px-2.5 py-1 rounded-lg text-xs font-medium bg-slate-100 hover:bg-indigo-100 hover:text-indigo-700 text-slate-600 transition">Last Month</button>
+                        <button type="button" onclick="setDateExportPreset('clear')" class="px-2.5 py-1 rounded-lg text-xs font-medium text-rose-600 hover:bg-rose-50 transition">Clear</button>
+                    </div>
+                </div>
+
+                <!-- 3. Date Range (From & To) -->
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div>
+                        <label for="exportStartDate" class="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1.5">
+                            <i class="fas fa-calendar-day text-indigo-500 mr-1"></i> From Date
+                        </label>
+                        <input type="date" id="exportStartDate" name="start_date"
+                            class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-sm text-slate-800 focus:ring-2 focus:ring-indigo-400 focus:border-indigo-400 outline-none transition bg-white">
+                    </div>
+                    <div>
+                        <label for="exportEndDate" class="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1.5">
+                            <i class="fas fa-calendar-check text-indigo-500 mr-1"></i> To Date
+                        </label>
+                        <input type="date" id="exportEndDate" name="end_date"
+                            class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-sm text-slate-800 focus:ring-2 focus:ring-indigo-400 focus:border-indigo-400 outline-none transition bg-white">
+                    </div>
+                </div>
+                <p class="text-[11px] text-slate-400">Leave dates blank to export all, or set a specific date / range.</p>
+
+                <!-- 4. Modal Actions -->
+                <div class="flex flex-col sm:flex-row items-center justify-between gap-2.5 pt-3 border-t border-slate-100">
+                    <button type="button" onclick="closeDateExportModal()"
+                        class="w-full sm:w-auto px-4 py-2.5 rounded-xl border border-slate-300 text-slate-600 hover:bg-slate-100 text-sm font-medium transition text-center">
+                        Cancel
+                    </button>
+                    <div class="w-full sm:w-auto flex items-center gap-2">
+                        <button type="button" onclick="downloadDateExport('csv')"
+                            class="flex-1 sm:flex-none px-4 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-semibold shadow-md shadow-emerald-100 hover:shadow-lg transition flex items-center justify-center gap-2">
+                            <i class="fas fa-file-csv"></i>
+                            <span>Download CSV</span>
+                        </button>
+                        <button type="button" onclick="downloadDateExport('excel')"
+                            class="flex-1 sm:flex-none px-4 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold shadow-md shadow-indigo-100 hover:shadow-lg transition flex items-center justify-center gap-2">
+                            <i class="fas fa-file-excel"></i>
+                            <span>Export Excel</span>
+                        </button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
     <script>
         function openAppointmentModal() {
             const modal = document.getElementById('appointmentModal');
@@ -668,6 +747,107 @@
         function closeAppointmentModal() {
             const modal = document.getElementById('appointmentModal');
             modal.classList.remove('active');
+        }
+
+        function openDateExportModal() {
+            const modal = document.getElementById('dateExportModal');
+            if (modal) {
+                modal.classList.add('active');
+            }
+        }
+
+        function closeDateExportModal() {
+            const modal = document.getElementById('dateExportModal');
+            if (modal) {
+                modal.classList.remove('active');
+            }
+        }
+
+        function formatDateIso(d) {
+            const year = d.getFullYear();
+            const month = String(d.getMonth() + 1).padStart(2, '0');
+            const day = String(d.getDate()).padStart(2, '0');
+            return `${year}-${month}-${day}`;
+        }
+
+        function setDateExportPreset(preset) {
+            const startInput = document.getElementById('exportStartDate');
+            const endInput = document.getElementById('exportEndDate');
+            const now = new Date();
+
+            if (preset === 'today') {
+                const todayStr = formatDateIso(now);
+                startInput.value = todayStr;
+                endInput.value = todayStr;
+            } else if (preset === 'yesterday') {
+                const yest = new Date(now);
+                yest.setDate(yest.getDate() - 1);
+                const yestStr = formatDateIso(yest);
+                startInput.value = yestStr;
+                endInput.value = yestStr;
+            } else if (preset === 'last7') {
+                const sevenDaysAgo = new Date(now);
+                sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 6);
+                startInput.value = formatDateIso(sevenDaysAgo);
+                endInput.value = formatDateIso(now);
+            } else if (preset === 'thisMonth') {
+                const firstDay = new Date(now.getFullYear(), now.getMonth(), 1);
+                startInput.value = formatDateIso(firstDay);
+                endInput.value = formatDateIso(now);
+            } else if (preset === 'lastMonth') {
+                const firstDayPrev = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+                const lastDayPrev = new Date(now.getFullYear(), now.getMonth(), 0);
+                startInput.value = formatDateIso(firstDayPrev);
+                endInput.value = formatDateIso(lastDayPrev);
+            } else if (preset === 'clear') {
+                startInput.value = '';
+                endInput.value = '';
+            }
+        }
+
+        function downloadDateExport(format) {
+            const startDate = document.getElementById('exportStartDate').value;
+            const endDate = document.getElementById('exportEndDate').value;
+            const dateField = document.querySelector('input[name="date_field"]:checked')?.value || 'created_at';
+            
+            if (format === 'csv') {
+                const form = document.getElementById('dateExportForm');
+                form.submit();
+                closeDateExportModal();
+            } else if (format === 'excel') {
+                applyTemporaryDateFilterAndExport(startDate, endDate, dateField);
+                closeDateExportModal();
+            }
+        }
+
+        function applyTemporaryDateFilterAndExport(startDate, endDate, dateField) {
+            if (!appointmentDataTable) return;
+            
+            const filterFunc = function(settings, data, dataIndex) {
+                if (settings.nTable.id !== 'appointmentTable') return true;
+                const rowNode = settings.aoData[dataIndex].nTr;
+                const rowDate = dateField === 'scheduled_date' 
+                    ? $(rowNode).attr('data-scheduled-date') 
+                    : $(rowNode).attr('data-booked-date');
+                
+                if (!rowDate) return false;
+                if (startDate && rowDate < startDate) return false;
+                if (endDate && rowDate > endDate) return false;
+                return true;
+            };
+
+            $.fn.dataTable.ext.search.push(filterFunc);
+            appointmentDataTable.draw();
+
+            // Trigger Excel export on the filtered dataset
+            appointmentDataTable.button('.buttons-excel').trigger();
+
+            // Clean up temporary filter and redraw table
+            const filterIdx = $.fn.dataTable.ext.search.indexOf(filterFunc);
+            if (filterIdx !== -1) {
+                $.fn.dataTable.ext.search.splice(filterIdx, 1);
+            }
+            appointmentDataTable.draw();
         }
 
         function openScheduleModal(id, name, scheduledDate, email, bookedAt) {
@@ -709,6 +889,10 @@
             if (e.target === scheduleModal) {
                 closeScheduleModal();
             }
+            const dateExportModal = document.getElementById('dateExportModal');
+            if (e.target === dateExportModal) {
+                closeDateExportModal();
+            }
         });
 
         // Close on Escape key
@@ -716,6 +900,7 @@
             if (e.key === 'Escape') {
                 closeAppointmentModal();
                 closeScheduleModal();
+                closeDateExportModal();
             }
         });
 
@@ -740,7 +925,7 @@
         $(document).ready(function() {
             let dateColIndex = $('#appointmentTable thead th.col-date').index();
             if (dateColIndex === -1) {
-                dateColIndex = {{ !empty($isOnlyAdmin) ? 9 : 10 }};
+                dateColIndex = 1;
             }
 
             appointmentDataTable = $('#appointmentTable').DataTable({

@@ -4,8 +4,7 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-return new class extends Migration
-{
+return new class extends Migration {
     /**
      * Run the migrations.
      */
@@ -75,9 +74,6 @@ return new class extends Migration
             $table->text('car_echo_ev')->nullable()->comment('Cardiac Echo Evaluation');
             $table->timestamps();
             $table->softDeletes();
-            $table->index('patient_name');
-            $table->index('record_date');
-            $table->index('mobile_no');
             $table->index('bmi_group');
             $table->index(
                 ['newly_detected', 'duration_of_diabetes'],

@@ -14,9 +14,16 @@ use Illuminate\Support\Facades\Mail;
 
 class DoctorManageController extends Controller
 {
-    public function doctorList(){
-        $doctors = User::where('role',"!=",'super_admin')->paginate(10);
-        return view('admin.backend.doctors.index',compact('doctors'));
+    public function doctorList(Request $request){
+        $query = User::where('role', "!=", 'super_admin');
+        if ($request->filled('role') && in_array($request->role, ['doctor', 'staff'])) {
+            $query->where('role', $request->role);
+        }
+        $doctors = $query->latest()->paginate(10)->withQueryString();
+        $totalCount = User::where('role', '!=', 'super_admin')->count();
+        $doctorCount = User::where('role', 'doctor')->count();
+        $staffCount = User::where('role', 'staff')->count();
+        return view('admin.backend.doctors.index', compact('doctors', 'totalCount', 'doctorCount', 'staffCount'));
     }
 
     public function createdocForm(){
@@ -34,7 +41,7 @@ class DoctorManageController extends Controller
             'pin_code'=>'required|string',
             'doctor_strime'=>'required|string',
             'phone'=>'required',
-            'role'=>'required|in:doctor,super_admin',
+            'role'=>'required|in:doctor,super_admin,staff',
         ]);
 
         $planTextPasssword = trim($request->password);
@@ -71,7 +78,8 @@ class DoctorManageController extends Controller
             'pin_code' => 'required|string',
             'doctor_strime' => 'required|string',
             'phone' => 'required',
-            'role' => 'required|in:doctor,super_admin',
+            'role' => 'required|in:doctor,super_admin,staff',
+            'password' => 'nullable|min:8|max:32',
         ]);
 
         $doctor = User::findOrFail($id);
@@ -85,9 +93,12 @@ class DoctorManageController extends Controller
         $doctor->doctor_strime = $request->doctor_strime;
         $doctor->phone = $request->phone;
         $doctor->role = $request->role;
+        if ($request->filled('password')) {
+            $doctor->password = Hash::make(trim($request->password));
+        }
         $doctor->save();
 
-        return redirect()->back()->with('success', 'Doctor updated successfully.');
+        return redirect()->back()->with('success', 'User updated successfully.');
     }
 
     public function DeleteDoctor($id)
@@ -177,9 +188,29 @@ class DoctorManageController extends Controller
                 $query->where('appointment_type', $request->type);
             }
         }
+
+        $dateField = ($request->get('date_field') === 'scheduled_date') ? 'appointment_scheduled_date' : 'created_at';
+        if ($request->filled('start_date')) {
+            $query->whereDate($dateField, '>=', $request->start_date);
+        }
+        if ($request->filled('end_date')) {
+            $query->whereDate($dateField, '<=', $request->end_date);
+        }
+
         $appointments = $query->get();
         $prefix = $request->type === 'on_site' ? 'onsite_' : ($request->type === 'admin' ? 'admin_' : '');
-        $filename = $prefix . 'appointments_export_' . date('Y-m-d_His') . '.csv';
+        
+        $dateSuffix = '';
+        if ($request->filled('start_date') && $request->filled('end_date')) {
+            $dateSuffix = '_' . $request->start_date . '_to_' . $request->end_date;
+        } elseif ($request->filled('start_date')) {
+            $dateSuffix = '_from_' . $request->start_date;
+        } elseif ($request->filled('end_date')) {
+            $dateSuffix = '_until_' . $request->end_date;
+        }
+
+        $fieldLabel = ($dateField === 'appointment_scheduled_date') ? '_by_scheduled_date' : '';
+        $filename = $prefix . 'appointments' . $fieldLabel . $dateSuffix . '_' . date('Y-m-d_His') . '.csv';
 
         $headers = [
             'Content-Type'        => 'text/csv; charset=UTF-8',
@@ -197,6 +228,7 @@ class DoctorManageController extends Controller
 
             $headers = [
                 'Sr No.',
+                'Booked On',
                 'Patient Name',
                 'Age',
                 'Father\'s Name',
@@ -204,18 +236,18 @@ class DoctorManageController extends Controller
                 'Email',
                 'Address',
                 'Visit Type',
-                'Scheduled Date',
             ];
             if (!$isAdmin) {
                 $headers[] = 'Note / Message';
             }
-            $headers[] = 'Booking Date';
+            $headers[] = 'Scheduled Date';
 
             fputcsv($handle, $headers);
 
             foreach ($appointments as $index => $app) {
                 $row = [
                     $index + 1,
+                    $app->created_at ? $app->created_at->format('d M Y, h:i A') : '-',
                     $app->patient_name ?? 'N/A',
                     $app->age ? $app->age . ' yrs' : '-',
                     $app->father_name ?? '-',
@@ -223,12 +255,11 @@ class DoctorManageController extends Controller
                     $app->mail ?? '-',
                     $app->address ?? '-',
                     $app->patient_type ?? '-',
-                    $app->appointment_scheduled_date ? \Carbon\Carbon::parse($app->appointment_scheduled_date)->format('d M Y') : 'Not Scheduled',
                 ];
                 if (!$isAdmin) {
                     $row[] = $app->message ?? '-';
                 }
-                $row[] = $app->created_at ? $app->created_at->format('d M Y, h:i A') : '-';
+                $row[] = $app->appointment_scheduled_date ? \Carbon\Carbon::parse($app->appointment_scheduled_date)->format('d M Y') : 'Not Scheduled';
 
                 fputcsv($handle, $row);
             }

@@ -36,14 +36,19 @@
                 <div class="space-y-5">
                     <div>
                         <h2 class="text-2xl font-extrabold" style="color: var(--color-dark);">Dr. Supriyo Mukherjee</h2>
-                        <p class="text-sm text-gray-600 mt-1">M.D. Internal Medicine, KGMC (Lucknow)</p>
-                        <p class="text-sm text-gray-600">M.Sc. Advancing Diabetes Care (UK), Senior Fellow IDF, FICP, FDI</p>
-                        <p class="text-sm font-bold mt-2" style="color: var(--color-secondary);">Gold Medal in Medicine</p>
+                        <ul class="space-y-1.5 text-sm text-gray-600 mt-2">
+                            <li>M.D. Internal Medicine, KGMC (Lucknow)</li>
+                            <li>M.Sc. (Distinction) Advancing Diabetes Care (UK)</li>
+                            <li>Senior Fellow, International Diabetes Federation (IDF)</li>
+                            <li>Fellow Indian College of Physicians (FICP)</li>
+                            <li>Fellow Diabetes India (FDI)</li>
+                            <li class="font-bold pt-1" style="color: var(--color-secondary);">Gold Medal in Medicine</li>
+                        </ul>
                     </div>
                     <div class="border-t border-gray-100 pt-5">
                         <h2 class="text-2xl font-extrabold" style="color: var(--color-dark);">Dr. Sushmita Mukherjee</h2>
                         <p class="text-sm text-gray-600 mt-1">M.B.B.S. (B.U.), CC.USG</p>
-                        <p class="text-sm font-bold" style="color: var(--color-primary);">Clinical Ultrasonologist</p>
+                        <p class="text-sm font-bold" style="color: var(--color-primary);">Director , Diagnostic & Imaging</p>
                     </div>
                 </div>
             </div>
@@ -54,7 +59,7 @@
 <section class="py-8" style="background: var(--color-dark);">
     <div class="max-w-7xl mx-auto px-6 grid grid-cols-2 md:grid-cols-4 gap-6 text-center">
         <div><p class="text-3xl font-extrabold text-white">2002</p><p class="text-white/60 text-sm">Established</p></div>
-        <div><p class="text-3xl font-extrabold text-white">2</p><p class="text-white/60 text-sm">Clinic Locations</p></div>
+        <div><p class="text-3xl font-extrabold text-white">1</p><p class="text-white/60 text-sm">Clinic Locations</p></div>
         <div><p class="text-3xl font-extrabold text-white">15</p><p class="text-white/60 text-sm">Days Prescription Validity</p></div>
         <div><p class="text-3xl font-extrabold text-white">Sun</p><p class="text-white/60 text-sm">Closed</p></div>
     </div>
@@ -116,13 +121,13 @@
         <div class="rounded-lg p-8 border border-emerald-100" style="background: var(--color-light);">
             <h3 class="text-2xl font-extrabold mb-3" style="color: var(--color-dark);">Administrative Office</h3>
             <p class="text-gray-700">Holding #404, "Sukhadaya", New Yarpur Road #1, Patna - 800001</p>
-            <p class="text-sm font-bold mt-4" style="color: var(--color-primary);">New and old patients: 09:00 AM to 02:00 PM</p>
-            <p class="text-sm text-gray-600">Drug evaluation: 04:00 PM to 06:00 PM</p>
         </div>
         <div class="rounded-lg p-8 border border-emerald-100" style="background: var(--color-light);">
             <h3 class="text-2xl font-extrabold mb-3" style="color: var(--color-dark);">Clinic Address</h3>
             <p class="text-gray-700">Bengali Tola, Samastipur - 848101, Bihar</p>
-            <p class="text-sm font-bold mt-4" style="color: var(--color-primary);">Sunday closed</p>
+            <p class="text-sm font-bold mt-4" style="color: var(--color-primary);">New and old patients: 09:00 AM to 02:00 PM</p>
+            <p class="text-sm text-gray-600">Drug evaluation: 04:00 PM to 06:00 PM</p>
+            <p class="text-sm font-bold mt-2" style="color: var(--color-primary);">Sunday closed</p>
             <p class="text-sm text-gray-600">Call service and night service unavailable as per clinic note.</p>
         </div>
     </div>

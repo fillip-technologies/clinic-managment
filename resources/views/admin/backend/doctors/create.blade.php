@@ -21,8 +21,8 @@
                 <i class="fas fa-user-md text-2xl text-indigo-600"></i>
             </div>
             <div>
-                <h2 class="text-2xl font-bold text-slate-800">Doctor Registration</h2>
-                <p class="text-sm text-slate-500">Create a new doctor profile</p>
+                <h2 class="text-2xl font-bold text-slate-800">Member Registration</h2>
+                <p class="text-sm text-slate-500">Create a new doctor or staff profile</p>
             </div>
         </div>
 
@@ -134,7 +134,7 @@ border-red-600
                         <option value="">Select role</option>
                         <option value="super_admin">Super Admin</option>
                         <option value="doctor">Doctor</option>
-
+                        <option value="staff">Staff</option>
                     </select>
 
                     @error('role')
@@ -193,7 +193,7 @@ border-red-600
             <!-- Submit Button -->
             <button type="submit"
                 class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-3 px-4 rounded-xl transition duration-200 flex items-center justify-center gap-2 shadow-md hover:shadow-lg">
-                <i class="fas fa-user-plus"></i> Register Doctor
+                <i class="fas fa-user-plus"></i> Register Member
             </button>
 
             <!-- Footer Note -->

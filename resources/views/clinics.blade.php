@@ -13,22 +13,34 @@
 </section>
 
 <section class="py-20 px-6" style="background: var(--color-light);">
-    <div class="max-w-6xl mx-auto grid md:grid-cols-2 gap-8">
-        @foreach ([
-            ['Administrative Office', 'Holding #404, "Sukhadaya", New Yarpur Road #1, Patna - 800001', 'New and old patients: 09:00 AM to 02:00 PM', 'Drug evaluation: 04:00 PM to 06:00 PM'],
-            ['Clinic Address', 'Bengali Tola, Samastipur - 848101, Bihar', 'Sunday closed', 'Please call before visiting for availability.'],
-        ] as $clinic)
-        <div class="rounded-lg bg-white shadow-sm border border-emerald-100 p-8">
-            <div class="h-1.5 rounded-full mb-6" style="background: linear-gradient(90deg, var(--color-primary), var(--color-secondary));"></div>
-            <h2 class="text-3xl font-extrabold mb-3" style="color: var(--color-dark);">{{ $clinic[0] }}</h2>
-            <p class="text-gray-700">{{ $clinic[1] }}</p>
+    <div class="max-w-6xl mx-auto grid md:grid-cols-2 gap-8 items-stretch">
+        <!-- Administrative Office -->
+        <div class="rounded-lg bg-white shadow-sm border border-emerald-100 p-8 flex flex-col justify-between">
+            <div>
+                <div class="h-1.5 rounded-full mb-6" style="background: linear-gradient(90deg, var(--color-primary), var(--color-secondary));"></div>
+                <h2 class="text-3xl font-extrabold mb-3" style="color: var(--color-dark);">Administrative Office</h2>
+                <p class="text-gray-700">Holding #404, "Sukhadaya", New Yarpur Road #1, Patna - 800001</p>
+                <p class=" mt-4 text-gray-600 text-sm">Phone: 8002268003</p>
+            </div>
+        </div>
+
+        <!-- Clinic Address -->
+        <div class="rounded-lg bg-white shadow-sm border border-emerald-100 p-8 flex flex-col justify-between">
+            <div>
+                <div class="h-1.5 rounded-full mb-6" style="background: linear-gradient(90deg, var(--color-primary), var(--color-secondary));"></div>
+                <h2 class="text-3xl font-extrabold mb-3" style="color: var(--color-dark);">Clinic Address</h2>
+                <p class="text-gray-700">Bengali Tola, Samastipur - 848101, Bihar</p>
+                <div class="mt-6 space-y-2 text-sm text-gray-600">
+                    <p>New and old patients: 09:00 AM to 02:00 PM</p>
+                    <p>Drug evaluation: 04:00 PM to 06:00 PM</p>
+                    <p>Sunday closed</p>
+                    <p>Please call before visiting for availability.</p>
+                </div>
+            </div>
             <div class="mt-6 space-y-2 text-sm text-gray-600">
-                <p>{{ $clinic[2] }}</p>
-                <p>{{ $clinic[3] }}</p>
                 <p>Phone: 8002268003</p>
             </div>
         </div>
-        @endforeach
     </div>
 </section>
 

@@ -20,10 +20,12 @@
         if (Auth::guard('super_admin')->check()) {
             $dashboardRoute = route('admin.dashboard');
             $name = 'Admin';
-        }
-        if (Auth::guard('doctor')->check()) {
+        } elseif (Auth::guard('doctor')->check()) {
             $dashboardRoute = route('doctor.dashboard');
             $name = 'Doctor';
+        } elseif (Auth::guard('staff')->check()) {
+            $dashboardRoute = route('list.patient');
+            $name = 'Staff';
         }
     @endphp
     <!-- Logo & Mobile Close -->
@@ -62,22 +64,22 @@
             $isSettings = request()->routeIs('admin.settings*') || request()->routeIs('doctor.settings*') || request()->is('admin/settings*') || request()->is('doctor/settings*');
         @endphp
 
-        <!-- Dashboard -->
-        <a href="{{ $dashboardRoute }}"
-            class="sidebar-item flex items-center gap-4 px-4 py-3 rounded-xl transition-all duration-200
-            {{ $isDashboard ? 'bg-indigo-600 text-white font-semibold shadow-lg shadow-indigo-600/30 active' : 'text-slate-300 hover:bg-slate-700/60 hover:text-white' }}">
-
-            <i class="fas fa-th-large w-5 text-center {{ $isDashboard ? 'text-white' : 'text-slate-400' }}"></i>
-            <span class="font-medium">Dashboard</span>
-        </a>
         @if (Auth::guard('super_admin')->check())
-            <!-- Doctors -->
+            <!-- Dashboard -->
+            <a href="{{ route('admin.dashboard') }}"
+                class="sidebar-item flex items-center gap-4 px-4 py-3 rounded-xl transition-all duration-200
+                {{ $isDashboard ? 'bg-indigo-600 text-white font-semibold shadow-lg shadow-indigo-600/30 active' : 'text-slate-300 hover:bg-slate-700/60 hover:text-white' }}">
+                <i class="fas fa-th-large w-5 text-center {{ $isDashboard ? 'text-white' : 'text-slate-400' }}"></i>
+                <span class="font-medium">Dashboard</span>
+            </a>
+
+            <!-- Doctors & Staff -->
             <a href="{{ route('doctor.list') }}"
                 class="sidebar-item flex items-center gap-4 px-4 py-3 rounded-xl transition-all duration-200
                 {{ $isDoctors ? 'bg-indigo-600 text-white font-semibold shadow-lg shadow-indigo-600/30 active' : 'text-slate-300 hover:bg-slate-700/60 hover:text-white' }}">
 
-                <i class="fas fa-user-doctor w-5 text-center {{ $isDoctors ? 'text-white' : 'text-slate-400' }}"></i>
-                <span class="font-medium">Doctors</span>
+                <i class="fas fa-users-gear w-5 text-center {{ $isDoctors ? 'text-white' : 'text-slate-400' }}"></i>
+                <span class="font-medium">Doctors & Staff</span>
             </a>
 
             <!-- Rooms -->
@@ -174,6 +176,14 @@
                 <span class="font-medium">Settings</span>
             </a>
         @elseif(Auth::guard('doctor')->check())
+            <!-- Dashboard -->
+            <a href="{{ route('doctor.dashboard') }}"
+                class="sidebar-item flex items-center gap-4 px-4 py-3 rounded-xl transition-all duration-200
+                {{ $isDashboard ? 'bg-indigo-600 text-white font-semibold shadow-lg shadow-indigo-600/30 active' : 'text-slate-300 hover:bg-slate-700/60 hover:text-white' }}">
+                <i class="fas fa-th-large w-5 text-center {{ $isDashboard ? 'text-white' : 'text-slate-400' }}"></i>
+                <span class="font-medium">Dashboard</span>
+            </a>
+
             @php
                 $isDocReports = request()->routeIs('doctorReporlist*') || request()->routeIs('doctor.report.form*') || request()->routeIs('editDocRep.*');
             @endphp
@@ -184,6 +194,22 @@
                 <span class="font-medium"> + Report Upload</span>
             </a>
             <a href="{{ route('doctor.settings') }}"
+                class="sidebar-item flex items-center gap-4 px-4 py-3 rounded-xl transition-all duration-200
+                {{ $isSettings ? 'bg-indigo-600 text-white font-semibold shadow-lg shadow-indigo-600/30 active' : 'text-slate-300 hover:bg-slate-700/60 hover:text-white' }}">
+                <i class="fas fa-cog w-5 text-center {{ $isSettings ? 'text-white' : 'text-slate-400' }}"></i>
+                <span class="font-medium">Settings</span>
+            </a>
+        @elseif(Auth::guard('staff')->check())
+            <!-- Patients (ONLY TAB for Staff) -->
+            <a href="{{ route('list.patient') }}"
+                class="sidebar-item flex items-center gap-4 px-4 py-3 rounded-xl transition-all duration-200
+                {{ $isPatients ? 'bg-indigo-600 text-white font-semibold shadow-lg shadow-indigo-600/30 active' : 'text-slate-300 hover:bg-slate-700/60 hover:text-white' }}">
+                <i class="fas fa-hospital-user w-5 text-center {{ $isPatients ? 'text-white' : 'text-slate-400' }}"></i>
+                <span class="font-medium">Patients</span>
+            </a>
+
+            <!-- Settings -->
+            <a href="{{ route('admin.settings') }}"
                 class="sidebar-item flex items-center gap-4 px-4 py-3 rounded-xl transition-all duration-200
                 {{ $isSettings ? 'bg-indigo-600 text-white font-semibold shadow-lg shadow-indigo-600/30 active' : 'text-slate-300 hover:bg-slate-700/60 hover:text-white' }}">
                 <i class="fas fa-cog w-5 text-center {{ $isSettings ? 'text-white' : 'text-slate-400' }}"></i>
@@ -209,6 +235,11 @@
             $name = $user->name ?? 'N/A';
             $email = $user->email ?? '';
             $logoutRoute = route('doctor.logout');
+        } elseif (Auth::guard('staff')->check()) {
+            $user = Auth::guard('staff')->user();
+            $name = $user->name ?? 'N/A';
+            $email = $user->email ?? '';
+            $logoutRoute = route('admin.logout');
         }
     @endphp
 

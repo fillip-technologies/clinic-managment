@@ -12,9 +12,7 @@ Route::post('/system/login', [AdminController::class, 'systemLogin'])->name('sys
 
 Route::prefix('admin')->middleware(['super_admin'])->group(function () {
     Route::get('/dashboard', [AdminController::class, 'dashboard'])->name('admin.dashboard');
-    Route::get('/settings', [AdminController::class, 'settings'])->name('admin.settings');
-    Route::post('/password/update', [AdminController::class, 'updatePassword'])->name('admin.password.update');
-    Route::post('/logout', [AdminController::class, 'AdminLogout'])->name('admin.logout');
+
     Route::controller(DoctorManageController::class)->group(function () {
         Route::get('/doctor/list', 'doctorList')->name('doctor.list');
         Route::get('/doctor/form', 'createdocForm')->name('doctor.form');
@@ -29,22 +27,6 @@ Route::prefix('admin')->middleware(['super_admin'])->group(function () {
         Route::delete('/appointment/delete/{id}', 'deleteAppointment')->name('appointment.delete');
         Route::post('/update/doctor/{id}', 'UpdateDoctor')->name('doctor.update');
         Route::post('/Add/doctor', 'AddDoctor')->name('AddDoctor');
-    });
-
-    Route::controller(PatientController::class)->group(function () {
-        Route::get('/patient/list', 'patientList')->name('list.patient');
-        Route::get('/patient/form', 'createPatient')->name('patient.form');
-        Route::post('/store/patient', 'store')->name('store.patient');
-        Route::post('/patient/update/{id}', 'update')->name('patient.update');
-        Route::get('/addnewReport/{id}', 'addnewReport')->name('addnewReport');
-        Route::post('/createNewRecord/{id}', 'createNewRecord')->name('createNewRecord');
-        Route::get('/patient/details/{id}', 'show')->name('patient.show');
-        Route::get('/patient/export/{id}', 'exportPatientRecords')->name('patient.export');
-        Route::get('/single/patient/{id}', 'edit')->name('patient.edit');
-        Route::delete('/delete/patient/{id}', 'destroy')->name('patient.delete');
-        Route::get('/analytics/disease','diseaseAnalytics')->name('analytics.disease');
-        Route::get('/analytics/disease/export', 'exportDiseaseAnalytics')->name('analytics.disease.export');
-        Route::get('/patient/attachment/{id}', 'viewAttachment')->name('patient.attachment');
     });
 
     Route::controller(ReportController::class)->group(function () {
@@ -62,5 +44,31 @@ Route::prefix('admin')->middleware(['super_admin'])->group(function () {
         Route::get('/delete/room/{id}', 'roomDelete')->name('room.delete');
         Route::get('/member/index/{id}/{index}','indexmember')->name('indexmember');
         Route::get('/delete/room-file/{id}/{index}', 'deleteRoomFile')->name('room.file.delete');
+    });
+
+    Route::controller(PatientController::class)->group(function () {
+        Route::get('/analytics/disease','diseaseAnalytics')->name('analytics.disease');
+        Route::get('/analytics/disease/export', 'exportDiseaseAnalytics')->name('analytics.disease.export');
+    });
+});
+
+// Routes accessible to both super_admin and staff:
+Route::prefix('admin')->middleware(['admin_or_staff'])->group(function () {
+    Route::get('/settings', [AdminController::class, 'settings'])->name('admin.settings');
+    Route::post('/password/update', [AdminController::class, 'updatePassword'])->name('admin.password.update');
+    Route::post('/logout', [AdminController::class, 'AdminLogout'])->name('admin.logout');
+
+    Route::controller(PatientController::class)->group(function () {
+        Route::get('/patient/list', 'patientList')->name('list.patient');
+        Route::get('/patient/form', 'createPatient')->name('patient.form');
+        Route::post('/store/patient', 'store')->name('store.patient');
+        Route::post('/patient/update/{id}', 'update')->name('patient.update');
+        Route::get('/addnewReport/{id}', 'addnewReport')->name('addnewReport');
+        Route::post('/createNewRecord/{id}', 'createNewRecord')->name('createNewRecord');
+        Route::get('/patient/details/{id}', 'show')->name('patient.show');
+        Route::get('/patient/export/{id}', 'exportPatientRecords')->name('patient.export');
+        Route::get('/single/patient/{id}', 'edit')->name('patient.edit');
+        Route::delete('/delete/patient/{id}', 'destroy')->name('patient.delete');
+        Route::get('/patient/attachment/{id}', 'viewAttachment')->name('patient.attachment');
     });
 });
