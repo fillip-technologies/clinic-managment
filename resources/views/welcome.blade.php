@@ -48,7 +48,7 @@
                     <div class="border-t border-gray-100 pt-5">
                         <h2 class="text-2xl font-extrabold" style="color: var(--color-dark);">Dr. Sushmita Mukherjee</h2>
                         <p class="text-sm text-gray-600 mt-1">M.B.B.S. (B.U.), CC.USG</p>
-                        <p class="text-sm font-bold" style="color: var(--color-primary);">Clinical Ultrasonologist</p>
+                        <p class="text-sm font-bold" style="color: var(--color-primary);">Director , Diagnostic & Imaging</p>
                     </div>
                 </div>
             </div>
