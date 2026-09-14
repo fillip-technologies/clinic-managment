@@ -188,9 +188,29 @@ class DoctorManageController extends Controller
                 $query->where('appointment_type', $request->type);
             }
         }
+
+        $dateField = ($request->get('date_field') === 'scheduled_date') ? 'appointment_scheduled_date' : 'created_at';
+        if ($request->filled('start_date')) {
+            $query->whereDate($dateField, '>=', $request->start_date);
+        }
+        if ($request->filled('end_date')) {
+            $query->whereDate($dateField, '<=', $request->end_date);
+        }
+
         $appointments = $query->get();
         $prefix = $request->type === 'on_site' ? 'onsite_' : ($request->type === 'admin' ? 'admin_' : '');
-        $filename = $prefix . 'appointments_export_' . date('Y-m-d_His') . '.csv';
+        
+        $dateSuffix = '';
+        if ($request->filled('start_date') && $request->filled('end_date')) {
+            $dateSuffix = '_' . $request->start_date . '_to_' . $request->end_date;
+        } elseif ($request->filled('start_date')) {
+            $dateSuffix = '_from_' . $request->start_date;
+        } elseif ($request->filled('end_date')) {
+            $dateSuffix = '_until_' . $request->end_date;
+        }
+
+        $fieldLabel = ($dateField === 'appointment_scheduled_date') ? '_by_scheduled_date' : '';
+        $filename = $prefix . 'appointments' . $fieldLabel . $dateSuffix . '_' . date('Y-m-d_His') . '.csv';
 
         $headers = [
             'Content-Type'        => 'text/csv; charset=UTF-8',
