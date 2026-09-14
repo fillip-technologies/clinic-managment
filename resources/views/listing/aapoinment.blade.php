@@ -291,6 +291,7 @@
                 <thead class="bg-slate-50/80 text-xs uppercase tracking-wider text-slate-500 border-b border-slate-200/70">
                     <tr>
                         <th scope="col" class="no-sort px-5 py-3.5 font-semibold min-w-[70px] whitespace-nowrap">Sr no.</th>
+                        <th scope="col" class="col-date px-5 py-3.5 font-semibold min-w-[160px] whitespace-nowrap">Booked On</th>
                         <th scope="col" class="px-5 py-3.5 font-semibold min-w-[180px] whitespace-nowrap">Patient Name</th>
                         <th scope="col" class="px-5 py-3.5 font-semibold min-w-[90px] whitespace-nowrap">Age</th>
                         <th scope="col" class="px-5 py-3.5 font-semibold min-w-[150px] whitespace-nowrap">Father's Name</th>
@@ -302,7 +303,6 @@
                         <th scope="col" class="px-5 py-3.5 font-semibold min-w-[220px]">Note / Message</th>
                         @endif
                         <th scope="col" class="px-5 py-3.5 font-semibold min-w-[150px] whitespace-nowrap">Scheduled Date</th>
-                        <th scope="col" class="col-date px-5 py-3.5 font-semibold min-w-[160px] whitespace-nowrap">Booked On</th>
                         <th scope="col" class="no-sort px-5 py-3.5 font-semibold min-w-[240px] text-center whitespace-nowrap no-export">Action</th>
                     </tr>
                 </thead>
@@ -320,6 +320,12 @@
                         data-message="{{ $appointment->message ?? '' }}">
                         <td class="px-5 py-3.5 text-slate-400 font-mono text-xs whitespace-nowrap">
                             {{ $loop->iteration }}
+                        </td>
+                        <td class="px-5 py-3.5 text-slate-500 text-xs font-mono whitespace-nowrap min-w-[160px]" data-order="{{ $appointment->created_at ? $appointment->created_at->timestamp : 0 }}">
+                            <div class="flex items-center gap-1.5">
+                                <i class="fas fa-clock text-slate-400 text-[11px]"></i>
+                                <span>{{ $appointment->created_at ? $appointment->created_at->format('d M Y, h:i A') : '-' }}</span>
+                            </div>
                         </td>
                         <td class="px-5 py-3.5 font-medium text-slate-800 flex items-center gap-3 min-w-[180px] whitespace-nowrap">
                             <span class="w-8 h-8 rounded-full bg-indigo-100 text-indigo-700 flex items-center justify-center text-xs font-semibold uppercase flex-shrink-0">
@@ -413,12 +419,6 @@
                                     <span>Not Scheduled</span>
                                 </span>
                             @endif
-                        </td>
-                        <td class="px-5 py-3.5 text-slate-500 text-xs font-mono whitespace-nowrap min-w-[160px]" data-order="{{ $appointment->created_at ? $appointment->created_at->timestamp : 0 }}">
-                            <div class="flex items-center gap-1.5">
-                                <i class="fas fa-clock text-slate-400 text-[11px]"></i>
-                                <span>{{ $appointment->created_at ? $appointment->created_at->format('d M Y, h:i A') : '-' }}</span>
-                            </div>
                         </td>
                         <td class="px-5 py-3.5 text-center whitespace-nowrap min-w-[240px]">
                             <div class="flex items-center justify-center gap-1.5">

@@ -5,13 +5,31 @@
         <!-- Header -->
         <div class="flex items-center justify-between mb-6">
             <div>
-                <h1 class="text-2xl md:text-3xl font-bold text-slate-800">Doctor Management</h1>
-                <p class="text-sm text-slate-500">Register and view all doctors</p>
+                <h1 class="text-2xl md:text-3xl font-bold text-slate-800">Doctor & Staff Management</h1>
+                <p class="text-sm text-slate-500">Register and manage clinic doctors and staff accounts</p>
             </div>
             <a href="{{ route('doctor.form') }}"
                 class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-xl text-sm font-semibold flex items-center gap-2 shadow-md hover:shadow-lg transition">
-                <i class="fas fa-plus"></i> Add Doctor
+                <i class="fas fa-plus"></i> Add Member
             </a>
+        </div>
+
+        <!-- Role Filter Tabs -->
+        <div class="flex flex-wrap items-center justify-between gap-4 mb-6">
+            <div class="flex items-center gap-2 bg-slate-100 p-1.5 rounded-xl text-sm font-medium">
+                <a href="{{ route('doctor.list') }}"
+                   class="px-4 py-1.5 rounded-lg transition {{ !request('role') ? 'bg-white text-indigo-600 shadow-sm font-semibold' : 'text-slate-600 hover:text-slate-900' }}">
+                    All Members <span class="ml-1 text-xs px-2 py-0.5 rounded-full {{ !request('role') ? 'bg-indigo-50 text-indigo-600' : 'bg-slate-200 text-slate-600' }}">{{ $totalCount ?? count($doctors) }}</span>
+                </a>
+                <a href="{{ route('doctor.list', ['role' => 'doctor']) }}"
+                   class="px-4 py-1.5 rounded-lg transition {{ request('role') == 'doctor' ? 'bg-white text-green-600 shadow-sm font-semibold' : 'text-slate-600 hover:text-slate-900' }}">
+                    <i class="fas fa-user-doctor mr-1"></i> Doctors <span class="ml-1 text-xs px-2 py-0.5 rounded-full {{ request('role') == 'doctor' ? 'bg-green-50 text-green-600' : 'bg-slate-200 text-slate-600' }}">{{ $doctorCount ?? 0 }}</span>
+                </a>
+                <a href="{{ route('doctor.list', ['role' => 'staff']) }}"
+                   class="px-4 py-1.5 rounded-lg transition {{ request('role') == 'staff' ? 'bg-white text-amber-600 shadow-sm font-semibold' : 'text-slate-600 hover:text-slate-900' }}">
+                    <i class="fas fa-user-nurse mr-1"></i> Staff <span class="ml-1 text-xs px-2 py-0.5 rounded-full {{ request('role') == 'staff' ? 'bg-amber-50 text-amber-600' : 'bg-slate-200 text-slate-600' }}">{{ $staffCount ?? 0 }}</span>
+                </a>
+            </div>
         </div>
 
         <!-- Form Section (hidden by default) -->
@@ -157,8 +175,8 @@
         <!-- Table Section -->
         <div class="bg-white rounded-2xl shadow-lg border border-slate-200 overflow-hidden">
             <div class="px-6 py-4 border-b border-slate-200 flex items-center justify-between">
-                <h3 class="font-semibold text-slate-700"><i class="fas fa-list mr-2 text-indigo-400"></i>All Doctors</h3>
-                <span id="doctorCount" class="text-sm text-slate-500 bg-slate-100 px-3 py-1 rounded-full">0 records</span>
+                <h3 class="font-semibold text-slate-700"><i class="fas fa-users-gear mr-2 text-indigo-400"></i>Members Directory</h3>
+                <span class="text-sm text-slate-500 bg-slate-100 px-3 py-1 rounded-full">{{ $doctors->total() }} records</span>
             </div>
             <div class="overflow-x-auto">
                 <table class="w-full text-sm">
@@ -229,7 +247,7 @@
                                 <td class="px-4 py-3">
                                     <span
                                         class="px-2 py-1 rounded-full text-xs font-medium
-                    {{ $doctor->role == 'super_admin' ? 'bg-red-100 text-red-700' : 'bg-green-100 text-green-700' }}">
+                    {{ $doctor->role == 'super_admin' ? 'bg-red-100 text-red-700' : ($doctor->role == 'staff' ? 'bg-amber-100 text-amber-700' : 'bg-green-100 text-green-700') }}">
                                         {{ ucfirst(str_replace('_', ' ', $doctor->role)) }}
                                     </span>
                                 </td>
@@ -267,21 +285,21 @@
 
                         @empty
                             <tr>
-                                <td colspan="11" class="text-center py-10 text-slate-500">
-                                    <i class="fas fa-user-md text-4xl mb-3 block text-slate-300"></i>
-                                    No doctors found.
+                                <td colspan="11" class="text-center py-12 text-slate-500">
+                                    <i class="fas fa-users-gear text-4xl mb-3 block text-slate-300"></i>
+                                    <p class="font-medium text-slate-600">No members found.</p>
+                                    <p class="text-xs text-slate-400 mt-1">Click "+ Add Member" to register a new doctor or staff member.</p>
                                 </td>
                             </tr>
                         @endforelse
                     </tbody>
                 </table>
             </div>
-            <!-- Empty state -->
-            <div id="emptyState" class="text-center py-12 text-slate-400">
-                <i class="fas fa-user-md text-4xl mb-3 block opacity-30"></i>
-                <p class="text-sm">No doctors registered yet.</p>
-                <p class="text-xs">Click "Add Doctor" to get started.</p>
-            </div>
+            @if ($doctors->hasPages())
+                <div class="px-6 py-4 border-t border-slate-200">
+                    {{ $doctors->links() }}
+                </div>
+            @endif
         </div>
     </div>
 

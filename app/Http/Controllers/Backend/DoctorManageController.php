@@ -14,9 +14,16 @@ use Illuminate\Support\Facades\Mail;
 
 class DoctorManageController extends Controller
 {
-    public function doctorList(){
-        $doctors = User::where('role',"!=",'super_admin')->paginate(10);
-        return view('admin.backend.doctors.index',compact('doctors'));
+    public function doctorList(Request $request){
+        $query = User::where('role', "!=", 'super_admin');
+        if ($request->filled('role') && in_array($request->role, ['doctor', 'staff'])) {
+            $query->where('role', $request->role);
+        }
+        $doctors = $query->latest()->paginate(10)->withQueryString();
+        $totalCount = User::where('role', '!=', 'super_admin')->count();
+        $doctorCount = User::where('role', 'doctor')->count();
+        $staffCount = User::where('role', 'staff')->count();
+        return view('admin.backend.doctors.index', compact('doctors', 'totalCount', 'doctorCount', 'staffCount'));
     }
 
     public function createdocForm(){
@@ -34,7 +41,7 @@ class DoctorManageController extends Controller
             'pin_code'=>'required|string',
             'doctor_strime'=>'required|string',
             'phone'=>'required',
-            'role'=>'required|in:doctor,super_admin',
+            'role'=>'required|in:doctor,super_admin,staff',
         ]);
 
         $planTextPasssword = trim($request->password);
@@ -71,7 +78,8 @@ class DoctorManageController extends Controller
             'pin_code' => 'required|string',
             'doctor_strime' => 'required|string',
             'phone' => 'required',
-            'role' => 'required|in:doctor,super_admin',
+            'role' => 'required|in:doctor,super_admin,staff',
+            'password' => 'nullable|min:8|max:32',
         ]);
 
         $doctor = User::findOrFail($id);
@@ -85,9 +93,12 @@ class DoctorManageController extends Controller
         $doctor->doctor_strime = $request->doctor_strime;
         $doctor->phone = $request->phone;
         $doctor->role = $request->role;
+        if ($request->filled('password')) {
+            $doctor->password = Hash::make(trim($request->password));
+        }
         $doctor->save();
 
-        return redirect()->back()->with('success', 'Doctor updated successfully.');
+        return redirect()->back()->with('success', 'User updated successfully.');
     }
 
     public function DeleteDoctor($id)

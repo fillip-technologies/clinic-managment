@@ -54,7 +54,7 @@
 <section class="py-8" style="background: var(--color-dark);">
     <div class="max-w-7xl mx-auto px-6 grid grid-cols-2 md:grid-cols-4 gap-6 text-center">
         <div><p class="text-3xl font-extrabold text-white">2002</p><p class="text-white/60 text-sm">Established</p></div>
-        <div><p class="text-3xl font-extrabold text-white">2</p><p class="text-white/60 text-sm">Clinic Locations</p></div>
+        <div><p class="text-3xl font-extrabold text-white">1</p><p class="text-white/60 text-sm">Clinic Locations</p></div>
         <div><p class="text-3xl font-extrabold text-white">15</p><p class="text-white/60 text-sm">Days Prescription Validity</p></div>
         <div><p class="text-3xl font-extrabold text-white">Sun</p><p class="text-white/60 text-sm">Closed</p></div>
     </div>

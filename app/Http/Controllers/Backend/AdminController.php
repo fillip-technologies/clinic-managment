@@ -39,17 +39,23 @@ class AdminController extends Controller
             } else {
                 return back()->with('error', 'Invalid Credantials');
             }
-        } else if($data->role == "doctor"){
-
-                if (Auth::guard('doctor')->attempt(['email' => $request->email, 'password' => $request->password])) {
-                    $request->session()->regenerate();
-                    return redirect()->route('doctor.dashboard');
-                } else {
-                    return back()->with('error', 'Invalid Credantials');
-                }
+        } else if ($data->role == "doctor") {
+            if (Auth::guard('doctor')->attempt(['email' => $request->email, 'password' => $request->password])) {
+                $request->session()->regenerate();
+                return redirect()->route('doctor.dashboard');
             } else {
-                return back()->with('error', 'Authentication Fails');
+                return back()->with('error', 'Invalid Credantials');
             }
+        } else if ($data->role == "staff") {
+            if (Auth::guard('staff')->attempt(['email' => $request->email, 'password' => $request->password])) {
+                $request->session()->regenerate();
+                return redirect()->route('list.patient');
+            } else {
+                return back()->with('error', 'Invalid Credantials');
+            }
+        } else {
+            return back()->with('error', 'Authentication Fails');
+        }
 
     }
 
@@ -71,11 +77,11 @@ class AdminController extends Controller
     {
         if (Auth::guard('super_admin')->check()) {
             Auth::guard('super_admin')->logout();
-            $request->session()->invalidate();
-            $request->session()->regenerateToken();
-            return redirect()->route('login');
+        } elseif (Auth::guard('staff')->check()) {
+            Auth::guard('staff')->logout();
         }
-
+        $request->session()->invalidate();
+        $request->session()->regenerateToken();
         return redirect()->route('login');
     }
 
@@ -93,7 +99,7 @@ class AdminController extends Controller
 
     public function settings()
     {
-        $user = Auth::guard('super_admin')->user() ?? Auth::guard('doctor')->user();
+        $user = Auth::guard('super_admin')->user() ?? Auth::guard('doctor')->user() ?? Auth::guard('staff')->user();
         if (!$user) {
             return redirect()->route('login');
         }
@@ -103,7 +109,7 @@ class AdminController extends Controller
 
     public function updatePassword(Request $request)
     {
-        $user = Auth::guard('super_admin')->user() ?? Auth::guard('doctor')->user();
+        $user = Auth::guard('super_admin')->user() ?? Auth::guard('doctor')->user() ?? Auth::guard('staff')->user();
         if (!$user) {
             return redirect()->route('login');
         }

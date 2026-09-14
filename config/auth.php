@@ -50,6 +50,11 @@ return [
             'driver' => 'session',
             'provider' => 'users',
         ],
+
+        'staff' => [
+            'driver' => 'session',
+            'provider' => 'users',
+        ],
     ],
 
     /*
