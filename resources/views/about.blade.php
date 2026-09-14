@@ -59,7 +59,7 @@
 
 <section class="py-20 px-6" style="background: var(--color-light);">
     <div class="max-w-6xl mx-auto grid lg:grid-cols-2 gap-12 items-center">
-        <img src="{{ asset('images/doctors.png') }}" class="rounded-lg shadow-xl w-full object-cover" alt="Clinic doctors">
+        <img src="{{ asset('images/doc2.png') }}" class="rounded-lg shadow-xl w-full object-cover" alt="Clinic doctors">
         <div>
             <span class="inline-block text-xs font-extrabold uppercase tracking-widest px-3 py-1 rounded-full mb-4 bg-white" style="color: var(--color-primary);">RCDHO Approach</span>
             <h2 class="text-3xl font-extrabold mb-5" style="color: var(--color-dark);">Building perfection in resource constraints</h2>
