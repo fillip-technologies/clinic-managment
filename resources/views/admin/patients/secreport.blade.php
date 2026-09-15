@@ -190,6 +190,15 @@
                             placeholder="REG-2026-001"
                             class="w-full rounded-xl border border-[#d3dfea] px-4 py-2.5 text-sm bg-[#fafdff] input-focus">
                     </div>
+                    <!-- Follow-up Reg. No. -->
+                    <div class="col-span-1">
+                        <label class="block text-xs font-semibold uppercase tracking-wide text-[#2f5a77] mb-1"><i
+                                class="fas fa-file-medical"></i> Follow-up Reg. No.</label>
+                        <input type="text" name="follow_up_reg_no"
+                            value="{{ old('follow_up_reg_no', $data->patient->follow_up_reg_no) }}"
+                            placeholder="e.g. F-2026-001 (optional)"
+                            class="w-full rounded-xl border border-[#d3dfea] px-4 py-2.5 text-sm bg-[#fafdff] input-focus">
+                    </div>
                 </div>
             </div>
 

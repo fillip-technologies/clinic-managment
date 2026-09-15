@@ -469,6 +469,11 @@
                         </td>
                         <td>
                             <span class="font-semibold text-slate-700">{{ $patient->registration_no ?: '-' }}</span>
+                            @if(!empty($patient->follow_up_reg_no))
+                                <div class="text-[11px] font-mono text-purple-600">
+                                    <span class="text-slate-400">F/U:</span> {{ $patient->follow_up_reg_no }}
+                                </div>
+                            @endif
                         </td>
                         <td>
                             @if(!empty($clinical?->duration_of_diabetes))

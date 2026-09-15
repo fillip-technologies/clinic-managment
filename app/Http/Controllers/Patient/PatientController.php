@@ -42,6 +42,7 @@ class PatientController extends Controller
             'mobile_no' => 'nullable|string|max:20',
             'mail' => 'nullable|email|max:255',
             'registration_no' => 'nullable|string|max:50|unique:patients,registration_no',
+            'follow_up_reg_no' => 'nullable|string|max:50',
 
             'has_diabetes' => 'nullable',
             'newly_detected' => 'nullable|string|max:50',
@@ -213,6 +214,7 @@ class PatientController extends Controller
             'mobile_no' => $request->mobile ?? $request->mobile_no,
             'mail' => $request->mail,
             'registration_no' => $registrationNo,
+            'follow_up_reg_no' => $request->filled('follow_up_reg_no') ? trim($request->follow_up_reg_no) : null,
         ]);
 
         PatientClinicalRecord::create([
@@ -383,6 +385,7 @@ class PatientController extends Controller
             'mail' => 'nullable|email|max:255',
 
             'registration_no' => $regNoRules,
+            'follow_up_reg_no' => 'nullable|string|max:50',
 
             'has_diabetes' => 'nullable',
             'newly_detected' => 'nullable|string|max:50',
@@ -568,6 +571,7 @@ class PatientController extends Controller
             'mobile_no' => $request->mobile ?? $request->mobile_no,
             'mail' => $request->mail,
             'registration_no' => $registrationNo,
+            'follow_up_reg_no' => $request->filled('follow_up_reg_no') ? trim($request->follow_up_reg_no) : null,
         ]);
 
         $matchAttributes = ['patient_id' => $patient->id];
@@ -816,6 +820,7 @@ class PatientController extends Controller
             'foot_exam' => 'nullable|string|max:500',
             'car_echo_ev' => 'nullable|string|max:500',
             'echo_exam' => 'nullable|string|max:500',
+            'follow_up_reg_no' => 'nullable|string|max:50',
         ]);
 
         $patientId = $request->patient_id;
@@ -831,6 +836,10 @@ class PatientController extends Controller
             }
         } else {
             $patient = Patient::find($patientId);
+        }
+
+        if ($patient && $request->filled('follow_up_reg_no')) {
+            $patient->update(['follow_up_reg_no' => trim($request->follow_up_reg_no)]);
         }
 
         $diabetes = "Normal";

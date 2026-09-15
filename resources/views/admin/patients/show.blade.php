@@ -184,9 +184,6 @@
                 <div>
                     <h1 class="text-xl sm:text-2xl font-bold text-slate-800 flex items-center gap-2">
                         <span>Patient Clinical Profile</span>
-                        <span class="text-xs px-2.5 py-0.5 rounded-full font-bold bg-indigo-100 text-indigo-700">
-                            {{ $patient->registration_no ?? 'ID #' . ($patient->id ?? $record->patient_id) }}
-                        </span>
                     </h1>
                     <p class="text-xs text-slate-500">Comprehensive patient history and clinical laboratory details</p>
                 </div>
@@ -219,8 +216,16 @@
                     <p class="text-xs font-medium text-slate-600">Research Centre for Diabetes, Hypertension and Obesity</p>
                 </div>
                 <div class="text-right">
-                    <span class="text-[11px] font-bold uppercase tracking-wider text-slate-500">Patient Reg. No:</span>
-                    <span class="text-base font-black font-mono text-slate-900 ml-1">{{ $patient->registration_no ?? 'ID #' . ($patient->id ?? $record->patient_id) }}</span>
+                    <div>
+                        <span class="text-[11px] font-bold uppercase tracking-wider text-slate-500">Patient Reg. No:</span>
+                        <span class="text-base font-black font-mono text-slate-900 ml-1">{{ $patient->registration_no ?? 'ID #' . ($patient->id ?? $record->patient_id) }}</span>
+                    </div>
+                    @if(!empty($patient->follow_up_reg_no))
+                        <div class="mt-0.5">
+                            <span class="text-[11px] font-bold uppercase tracking-wider text-slate-500">Follow-up Reg:</span>
+                            <span class="text-sm font-black font-mono text-indigo-900 ml-1">{{ $patient->follow_up_reg_no }}</span>
+                        </div>
+                    @endif
                 </div>
             </div>
         </div>
@@ -237,13 +242,11 @@
                         {{ $patient->patient_name ? substr($patient->patient_name, 0, 2) : 'PT' }}
                     </div>
                     <div>
+                        <!-- Patient Name & Category Badges -->
                         <div class="flex flex-wrap items-center gap-2.5 mb-1.5">
                             <h2 class="text-2xl sm:text-3xl font-extrabold text-white tracking-tight">
                                 {{ $patient->patient_name ?? 'Unnamed Patient' }}
                             </h2>
-                            <span class="px-2.5 py-0.5 rounded-full text-xs font-bold font-mono bg-amber-400/20 text-amber-300 border border-amber-400/40">
-                                Reg No: {{ $patient->registration_no ?? 'ID #' . ($patient->id ?? $record->patient_id) }}
-                            </span>
                             <span class="px-2.5 py-0.5 rounded-full text-xs font-semibold {{ ($patient->gender ?? '') === 'Female' ? 'bg-pink-500/30 text-pink-200 border border-pink-400/30' : 'bg-blue-500/30 text-blue-200 border border-blue-400/30' }}">
                                 {{ $patient->gender ?? 'Not Specified' }}
                             </span>
@@ -254,18 +257,11 @@
                             @endif
                         </div>
 
-                        <div class="grid grid-cols-2 sm:grid-cols-5 gap-x-6 gap-y-1.5 text-xs text-slate-300 mt-2">
-                            <div>
-                                <span class="text-slate-400">Reg No:</span>
-                                <span class="font-mono font-bold text-amber-300 ml-1">{{ $patient->registration_no ?? 'N/A' }}</span>
-                            </div>
+                        <!-- Demographics: Age, Guardian, Reg Date, Mobile -->
+                        <div class="grid grid-cols-2 sm:grid-cols-4 gap-x-6 gap-y-1.5 text-xs text-slate-300 mt-2">
                             <div>
                                 <span class="text-slate-400">Age:</span>
                                 <span class="font-semibold text-white ml-1">{{ $patient->age ? $patient->age . ' yrs' : 'N/A' }}</span>
-                            </div>
-                            <div>
-                                <span class="text-slate-400">Mobile:</span>
-                                <span class="font-semibold text-white ml-1">{{ $patient->mobile_no ?? 'N/A' }}</span>
                             </div>
                             <div>
                                 <span class="text-slate-400">Guardian:</span>
@@ -274,6 +270,24 @@
                             <div>
                                 <span class="text-slate-400">Reg Date:</span>
                                 <span class="font-semibold text-white ml-1">{{ $patient->record_date ? \Carbon\Carbon::parse($patient->record_date)->format('d M Y') : 'N/A' }}</span>
+                            </div>
+                            <div>
+                                <span class="text-slate-400">Mobile:</span>
+                                <span class="font-semibold text-white ml-1">{{ $patient->mobile_no ?? 'N/A' }}</span>
+                            </div>
+                        </div>
+
+                        <!-- Registration Numbers: Below Age, Guardian, Reg Date -->
+                        <div class="flex flex-wrap items-center gap-x-6 gap-y-1.5 text-xs text-slate-300 mt-2 pt-2 border-t border-white/10">
+                            <div>
+                                <span class="text-slate-400">Reg No:</span>
+                                <span class="font-mono font-bold text-amber-300 ml-1">{{ $patient->registration_no ?? 'ID #' . ($patient->id ?? $record->patient_id) }}</span>
+                            </div>
+                            <div>
+                                <span class="text-slate-400">Follow-up Reg No:</span>
+                                <span class="font-mono font-bold {{ !empty($patient->follow_up_reg_no) ? 'text-purple-300' : 'text-slate-400' }} ml-1">
+                                    {{ $patient->follow_up_reg_no ?: 'None' }}
+                                </span>
                             </div>
                         </div>
 
@@ -327,12 +341,6 @@
 
                 <!-- Record status badges -->
                 <div class="flex md:flex-col items-end gap-2 text-right">
-                    <div class="bg-indigo-900/60 backdrop-blur-md px-3.5 py-2 rounded-xl border border-indigo-400/30 text-xs text-right">
-                        <p class="text-indigo-200 text-[10px] uppercase font-semibold">Patient Reg. No.</p>
-                        <p class="font-mono font-bold text-amber-300 text-sm tracking-wider">
-                            {{ $patient->registration_no ?? 'ID #' . ($patient->id ?? $record->patient_id) }}
-                        </p>
-                    </div>
                     <div class="bg-white/10 backdrop-blur-md px-3.5 py-2 rounded-xl border border-white/10 text-xs">
                         <p class="text-slate-300 text-[10px] uppercase font-semibold">Latest Visit Record</p>
                         <p class="font-bold text-white text-sm">
@@ -935,6 +943,9 @@
                     </div>
                     <div>
                         <span class="font-bold">Patient Reg No:</span> <span class="font-mono font-bold">{{ $patient->registration_no ?? 'ID #' . $patient->id }}</span>
+                        @if(!empty($patient->follow_up_reg_no))
+                            <span class="ml-2 font-bold">| Follow-up Reg:</span> <span class="font-mono font-bold">{{ $patient->follow_up_reg_no }}</span>
+                        @endif
                     </div>
                     <div>
                         <span class="font-bold">Printed:</span> {{ date('d M Y, h:i A') }}

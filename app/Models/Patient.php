@@ -18,8 +18,9 @@ class Patient extends Model
         'mail',
         'rcdho_grade',
         'registration_no',
+        'follow_up_reg_no',
         'father_husband_name',
-        ];
+    ];
 
 
     public function clinicalRecords()
