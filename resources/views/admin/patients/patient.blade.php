@@ -73,24 +73,28 @@
 
     <div class="w-full max-w-7xl bg-white rounded-3xl card-shadow p-6 md:p-9 transition-all m-auto">
 
-        <div class="flex flex-wrap items-center justify-between border-b border-[#e2ebf3] pb-5 mb-7">
-            <div class="flex items-center gap-3">
-                <i class="fas fa-notes-medical text-3xl text-[#1f6e96]"></i>
-                <h1 class="text-2xl md:text-3xl font-semibold text-[#0b2a3f] tracking-tight">Patient Clinical Record
-                </h1>
-            </div>
-            <div class="flex items-center gap-3 mt-2 sm:mt-0">
-                <span class="badge-soft"><i class="far fa-calendar-alt mr-1"></i> New Registration</span>
-                <span
-                    class="bg-[#eaf1f9] px-4 py-1.5 rounded-full text-sm font-medium text-[#1f5a7a] border border-[#c7dae9]">
-                    <i class="far fa-clock mr-1"></i> Today
-                </span>
-            </div>
-        </div>
-
         <!-- ====== FORM with name & value attributes (Laravel friendly) ====== -->
-        <form action="{{ route('store.patient') }}" class="space-y-7" method="POST" action="/patient-records" enctype="multipart/form-data">
+        <form action="{{ route('store.patient') }}" id="patientForm" class="space-y-7" method="POST" enctype="multipart/form-data">
             @csrf
+
+            <div class="flex flex-wrap items-center justify-between border-b border-[#e2ebf3] pb-5 mb-7">
+                <div class="flex items-center gap-3">
+                    <i class="fas fa-notes-medical text-3xl text-[#1f6e96]"></i>
+                    <h1 class="text-2xl md:text-3xl font-semibold text-[#0b2a3f] tracking-tight">Patient Clinical Record
+                    </h1>
+                </div>
+                <div class="flex items-center gap-3 mt-2 sm:mt-0">
+                    <span class="badge-soft"><i class="far fa-calendar-alt mr-1"></i> New Registration</span>
+                    <label class="bg-[#eaf1f9] hover:bg-[#dfeaf6] px-3.5 py-1.5 rounded-full text-sm font-medium text-[#1f5a7a] border border-[#c7dae9] flex items-center gap-2 cursor-pointer transition shadow-sm"
+                        onclick="try{ this.querySelector('input').showPicker(); }catch(e){}" title="Click to select visit date">
+                        <i class="far fa-calendar-alt text-[#1f6e96]"></i>
+                        <span class="text-xs font-bold text-[#1f5a7a]">Visit Date:</span>
+                        <input type="date" name="record_date" id="header_record_date"
+                            value="{{ old('record_date', date('Y-m-d')) }}"
+                            class="bg-transparent text-sm font-bold text-[#1f5a7a] outline-none cursor-pointer border-0 p-0 focus:ring-0">
+                    </label>
+                </div>
+            </div>
 
             <!-- === SECTION 1: Personal & Demographics === -->
             <div>
@@ -105,8 +109,9 @@
                     <div class="col-span-1">
                         <label class="block text-xs font-semibold uppercase tracking-wide text-[#2f5a77] mb-1"><i
                                 class="far fa-calendar-alt"></i> Date</label>
-                        <input type="date" name="record_date" value="{{ old('record_date', date('Y-m-d')) }}"
-                            class="w-full rounded-xl border border-[#d3dfea] px-4 py-2.5 text-sm bg-[#fafdff] input-focus">
+                        <input type="date" id="sec1_record_date"
+                            value="{{ old('record_date', date('Y-m-d')) }}"
+                            class="w-full rounded-xl border border-[#d3dfea] px-4 py-2.5 text-sm bg-[#fafdff] input-focus cursor-pointer">
                     </div>
                     <!-- Patient's Name -->
                     <div class="col-span-1">
@@ -583,6 +588,13 @@
                         fields.classList.add('hidden');
                     }
                 });
+            }
+
+            const hDate = document.getElementById('header_record_date');
+            const sDate = document.getElementById('sec1_record_date');
+            if (hDate && sDate) {
+                hDate.addEventListener('change', () => { sDate.value = hDate.value; });
+                sDate.addEventListener('change', () => { hDate.value = sDate.value; });
             }
         });
     </script>

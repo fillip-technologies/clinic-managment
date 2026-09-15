@@ -607,7 +607,7 @@
                             @endif
                         </td>
                         <td>
-                            <span class="font-medium text-slate-600">{{ $patient->record_date ? \Carbon\Carbon::parse($patient->record_date)->format('d/m/Y') : ($clinical?->created_at ? $clinical->created_at->format('d/m/Y') : '-') }}</span>
+                            <span class="font-medium text-slate-600">{{ $clinical?->record_date ? \Carbon\Carbon::parse($clinical->record_date)->format('d/m/Y') : ($clinical?->created_at ? $clinical->created_at->format('d/m/Y') : ($patient->record_date ? \Carbon\Carbon::parse($patient->record_date)->format('d/m/Y') : '-')) }}</span>
                         </td>
                         <td class="none">
                             <div class="flex items-center gap-2 py-1">

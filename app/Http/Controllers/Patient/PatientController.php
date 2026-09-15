@@ -219,6 +219,7 @@ class PatientController extends Controller
 
         PatientClinicalRecord::create([
             "patient_id" => $patient->id,
+            "record_date" => $request->record_date ?? date('Y-m-d'),
             'newly_detected' => $request->newly_detected,
             'duration_of_diabetes' => $request->diabetes_duration ?? $request->duration_of_diabetes,
             'insuline_brand' => $request->insuline_brand,
@@ -579,9 +580,10 @@ class PatientController extends Controller
             $matchAttributes['id'] = $record->id;
         }
 
-        PatientClinicalRecord::updateOrCreate(
+        $clinicalRecord = PatientClinicalRecord::updateOrCreate(
             $matchAttributes,
             [
+                'record_date' => $request->record_date ?? date('Y-m-d'),
                 'newly_detected' => $request->newly_detected,
                 'duration_of_diabetes' => $request->diabetes_duration ?? $request->duration_of_diabetes,
                 'insuline_brand' => $request->insuline_brand,
@@ -654,6 +656,12 @@ class PatientController extends Controller
                 'infection' => $infection,
             ]
         );
+
+        if ($request->filled('record_date') && $clinicalRecord) {
+            $timeStr = $clinicalRecord->created_at ? $clinicalRecord->created_at->format('H:i:s') : now()->format('H:i:s');
+            $clinicalRecord->created_at = \Carbon\Carbon::parse($request->record_date . ' ' . $timeStr);
+            $clinicalRecord->save();
+        }
 
         return redirect()->route('list.patient')
             ->with('success', 'Patient clinical record updated successfully.');
@@ -730,6 +738,7 @@ class PatientController extends Controller
     public function createNewRecord(Request $request, $id)
     {
         $request->validate([
+            'record_date' => 'nullable|date',
             'has_diabetes' => 'nullable',
             'newly_detected' => 'nullable|string|max:50',
             'diabetes_duration' => 'nullable|string|max:50',
@@ -898,8 +907,9 @@ class PatientController extends Controller
             $attachmentPath = $file->storeAs('patient-attachments', $filename, 'public');
         }
 
-        PatientClinicalRecord::create([
+        $clinicalRecord = PatientClinicalRecord::create([
             "patient_id" => $patientId,
+            'record_date' => $request->record_date ?? date('Y-m-d'),
             'newly_detected' => $request->newly_detected,
             'duration_of_diabetes' => $request->diabetes_duration ?? $request->duration_of_diabetes,
             'insuline_brand' => $request->insuline_brand,
@@ -971,6 +981,12 @@ class PatientController extends Controller
             'obesity' => $obesity,
             'infection' => $infection,
         ]);
+
+        if ($request->filled('record_date')) {
+            $timeStr = now()->format('H:i:s');
+            $clinicalRecord->created_at = \Carbon\Carbon::parse($request->record_date . ' ' . $timeStr);
+            $clinicalRecord->save();
+        }
 
         return redirect()->route('list.patient')
             ->with('success', 'New Report Added SuccessFuly');

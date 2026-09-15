@@ -12,6 +12,7 @@ class PatientClinicalRecord extends Model
       protected $table = 'patient_clinical_records';
       protected $fillable = [
         'patient_id',
+        'record_date',
         'newly_detected',
         'duration_of_diabetes',
         'insuline_brand',
