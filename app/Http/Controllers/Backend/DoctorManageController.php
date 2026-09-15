@@ -124,7 +124,7 @@ class DoctorManageController extends Controller
             'patient_name'     => 'required|string|max:255',
             'father_name'      => 'nullable|string|max:255',
             'age'              => 'nullable|numeric|min:0|max:150',
-            'patient_type'     => 'required|string|in:N,ON,DMF,NDM,NM,NMDM,complimentry,Complimentry',
+            'patient_type'     => 'required|string|in:N,ON,DMF,NDM,NM,NMDM,complimentry,Complimentry,complementary,Complementary,complimentary,Complimentary',
             'phone'            => 'required|string|max:20',
             'mail'             => 'nullable|email|max:255',
             'address'          => 'nullable|string',
@@ -137,7 +137,12 @@ class DoctorManageController extends Controller
             $appointmentType = ($request->is('admin/*') || str_contains(url()->previous() ?? '', 'admin')) ? 'admin' : 'on_site';
         }
 
-        $patientType = strtolower($request->patient_type) === 'complimentry' ? 'complimentry' : $request->patient_type;
+        $rawPatientType = trim($request->patient_type);
+        if (in_array(strtolower($rawPatientType), ['complimentry', 'complementary', 'complimentary'])) {
+            $patientType = 'Complementary';
+        } else {
+            $patientType = $rawPatientType;
+        }
 
         $appointment = Appoinment::create([
             'patient_name'     => $request->patient_name,

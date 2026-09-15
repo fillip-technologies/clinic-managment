@@ -338,16 +338,19 @@
                         <td class="px-5 py-3.5 min-w-[130px] whitespace-nowrap">
                             @php
                                 $rawType = trim($appointment->patient_type ?? '');
+                                $typeKey = strtolower($rawType);
                                 $typeMap = [
-                                    'N' => ['bg' => 'bg-sky-50', 'text' => 'text-sky-700', 'border' => 'border-sky-200', 'dot' => 'bg-sky-500'],
-                                    'ON' => ['bg' => 'bg-indigo-50', 'text' => 'text-indigo-700', 'border' => 'border-indigo-200', 'dot' => 'bg-indigo-500'],
-                                    'DMF' => ['bg' => 'bg-amber-50', 'text' => 'text-amber-700', 'border' => 'border-amber-200', 'dot' => 'bg-amber-500'],
-                                    'NDM' => ['bg' => 'bg-rose-50', 'text' => 'text-rose-700', 'border' => 'border-rose-200', 'dot' => 'bg-rose-500'],
-                                    'NM' => ['bg' => 'bg-teal-50', 'text' => 'text-teal-700', 'border' => 'border-teal-200', 'dot' => 'bg-teal-500'],
-                                    'NMDM' => ['bg' => 'bg-purple-50', 'text' => 'text-purple-700', 'border' => 'border-purple-200', 'dot' => 'bg-purple-500'],
+                                    'n' => ['bg' => 'bg-sky-50', 'text' => 'text-sky-700', 'border' => 'border-sky-200', 'dot' => 'bg-sky-500'],
+                                    'on' => ['bg' => 'bg-indigo-50', 'text' => 'text-indigo-700', 'border' => 'border-indigo-200', 'dot' => 'bg-indigo-500'],
+                                    'dmf' => ['bg' => 'bg-amber-50', 'text' => 'text-amber-700', 'border' => 'border-amber-200', 'dot' => 'bg-amber-500'],
+                                    'ndm' => ['bg' => 'bg-rose-50', 'text' => 'text-rose-700', 'border' => 'border-rose-200', 'dot' => 'bg-rose-500'],
+                                    'nm' => ['bg' => 'bg-teal-50', 'text' => 'text-teal-700', 'border' => 'border-teal-200', 'dot' => 'bg-teal-500'],
+                                    'nmdm' => ['bg' => 'bg-purple-50', 'text' => 'text-purple-700', 'border' => 'border-purple-200', 'dot' => 'bg-purple-500'],
+                                    'complementary' => ['bg' => 'bg-emerald-50', 'text' => 'text-emerald-700', 'border' => 'border-emerald-200', 'dot' => 'bg-emerald-500'],
+                                    'complimentary' => ['bg' => 'bg-emerald-50', 'text' => 'text-emerald-700', 'border' => 'border-emerald-200', 'dot' => 'bg-emerald-500'],
                                     'complimentry' => ['bg' => 'bg-emerald-50', 'text' => 'text-emerald-700', 'border' => 'border-emerald-200', 'dot' => 'bg-emerald-500'],
                                 ];
-                                $style = $typeMap[$rawType] ?? ['bg' => 'bg-slate-100', 'text' => 'text-slate-700', 'border' => 'border-slate-200', 'dot' => 'bg-slate-400'];
+                                $style = $typeMap[$typeKey] ?? ['bg' => 'bg-slate-100', 'text' => 'text-slate-700', 'border' => 'border-slate-200', 'dot' => 'bg-slate-400'];
                             @endphp
                             <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold border {{ $style['bg'] }} {{ $style['text'] }} {{ $style['border'] }}">
                                 <span class="w-1.5 h-1.5 rounded-full {{ $style['dot'] }}"></span>
@@ -544,7 +547,7 @@
                         <option value="NDM">NDM</option>
                         <option value="NM">NM</option>
                         <option value="NMDM">NMDM</option>
-                        <option value="complimentry">complimentry</option>
+                        <option value="Complementary">Complementary</option>
                     </select>
                     @error('patient_type')
                         <p class="text-xs text-red-500 mt-1">{{ $message }}</p>
