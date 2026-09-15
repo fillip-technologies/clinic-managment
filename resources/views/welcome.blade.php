@@ -103,7 +103,7 @@
 
 <section class="py-20 px-6" style="background: var(--color-light);">
     <div class="max-w-7xl mx-auto grid lg:grid-cols-2 gap-12 items-center">
-        <img src="{{ asset('images/doctor-consult.png') }}" class="w-full rounded-lg shadow-xl object-cover" alt="Patient consultation">
+        <img src="{{ asset('images/doctor-consult2.png') }}" class="w-full rounded-lg shadow-xl object-cover" alt="Patient consultation">
         <div>
             <span class="inline-block text-xs font-extrabold uppercase tracking-widest px-3 py-1 rounded-full mb-4" style="background: white; color: var(--color-primary);">Prescription Flow</span>
             <h2 class="text-3xl font-extrabold mb-5" style="color: var(--color-dark);">From registration to follow-up, every visit is structured</h2>
