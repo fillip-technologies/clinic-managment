@@ -331,9 +331,11 @@
                     <tr>
                         <th scope="col" class="no-sort px-5 py-3.5 font-semibold min-w-[70px] whitespace-nowrap">Sr no.</th>
                         <th scope="col" class="col-date px-5 py-3.5 font-semibold min-w-[160px] whitespace-nowrap">Booked On</th>
+                        <th scope="col" class="col-scheduled-date px-5 py-3.5 font-semibold min-w-[150px] whitespace-nowrap">Scheduled Date</th>
+                        <th scope="col" class="no-sort px-5 py-3.5 font-semibold min-w-[240px] text-center whitespace-nowrap no-export">Action</th>
                         <th scope="col" class="px-5 py-3.5 font-semibold min-w-[180px] whitespace-nowrap">Patient Name</th>
                         <th scope="col" class="px-5 py-3.5 font-semibold min-w-[90px] whitespace-nowrap">Age</th>
-                        <th scope="col" class="px-5 py-3.5 font-semibold min-w-[150px] whitespace-nowrap">Father/Husband Name</th>
+                        <th scope="col" class="px-5 py-3.5 font-semibold min-w-[160px] whitespace-nowrap">Father/Husband Name</th>
                         <th scope="col" class="px-5 py-3.5 font-semibold min-w-[140px] whitespace-nowrap">Phone</th>
                         <th scope="col" class="px-5 py-3.5 font-semibold min-w-[180px] whitespace-nowrap">Email</th>
                         <th scope="col" class="px-5 py-3.5 font-semibold min-w-[180px]">Address</th>
@@ -341,8 +343,6 @@
                         @if(empty($isOnlyAdmin))
                         <th scope="col" class="px-5 py-3.5 font-semibold min-w-[220px]">Note / Message</th>
                         @endif
-                        <th scope="col" class="col-scheduled-date px-5 py-3.5 font-semibold min-w-[150px] whitespace-nowrap">Scheduled Date</th>
-                        <th scope="col" class="no-sort px-5 py-3.5 font-semibold min-w-[240px] text-center whitespace-nowrap no-export">Action</th>
                     </tr>
                 </thead>
                 <tbody id="tableBody" class="divide-y divide-slate-100">
@@ -368,11 +368,49 @@
                                 <span>{{ $appointment->created_at ? $appointment->created_at->format('d M Y, h:i A') : '-' }}</span>
                             </div>
                         </td>
-                        <td class="px-5 py-3.5 font-medium text-slate-800 flex items-center gap-3 min-w-[180px] whitespace-nowrap">
-                            <span class="w-8 h-8 rounded-full bg-indigo-100 text-indigo-700 flex items-center justify-center text-xs font-semibold uppercase flex-shrink-0">
-                                {{ $appointment->patient_name ? substr($appointment->patient_name, 0, 2) : 'NA' }}
-                            </span>
-                            <span class="font-semibold text-slate-800">{{ $appointment->patient_name ?? 'N/A' }}</span>
+                        <td class="px-5 py-3.5 min-w-[150px] whitespace-nowrap" data-order="{{ $appointment->appointment_scheduled_date ? \Carbon\Carbon::parse($appointment->appointment_scheduled_date)->timestamp : 0 }}">
+                            @if($appointment->appointment_scheduled_date)
+                                <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200 shadow-sm">
+                                    <i class="fas fa-calendar-check text-emerald-500 text-[11px]"></i>
+                                    <span>{{ \Carbon\Carbon::parse($appointment->appointment_scheduled_date)->format('d M Y') }}</span>
+                                </span>
+                            @else
+                                <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-amber-50 text-amber-700 border border-amber-200">
+                                    <i class="fas fa-clock text-amber-500 text-[11px]"></i>
+                                    <span>Not Scheduled</span>
+                                </span>
+                            @endif
+                        </td>
+                        <td class="px-5 py-3.5 text-center whitespace-nowrap min-w-[240px]">
+                            <div class="flex items-center justify-center gap-1.5">
+                                <button type="button"
+                                    onclick="openScheduleModal({{ $appointment->id }}, '{{ addslashes($appointment->patient_name ?? '') }}', '{{ $appointment->appointment_scheduled_date ? \Carbon\Carbon::parse($appointment->appointment_scheduled_date)->format('Y-m-d') : '' }}', '{{ addslashes($appointment->mail ?? '') }}', '{{ addslashes($appointment->created_at ? $appointment->created_at->format('d M Y, h:i A') : '') }}')"
+                                    title="{{ $appointment->appointment_scheduled_date ? 'Reschedule Appointment Date' : 'Schedule Appointment Date' }}"
+                                    class="inline-flex items-center justify-center gap-1.5 px-2.5 py-1.5 rounded-xl {{ $appointment->appointment_scheduled_date ? 'bg-emerald-50 hover:bg-emerald-100 text-emerald-700 border border-emerald-200' : 'bg-amber-50 hover:bg-amber-100 text-amber-700 border border-amber-200' }} font-semibold text-xs transition shadow-sm hover:shadow">
+                                    <i class="fas {{ $appointment->appointment_scheduled_date ? 'fa-calendar-check text-emerald-600' : 'fa-calendar-alt text-amber-600' }} text-xs"></i>
+                                    <span>{{ $appointment->appointment_scheduled_date ? 'Reschedule' : 'Schedule' }}</span>
+                                </button>
+
+                                <a href="{{ route('patient.form') }}?name={{ urlencode($appointment->patient_name ?? '') }}&father_name={{ urlencode($appointment->father_name ?? '') }}&guardian_name={{ urlencode($appointment->father_name ?? '') }}&number={{ urlencode($appointment->phone ?? '') }}&age={{ urlencode($appointment->age ?? '') }}&mail={{ urlencode($appointment->mail ?? '') }}&address={{ urlencode($appointment->address ?? '') }}"
+                                   title="Register Patient (Pass details to form)"
+                                   class="inline-flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-semibold text-xs transition shadow-sm hover:shadow-md group/btn">
+                                    <i class="fas fa-plus text-xs group-hover/btn:scale-125 transition-transform"></i>
+                                    <span>Add Patient</span>
+                                </a>
+
+                                <form action="{{ route('appointment.delete', $appointment->id) }}" method="POST" class="inline-block" onsubmit="return confirm('Are you sure you want to delete this appointment for {{ addslashes($appointment->patient_name) }}?');">
+                                    @csrf
+                                    @method('DELETE')
+                                    <button type="submit"
+                                        title="Delete Appointment"
+                                        class="w-8 h-8 rounded-xl bg-red-50 hover:bg-red-600 text-red-600 hover:text-white border border-red-200 hover:border-red-600 transition flex items-center justify-center shadow-sm hover:shadow">
+                                        <i class="fas fa-trash-alt text-xs"></i>
+                                    </button>
+                                </form>
+                            </div>
+                        </td>
+                        <td class="px-5 py-3.5 font-semibold text-slate-800 whitespace-nowrap min-w-[180px]">
+                            {{ $appointment->patient_name ?? 'N/A' }}
                         </td>
                         <td class="px-5 py-3.5 text-slate-700 font-medium text-xs whitespace-nowrap min-w-[90px]">
                             @if($appointment->age)
@@ -381,7 +419,7 @@
                                 <span class="text-slate-400">-</span>
                             @endif
                         </td>
-                        <td class="px-5 py-3.5 text-slate-700 text-xs min-w-[150px] whitespace-nowrap">
+                        <td class="px-5 py-3.5 text-slate-700 text-xs min-w-[160px] whitespace-nowrap">
                             {{ $appointment->father_name ?: '-' }}
                         </td>
                         <td class="px-5 py-3.5 text-slate-600 font-mono text-xs whitespace-nowrap min-w-[140px]">
@@ -451,47 +489,6 @@
                             @endif
                         </td>
                         @endif
-                        <td class="px-5 py-3.5 min-w-[150px] whitespace-nowrap" data-order="{{ $appointment->appointment_scheduled_date ? \Carbon\Carbon::parse($appointment->appointment_scheduled_date)->timestamp : 0 }}">
-                            @if($appointment->appointment_scheduled_date)
-                                <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200 shadow-sm">
-                                    <i class="fas fa-calendar-check text-emerald-500 text-[11px]"></i>
-                                    <span>{{ \Carbon\Carbon::parse($appointment->appointment_scheduled_date)->format('d M Y') }}</span>
-                                </span>
-                            @else
-                                <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-amber-50 text-amber-700 border border-amber-200">
-                                    <i class="fas fa-clock text-amber-500 text-[11px]"></i>
-                                    <span>Not Scheduled</span>
-                                </span>
-                            @endif
-                        </td>
-                        <td class="px-5 py-3.5 text-center whitespace-nowrap min-w-[240px]">
-                            <div class="flex items-center justify-center gap-1.5">
-                                <button type="button"
-                                    onclick="openScheduleModal({{ $appointment->id }}, '{{ addslashes($appointment->patient_name ?? '') }}', '{{ $appointment->appointment_scheduled_date ? \Carbon\Carbon::parse($appointment->appointment_scheduled_date)->format('Y-m-d') : '' }}', '{{ addslashes($appointment->mail ?? '') }}', '{{ addslashes($appointment->created_at ? $appointment->created_at->format('d M Y, h:i A') : '') }}')"
-                                    title="{{ $appointment->appointment_scheduled_date ? 'Reschedule Appointment Date' : 'Schedule Appointment Date' }}"
-                                    class="inline-flex items-center justify-center gap-1.5 px-2.5 py-1.5 rounded-xl {{ $appointment->appointment_scheduled_date ? 'bg-emerald-50 hover:bg-emerald-100 text-emerald-700 border border-emerald-200' : 'bg-amber-50 hover:bg-amber-100 text-amber-700 border border-amber-200' }} font-semibold text-xs transition shadow-sm hover:shadow">
-                                    <i class="fas {{ $appointment->appointment_scheduled_date ? 'fa-calendar-check text-emerald-600' : 'fa-calendar-alt text-amber-600' }} text-xs"></i>
-                                    <span>{{ $appointment->appointment_scheduled_date ? 'Reschedule' : 'Schedule' }}</span>
-                                </button>
-
-                                <a href="{{ route('patient.form') }}?name={{ urlencode($appointment->patient_name ?? '') }}&father_name={{ urlencode($appointment->father_name ?? '') }}&guardian_name={{ urlencode($appointment->father_name ?? '') }}&number={{ urlencode($appointment->phone ?? '') }}&age={{ urlencode($appointment->age ?? '') }}&mail={{ urlencode($appointment->mail ?? '') }}&address={{ urlencode($appointment->address ?? '') }}"
-                                   title="Register Patient (Pass details to form)"
-                                   class="inline-flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-semibold text-xs transition shadow-sm hover:shadow-md group/btn">
-                                    <i class="fas fa-plus text-xs group-hover/btn:scale-125 transition-transform"></i>
-                                    <span>Add Patient</span>
-                                </a>
-
-                                <form action="{{ route('appointment.delete', $appointment->id) }}" method="POST" class="inline-block" onsubmit="return confirm('Are you sure you want to delete this appointment for {{ addslashes($appointment->patient_name) }}?');">
-                                    @csrf
-                                    @method('DELETE')
-                                    <button type="submit"
-                                        title="Delete Appointment"
-                                        class="w-8 h-8 rounded-xl bg-red-50 hover:bg-red-600 text-red-600 hover:text-white border border-red-200 hover:border-red-600 transition flex items-center justify-center shadow-sm hover:shadow">
-                                        <i class="fas fa-trash-alt text-xs"></i>
-                                    </button>
-                                </form>
-                            </div>
-                        </td>
                     </tr>
                     @endforeach
                 </tbody>
