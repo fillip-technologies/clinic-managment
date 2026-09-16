@@ -103,10 +103,10 @@
                     </tr>
 
                     @if(!empty($appointment->father_name))
-                    <!-- Father's Name -->
+                    <!-- Father/Husband Name -->
                     <tr>
                         <td style="padding:11px 0;font-size:14px;color:#475569;border-bottom:1px solid #e2ece8;">
-                            <strong>Father's Name:</strong>
+                            <strong>Father/Husband Name:</strong>
                         </td>
                         <td style="padding:11px 0;font-size:14px;color:#12343b;border-bottom:1px solid #e2ece8;">
                             {{ $appointment->father_name }}

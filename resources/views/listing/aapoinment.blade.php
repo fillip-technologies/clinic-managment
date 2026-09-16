@@ -333,7 +333,7 @@
                         <th scope="col" class="col-date px-5 py-3.5 font-semibold min-w-[160px] whitespace-nowrap">Booked On</th>
                         <th scope="col" class="px-5 py-3.5 font-semibold min-w-[180px] whitespace-nowrap">Patient Name</th>
                         <th scope="col" class="px-5 py-3.5 font-semibold min-w-[90px] whitespace-nowrap">Age</th>
-                        <th scope="col" class="px-5 py-3.5 font-semibold min-w-[150px] whitespace-nowrap">Father's Name</th>
+                        <th scope="col" class="px-5 py-3.5 font-semibold min-w-[150px] whitespace-nowrap">Father/Husband Name</th>
                         <th scope="col" class="px-5 py-3.5 font-semibold min-w-[140px] whitespace-nowrap">Phone</th>
                         <th scope="col" class="px-5 py-3.5 font-semibold min-w-[180px] whitespace-nowrap">Email</th>
                         <th scope="col" class="px-5 py-3.5 font-semibold min-w-[180px]">Address</th>
@@ -549,12 +549,12 @@
                     </div>
                 </div>
 
-                <!-- Father's Name -->
+                <!-- Father/Husband Name -->
                 <div>
                     <label for="father_name" class="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1.5">
-                        <i class="fas fa-user-friends text-indigo-500 mr-1"></i> Father's Name
+                        <i class="fas fa-user-friends text-indigo-500 mr-1"></i> Father/Husband Name
                     </label>
-                    <input type="text" id="father_name" name="father_name" placeholder="Enter father's name (optional)"
+                    <input type="text" id="father_name" name="father_name" placeholder="Enter father or husband name (optional)"
                         class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-sm text-slate-800 placeholder:text-slate-400 focus:ring-2 focus:ring-indigo-400 focus:border-indigo-400 outline-none transition bg-slate-50/50">
                     @error('father_name')
                         <p class="text-xs text-red-500 mt-1">{{ $message }}</p>

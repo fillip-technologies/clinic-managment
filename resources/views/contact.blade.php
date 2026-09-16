@@ -50,7 +50,7 @@
                             class="w-full px-4 py-3 rounded-lg border border-emerald-100 outline-none focus:border-emerald-600 @error('age') border-red-600 @enderror">
                     </div>
                     <div class="grid sm:grid-cols-2 gap-4">
-                        <input type="text" name="father_name" value="{{ old('father_name') }}" placeholder="Father's name (optional)"
+                        <input type="text" name="father_name" value="{{ old('father_name') }}" placeholder="Father/Husband name (optional)"
                             class="w-full px-4 py-3 rounded-lg border border-emerald-100 outline-none focus:border-emerald-600 @error('father_name') border-red-600 @enderror">
                         <input type="tel" name="phone" value="{{ old('phone') }}" placeholder="Mobile number" required
                             class="w-full px-4 py-3 rounded-lg border border-emerald-100 outline-none focus:border-emerald-600 @error('phone') border-red-600 @enderror">
