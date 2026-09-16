@@ -721,6 +721,7 @@
 
             <!-- Modal Body Form -->
             <form id="dateExportForm" method="GET" action="{{ route('appointment.export') }}" class="p-6 space-y-4">
+                <input type="hidden" name="export_by_date" value="1">
                 <input type="hidden" name="type" value="{{ !empty($isOnlyOnSite) ? 'on_site' : (!empty($isOnlyAdmin) ? 'admin' : '') }}">
 
                 <!-- 1. Select Date Criteria -->
@@ -905,18 +906,32 @@
                 return true;
             };
 
+            // Save previous table ordering
+            const previousOrder = appointmentDataTable.order();
+
+            // Sort ascending by date for Export by Date
+            let dateColIndex = $('#appointmentTable thead th.col-date').index();
+            if (dateColIndex === -1) dateColIndex = 1;
+            let scheduledColIndex = $('#appointmentTable thead th.col-scheduled-date').index();
+
+            if (dateField === 'scheduled_date' && scheduledColIndex !== -1) {
+                appointmentDataTable.order([[scheduledColIndex, 'asc'], [dateColIndex, 'asc']]);
+            } else {
+                appointmentDataTable.order([[dateColIndex, 'asc']]);
+            }
+
             $.fn.dataTable.ext.search.push(filterFunc);
             appointmentDataTable.draw();
 
-            // Trigger Excel export on the filtered dataset
+            // Trigger Excel export on the filtered dataset (in ASC order)
             appointmentDataTable.button('.buttons-excel').trigger();
 
-            // Clean up temporary filter and redraw table
+            // Clean up temporary filter and restore previous ordering
             const filterIdx = $.fn.dataTable.ext.search.indexOf(filterFunc);
             if (filterIdx !== -1) {
                 $.fn.dataTable.ext.search.splice(filterIdx, 1);
             }
-            appointmentDataTable.draw();
+            appointmentDataTable.order(previousOrder).draw();
         }
 
         function openScheduleModal(id, name, scheduledDate, email, bookedAt) {

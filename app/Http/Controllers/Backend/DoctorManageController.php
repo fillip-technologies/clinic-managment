@@ -183,7 +183,7 @@ class DoctorManageController extends Controller
 
     public function exportAppointments(Request $request)
     {
-        $query = Appoinment::latest();
+        $query = Appoinment::query();
         if ($request->filled('type')) {
             if ($request->type === 'on_site') {
                 $query->where(function ($q) {
@@ -195,11 +195,24 @@ class DoctorManageController extends Controller
         }
 
         $dateField = ($request->get('date_field') === 'scheduled_date') ? 'appointment_scheduled_date' : 'created_at';
+        $isExportByDate = $request->boolean('export_by_date') || $request->filled('start_date') || $request->filled('end_date');
+
         if ($request->filled('start_date')) {
             $query->whereDate($dateField, '>=', $request->start_date);
         }
         if ($request->filled('end_date')) {
             $query->whereDate($dateField, '<=', $request->end_date);
+        }
+
+        // Only sort ascending by date when performing Export by Date; general export retains latest (desc)
+        if ($isExportByDate) {
+            if ($dateField === 'appointment_scheduled_date') {
+                $query->orderBy('appointment_scheduled_date', 'asc')->orderBy('created_at', 'asc');
+            } else {
+                $query->orderBy('created_at', 'asc');
+            }
+        } else {
+            $query->latest();
         }
 
         $appointments = $query->get();
