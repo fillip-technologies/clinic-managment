@@ -258,6 +258,72 @@
         <!-- Hidden container for DataTables buttons -->
         <div id="dt-buttons-hidden" class="hidden"></div>
 
+        <!-- Calendar Date Filter Toolbar -->
+        <div class="mb-4 bg-slate-50/90 border border-slate-200/80 rounded-xl p-3 sm:p-4 shadow-sm">
+            <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-3">
+                <!-- Left: Date Picker & Field Criteria -->
+                <div class="flex flex-wrap items-center gap-2.5">
+                    <div class="flex items-center gap-2 text-slate-700 font-semibold text-xs uppercase tracking-wider">
+                        <span class="w-7 h-7 rounded-lg bg-indigo-100 text-indigo-600 flex items-center justify-center">
+                            <i class="fas fa-calendar-day text-sm"></i>
+                        </span>
+                        <span>Date Filter:</span>
+                    </div>
+
+                    <!-- Date Picker Input -->
+                    <div class="relative">
+                        <input type="date" id="calendarFilterDate" 
+                            onchange="applyCalendarDateFilter(this.value)"
+                            onclick="if (this.showPicker) { try { this.showPicker(); } catch(e) {} }"
+                            class="h-9 pl-8 pr-3 text-xs sm:text-sm font-medium text-slate-800 bg-white border border-slate-300 rounded-lg shadow-sm focus:ring-2 focus:ring-indigo-400 focus:border-indigo-400 outline-none transition cursor-pointer">
+                        <i class="fas fa-calendar-alt absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-400 text-xs pointer-events-none"></i>
+                    </div>
+
+                    <!-- Criteria Selector (Booked Date vs Scheduled Date) -->
+                    <div class="inline-flex rounded-lg border border-slate-200 bg-white p-0.5 text-xs font-medium shadow-sm">
+                        <button type="button" id="btnFilterBooked" onclick="setCalendarFilterField('booked')"
+                            class="px-2.5 py-1 rounded-md transition text-white bg-indigo-600 font-semibold shadow-xs">
+                            Booked Date
+                        </button>
+                        <button type="button" id="btnFilterScheduled" onclick="setCalendarFilterField('scheduled')"
+                            class="px-2.5 py-1 rounded-md transition text-slate-600 hover:text-slate-900">
+                            Scheduled Date
+                        </button>
+                    </div>
+
+                    <!-- Quick Preset Buttons -->
+                    <div class="flex items-center gap-1">
+                        <button type="button" onclick="setCalendarDatePreset('today')"
+                            class="px-2.5 py-1 text-xs font-medium rounded-md border border-slate-200 bg-white text-slate-700 hover:bg-indigo-50 hover:text-indigo-600 hover:border-indigo-200 transition shadow-xs">
+                            Today
+                        </button>
+                        <button type="button" onclick="setCalendarDatePreset('yesterday')"
+                            class="px-2.5 py-1 text-xs font-medium rounded-md border border-slate-200 bg-white text-slate-700 hover:bg-indigo-50 hover:text-indigo-600 hover:border-indigo-200 transition shadow-xs">
+                            Yesterday
+                        </button>
+                        <button type="button" onclick="setCalendarDatePreset('tomorrow')"
+                            class="px-2.5 py-1 text-xs font-medium rounded-md border border-slate-200 bg-white text-slate-700 hover:bg-indigo-50 hover:text-indigo-600 hover:border-indigo-200 transition shadow-xs">
+                            Tomorrow
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Right: Active Status & Clear Button -->
+                <div class="flex items-center gap-2">
+                    <div id="calendarFilterActiveBadge" class="hidden items-center gap-2 px-3 py-1.5 rounded-lg bg-indigo-50 border border-indigo-200 text-indigo-800 text-xs font-medium">
+                        <i class="fas fa-calendar-check text-indigo-600"></i>
+                        <span id="calendarFilterStatusText"></span>
+                    </div>
+
+                    <button type="button" id="calendarFilterClearBtn" onclick="clearCalendarDateFilter()"
+                        class="hidden items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium text-rose-600 bg-rose-50 border border-rose-200 hover:bg-rose-100 transition shadow-xs">
+                        <i class="fas fa-times"></i>
+                        <span>Clear Filter</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+
         <!-- Table -->
         <div class="rounded-xl border border-slate-200/80 bg-white/60 shadow-sm p-4">
             <table id="appointmentTable" class="w-full text-sm text-left text-slate-700 {{ !empty($isOnlyAdmin) ? 'min-w-[1450px]' : 'min-w-[1650px]' }} stripe hover">
@@ -275,7 +341,7 @@
                         @if(empty($isOnlyAdmin))
                         <th scope="col" class="px-5 py-3.5 font-semibold min-w-[220px]">Note / Message</th>
                         @endif
-                        <th scope="col" class="px-5 py-3.5 font-semibold min-w-[150px] whitespace-nowrap">Scheduled Date</th>
+                        <th scope="col" class="col-scheduled-date px-5 py-3.5 font-semibold min-w-[150px] whitespace-nowrap">Scheduled Date</th>
                         <th scope="col" class="no-sort px-5 py-3.5 font-semibold min-w-[240px] text-center whitespace-nowrap no-export">Action</th>
                     </tr>
                 </thead>
@@ -924,6 +990,165 @@
             }
         }
 
+        // Calendar Date Filter State & Functions
+        let activeCalendarDate = '';
+        let activeCalendarField = 'booked'; // 'booked' or 'scheduled'
+
+        // Register DataTables search filter for calendar date
+        $.fn.dataTable.ext.search.push(function(settings, data, dataIndex) {
+            if (settings.nTable.id !== 'appointmentTable') return true;
+            if (!activeCalendarDate) return true;
+
+            const rowNode = settings.aoData[dataIndex].nTr;
+            if (!rowNode) return true;
+
+            const bookedDate = $(rowNode).attr('data-booked-date') || '';
+            const scheduledDate = $(rowNode).attr('data-scheduled-date') || '';
+
+            if (activeCalendarField === 'booked') {
+                return bookedDate === activeCalendarDate;
+            } else if (activeCalendarField === 'scheduled') {
+                return scheduledDate === activeCalendarDate;
+            }
+            return true;
+        });
+
+        function applyCalendarDateFilter(dateVal) {
+            activeCalendarDate = (dateVal || '').trim();
+            const input = document.getElementById('calendarFilterDate');
+            if (input && input.value !== activeCalendarDate) {
+                input.value = activeCalendarDate;
+            }
+
+            if (!appointmentDataTable) return;
+
+            let dateColIndex = $('#appointmentTable thead th.col-date').index();
+            if (dateColIndex === -1) dateColIndex = 1;
+            let scheduledColIndex = $('#appointmentTable thead th.col-scheduled-date').index();
+
+            if (activeCalendarDate) {
+                // When a date is selected, sort in ASCENDING order of datetime as requested
+                if (activeCalendarField === 'scheduled' && scheduledColIndex !== -1) {
+                    appointmentDataTable.order([[scheduledColIndex, 'asc'], [dateColIndex, 'asc']]);
+                } else {
+                    appointmentDataTable.order([[dateColIndex, 'asc']]);
+                }
+            } else {
+                // When cleared, restore default descending order
+                appointmentDataTable.order([[dateColIndex, 'desc']]);
+            }
+
+            appointmentDataTable.draw();
+        }
+
+        function clearCalendarDateFilter() {
+            activeCalendarDate = '';
+            const input = document.getElementById('calendarFilterDate');
+            if (input) input.value = '';
+
+            if (appointmentDataTable) {
+                let dateColIndex = $('#appointmentTable thead th.col-date').index();
+                if (dateColIndex === -1) dateColIndex = 1;
+                appointmentDataTable.order([[dateColIndex, 'desc']]).draw();
+            } else {
+                updateCalendarFilterCount();
+            }
+        }
+
+        function setCalendarFilterField(field) {
+            activeCalendarField = field;
+            const btnBooked = document.getElementById('btnFilterBooked');
+            const btnScheduled = document.getElementById('btnFilterScheduled');
+
+            if (btnBooked && btnScheduled) {
+                if (field === 'booked') {
+                    btnBooked.className = 'px-2.5 py-1 rounded-md transition text-white bg-indigo-600 font-semibold shadow-xs';
+                    btnScheduled.className = 'px-2.5 py-1 rounded-md transition text-slate-600 hover:text-slate-900';
+                } else {
+                    btnScheduled.className = 'px-2.5 py-1 rounded-md transition text-white bg-indigo-600 font-semibold shadow-xs';
+                    btnBooked.className = 'px-2.5 py-1 rounded-md transition text-slate-600 hover:text-slate-900';
+                }
+            }
+
+            if (appointmentDataTable) {
+                if (activeCalendarDate) {
+                    let dateColIndex = $('#appointmentTable thead th.col-date').index();
+                    if (dateColIndex === -1) dateColIndex = 1;
+                    let scheduledColIndex = $('#appointmentTable thead th.col-scheduled-date').index();
+
+                    if (activeCalendarField === 'scheduled' && scheduledColIndex !== -1) {
+                        appointmentDataTable.order([[scheduledColIndex, 'asc'], [dateColIndex, 'asc']]);
+                    } else {
+                        appointmentDataTable.order([[dateColIndex, 'asc']]);
+                    }
+                }
+                appointmentDataTable.draw();
+            }
+        }
+
+        function setCalendarDatePreset(preset) {
+            const now = new Date();
+            let target = new Date();
+            if (preset === 'today') {
+                target = now;
+            } else if (preset === 'yesterday') {
+                target.setDate(now.getDate() - 1);
+            } else if (preset === 'tomorrow') {
+                target.setDate(now.getDate() + 1);
+            }
+            const year = target.getFullYear();
+            const month = String(target.getMonth() + 1).padStart(2, '0');
+            const day = String(target.getDate()).padStart(2, '0');
+            const dateStr = `${year}-${month}-${day}`;
+
+            applyCalendarDateFilter(dateStr);
+        }
+
+        function updateCalendarFilterCount() {
+            const badge = document.getElementById('calendarFilterActiveBadge');
+            const clearBtn = document.getElementById('calendarFilterClearBtn');
+            const statusText = document.getElementById('calendarFilterStatusText');
+
+            if (!activeCalendarDate) {
+                if (badge) {
+                    badge.classList.add('hidden');
+                    badge.classList.remove('flex');
+                }
+                if (clearBtn) {
+                    clearBtn.classList.add('hidden');
+                    clearBtn.classList.remove('inline-flex');
+                }
+                return;
+            }
+
+            if (badge) {
+                badge.classList.remove('hidden');
+                badge.classList.add('flex');
+            }
+            if (clearBtn) {
+                clearBtn.classList.remove('hidden');
+                clearBtn.classList.add('inline-flex');
+            }
+
+            let count = 0;
+            if (appointmentDataTable) {
+                count = appointmentDataTable.rows({ filter: 'applied' }).count();
+            }
+
+            let formattedDate = activeCalendarDate;
+            try {
+                const parts = activeCalendarDate.split('-');
+                if (parts.length === 3) {
+                    const d = new Date(parseInt(parts[0], 10), parseInt(parts[1], 10) - 1, parseInt(parts[2], 10));
+                    formattedDate = d.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
+                }
+            } catch(e) {}
+
+            if (statusText) {
+                statusText.innerHTML = `<span><strong>${count}</strong> ${count === 1 ? 'record' : 'records'} on <strong>${formattedDate}</strong></span>`;
+            }
+        }
+
         // DataTable Initialization
         $(document).ready(function() {
             let dateColIndex = $('#appointmentTable thead th.col-date').index();
@@ -1035,7 +1260,7 @@
             // Mount buttons in hidden container so they can be triggered from the dropdown button
             appointmentDataTable.buttons().container().appendTo('#dt-buttons-hidden');
 
-            // Dynamic sequential numbers on sort/search/page
+            // Dynamic sequential numbers on sort/search/page & update filter badge
             appointmentDataTable.on('order.dt search.dt draw.dt', function() {
                 let info = appointmentDataTable.page.info();
                 appointmentDataTable.column(0, {
@@ -1045,7 +1270,15 @@
                 }).nodes().each(function(cell, i) {
                     cell.innerHTML = i + 1 + info.start;
                 });
+                updateCalendarFilterCount();
             });
+
+            // Initialize calendar filter if date query param is present in URL
+            const urlParams = new URLSearchParams(window.location.search);
+            const initialDate = urlParams.get('date') || urlParams.get('filter_date');
+            if (initialDate) {
+                applyCalendarDateFilter(initialDate);
+            }
         });
     </script>
 @endsection
