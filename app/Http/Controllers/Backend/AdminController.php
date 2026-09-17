@@ -69,10 +69,21 @@ class AdminController extends Controller
         $doctors = User::where('role', 'doctor')->count();
         $patients = Patient::count();
         $allPatient = Patient::paginate(10);
-        $diabetes = PatientClinicalRecord::where('diabetes', 'Diabetes')->count();
-        $hypertension = PatientClinicalRecord::where('hypertension', 'Hypertension')->count();
-        $obesity = PatientClinicalRecord::where('obesity', 'Obesity')->count();
-        $infection = PatientClinicalRecord::where('infection', 'Infection')->count();
+        $diabetes = Patient::whereHas('clinicalRecords', function ($q) {
+            $q->where('diabetes', 'Diabetes');
+        })->count();
+
+        $hypertension = Patient::whereHas('clinicalRecords', function ($q) {
+            $q->where('hypertension', 'Hypertension')->orWhere('htn', 'Yes');
+        })->count();
+
+        $obesity = Patient::whereHas('clinicalRecords', function ($q) {
+            $q->where('obesity', 'Obesity');
+        })->count();
+
+        $infection = Patient::whereHas('clinicalRecords', function ($q) {
+            $q->where('infection', 'Infection');
+        })->count();
 
         return view('admin.backend.dashboard', compact('doctors', 'patients', 'diabetes', 'hypertension', 'obesity', 'infection', 'allPatient'));
     }
