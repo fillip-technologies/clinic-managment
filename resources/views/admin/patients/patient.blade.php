@@ -120,23 +120,14 @@
                         <input type="text" name="patient_name" value="{{ old('patient_name', request('patient_name', request('name'))) }}" placeholder="Full name"
                             class="w-full rounded-xl border border-[#d3dfea] px-4 py-2.5 text-sm bg-[#fafdff] input-focus">
                     </div>
-                    <!-- DATE OF BIRTH (DOB) -->
+                    <!-- AGE -->
                     <div class="col-span-1">
-                        @php
-                            $initialDob = old('dob', request('dob'));
-                            if (empty($initialDob) && request()->filled('age') && is_numeric(request('age')) && request('age') > 0) {
-                                $initialDob = (date('Y') - intval(request('age'))) . '-01-01';
-                            }
-                        @endphp
-                        <label class="block text-xs font-semibold uppercase tracking-wide text-[#2f5a77] mb-1">
-                            <i class="far fa-calendar-alt"></i> Date of Birth (DOB)
-                            <span id="dobCalculatedAge" class="text-indigo-600 font-bold ml-1"></span>
-                        </label>
-                        <input type="date" name="dob" id="patientDobInput" max="{{ date('Y-m-d') }}"
-                            value="{{ $initialDob }}" onchange="calculateDobAge(this.value)"
-                            onclick="try { this.showPicker(); } catch(e) {}"
-                            class="w-full rounded-xl border border-[#d3dfea] px-4 py-2.5 text-sm bg-white input-focus cursor-pointer">
-                        @error('dob')
+                        <label class="block text-xs font-semibold uppercase tracking-wide text-[#2f5a77] mb-1"><i
+                                class="far fa-calendar"></i> Age</label>
+                        <input type="number" name="age" value="{{ old('age', request('age')) }}" placeholder="Years"
+                            min="0" max="150"
+                            class="w-full rounded-xl border border-[#d3dfea] px-4 py-2.5 text-sm bg-white input-focus">
+                        @error('age')
                             <p class="text-xs text-red-500 mt-1">{{ $message }}</p>
                         @enderror
                     </div>
@@ -590,34 +581,7 @@
     </div>
 
     <script>
-        function calculateDobAge(dobStr) {
-            const ageBadge = document.getElementById('dobCalculatedAge');
-            if (!dobStr) {
-                if (ageBadge) ageBadge.textContent = '';
-                return;
-            }
-            const dob = new Date(dobStr);
-            if (isNaN(dob.getTime())) {
-                if (ageBadge) ageBadge.textContent = '';
-                return;
-            }
-            const today = new Date();
-            let age = today.getFullYear() - dob.getFullYear();
-            const m = today.getMonth() - dob.getMonth();
-            if (m < 0 || (m === 0 && today.getDate() < dob.getDate())) {
-                age--;
-            }
-            if (ageBadge) {
-                ageBadge.textContent = age >= 0 ? `(${age} yrs)` : '';
-            }
-        }
-
         document.addEventListener('DOMContentLoaded', function() {
-            const dobInput = document.getElementById('patientDobInput');
-            if (dobInput && dobInput.value) {
-                calculateDobAge(dobInput.value);
-            }
-
             const toggle = document.getElementById('diabetes_toggle');
             const fields = document.getElementById('diabetes_fields');
             if (toggle && fields) {

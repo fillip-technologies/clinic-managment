@@ -32,7 +32,7 @@ class PatientController extends Controller
         $validator = Validator::make($request->all(), [
             'record_date' => 'required|date',
             'patient_name' => 'required|string|max:255',
-            'dob' => 'nullable|date|before_or_equal:today',
+            'age' => 'nullable|integer|min:0|max:150',
             'gender' => 'nullable|string|max:50',
             'guardian_name' => 'nullable|string|max:255',
             'father_husband_name' => 'nullable|string|max:255',
@@ -206,7 +206,7 @@ class PatientController extends Controller
         $patient = Patient::create([
             'record_date' => $request->record_date,
             'patient_name' => $request->patient_name,
-            'dob' => $request->dob,
+            'age' => $request->age,
             'gender' => $request->gender,
             'father_husband_name' => $request->guardian_name ?? $request->father_husband_name,
             'rcdho_grade' => $request->rcdho_grade,
@@ -375,7 +375,7 @@ class PatientController extends Controller
         $validator = Validator::make($request->all(), [
             'record_date' => 'required|date',
             'patient_name' => 'required|string|max:255',
-            'dob' => 'nullable|date|before_or_equal:today',
+            'age' => 'nullable|integer|min:0|max:150',
             'gender' => 'nullable|string|max:50',
             'guardian_name' => 'nullable|string|max:255',
             'father_husband_name' => 'nullable|string|max:255',
@@ -564,7 +564,7 @@ class PatientController extends Controller
         $patient->update([
             'record_date' => $request->record_date,
             'patient_name' => $request->patient_name,
-            'dob' => $request->dob,
+            'age' => $request->age,
             'gender' => $request->gender,
             'father_husband_name' => $request->guardian_name ?? $request->father_husband_name,
             'rcdho_grade' => $request->rcdho_grade,
@@ -719,8 +719,20 @@ class PatientController extends Controller
 
 
 
-    public function addnewReport($id)
+    public function addnewReport(Request $request, $id)
     {
+        if ($request->filled('patient_id')) {
+            $patient = Patient::find($request->patient_id);
+            if ($patient) {
+                $data = $patient->latestRecord ?? $patient->clinicalRecords()->latest('id')->first();
+                if (!$data) {
+                    $data = new PatientClinicalRecord(['patient_id' => $patient->id]);
+                    $data->setRelation('patient', $patient);
+                }
+                return view('admin.patients.secreport', compact('data'));
+            }
+        }
+
         $patient = Patient::find($id);
         if ($patient) {
             $data = $patient->latestRecord ?? $patient->clinicalRecords()->latest('id')->first();
@@ -739,7 +751,18 @@ class PatientController extends Controller
     {
         $request->validate([
             'record_date' => 'nullable|date',
-            'dob' => 'nullable|date|before_or_equal:today',
+            'patient_name' => 'nullable|string|max:255',
+            'age' => 'nullable|integer|min:0|max:150',
+            'gender' => 'nullable|string|max:50',
+            'guardian_name' => 'nullable|string|max:255',
+            'father_husband_name' => 'nullable|string|max:255',
+            'rcdho_grade' => 'nullable|string|max:50',
+            'address' => 'nullable|string|max:500',
+            'mobile' => 'nullable|string|max:20',
+            'mobile_no' => 'nullable|string|max:20',
+            'mail' => 'nullable|email|max:255',
+            'registration_no' => 'nullable|string|max:50',
+            'follow_up_reg_no' => 'nullable|string|max:50',
             'has_diabetes' => 'nullable',
             'newly_detected' => 'nullable|string|max:50',
             'diabetes_duration' => 'nullable|string|max:50',
@@ -850,11 +873,35 @@ class PatientController extends Controller
 
         if ($patient) {
             $patientUpdates = [];
-            if ($request->filled('follow_up_reg_no')) {
-                $patientUpdates['follow_up_reg_no'] = trim($request->follow_up_reg_no);
+            if ($request->filled('patient_name')) {
+                $patientUpdates['patient_name'] = $request->patient_name;
             }
-            if ($request->filled('dob')) {
-                $patientUpdates['dob'] = $request->dob;
+            if ($request->filled('age')) {
+                $patientUpdates['age'] = $request->age;
+            }
+            if ($request->filled('gender')) {
+                $patientUpdates['gender'] = $request->gender;
+            }
+            if ($request->has('guardian_name') || $request->has('father_husband_name')) {
+                $patientUpdates['father_husband_name'] = $request->guardian_name ?? $request->father_husband_name;
+            }
+            if ($request->filled('rcdho_grade')) {
+                $patientUpdates['rcdho_grade'] = $request->rcdho_grade;
+            }
+            if ($request->has('address')) {
+                $patientUpdates['address'] = $request->address;
+            }
+            if ($request->has('mobile') || $request->has('mobile_no')) {
+                $patientUpdates['mobile_no'] = $request->mobile ?? $request->mobile_no;
+            }
+            if ($request->has('mail')) {
+                $patientUpdates['mail'] = $request->mail;
+            }
+            if ($request->filled('registration_no')) {
+                $patientUpdates['registration_no'] = trim($request->registration_no);
+            }
+            if ($request->has('follow_up_reg_no')) {
+                $patientUpdates['follow_up_reg_no'] = trim($request->follow_up_reg_no);
             }
             if (!empty($patientUpdates)) {
                 $patient->update($patientUpdates);
@@ -998,8 +1045,9 @@ class PatientController extends Controller
             $clinicalRecord->save();
         }
 
-        return redirect()->route('list.patient')
-            ->with('success', 'New Report Added SuccessFuly');
+        $targetId = $patient->id ?? $patientId;
+        return redirect()->route('patient.show', $targetId)
+            ->with('success', 'New follow-up clinical report added successfully');
     }
 
 
@@ -1629,7 +1677,6 @@ class PatientController extends Controller
             fputcsv($handle, [
                 'Patient ID',
                 'Patient Name',
-                'DOB',
                 'Age',
                 'Gender',
                 'Mobile',
@@ -1722,7 +1769,6 @@ class PatientController extends Controller
                 fputcsv($handle, [
                     $patient->id,
                     $patient->patient_name ?? 'N/A',
-                    $patient->dob ? $patient->dob->format('Y-m-d') : 'N/A',
                     $patient->age ?? 'N/A',
                     $patient->gender ?? 'N/A',
                     $patient->mobile_no ?? $patient->mobile ?? 'N/A',

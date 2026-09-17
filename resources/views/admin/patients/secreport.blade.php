@@ -117,40 +117,30 @@
                     <div class="col-span-1">
                         <label class="block text-xs font-semibold uppercase tracking-wide text-[#2f5a77] mb-1"><i
                                 class="far fa-user"></i> Patient’s Name</label>
-                        <input type="text" name="patient_name" readonly
+                        <input type="text" name="patient_name"
                             value="{{ old('patient_name', $data->patient->patient_name ?? '') }}" placeholder="Full name"
-                            class="w-full rounded-xl border border-[#d3dfea] px-4 py-2.5 text-sm bg-[#fafdff] input-focus">
+                            class="w-full rounded-xl border border-[#d3dfea] px-4 py-2.5 text-sm bg-white input-focus">
                     </div>
-                    <!-- DATE OF BIRTH (DOB) -->
+                    <!-- AGE -->
                     <div class="col-span-1">
-                        <label class="block text-xs font-semibold uppercase tracking-wide text-[#2f5a77] mb-1">
-                            <i class="far fa-calendar-alt"></i> Date of Birth (DOB)
-                            <span id="dobCalculatedAge" class="text-indigo-600 font-bold ml-1"></span>
-                        </label>
-                        @php
-                            $patientDobVal = old('dob', !empty($data->patient->dob) ? \Carbon\Carbon::parse($data->patient->dob)->format('Y-m-d') : '');
-                        @endphp
-                        <input type="date" name="dob" id="patientDobInput" max="{{ date('Y-m-d') }}"
-                            value="{{ $patientDobVal }}"
-                            onchange="calculateDobAge(this.value)"
-                            onclick="try { this.showPicker(); } catch(e) {}"
-                            class="w-full rounded-xl border border-[#d3dfea] px-4 py-2.5 text-sm bg-white input-focus cursor-pointer">
-                        @error('dob')
-                            <p class="text-xs text-red-500 mt-1">{{ $message }}</p>
-                        @enderror
+                        <label class="block text-xs font-semibold uppercase tracking-wide text-[#2f5a77] mb-1"><i
+                                class="far fa-calendar"></i> Age</label>
+                        <input type="number" name="age" value="{{ old('age', $data->patient->age ?? '') }}"
+                            placeholder="Years" min="0" max="150"
+                            class="w-full rounded-xl border border-[#d3dfea] px-4 py-2.5 text-sm bg-white input-focus">
                     </div>
                     <!-- GENDER -->
                     <div class="col-span-1">
                         <label class="block text-xs font-semibold uppercase tracking-wide text-[#2f5a77] mb-1"><i
                                 class="fas fa-venus-mars"></i> Gender</label>
-                        <select name="gender" disabled
-                            class="w-full rounded-xl border border-[#d3dfea] px-4 py-2.5 text-sm bg-[#fafdff] input-focus">
+                        <select name="gender"
+                            class="w-full rounded-xl border border-[#d3dfea] px-4 py-2.5 text-sm bg-white input-focus">
                             <option value="">Select</option>
-                            <option value="Male" {{ old('gender', $data->patient->gender) == 'Male' ? 'selected' : '' }}>
+                            <option value="Male" {{ old('gender', $data->patient->gender ?? '') == 'Male' ? 'selected' : '' }}>
                                 Male</option>
-                            <option value="Female" {{ old('gender', $data->patient->gender) == 'Female' ? 'selected' : '' }}>
+                            <option value="Female" {{ old('gender', $data->patient->gender ?? '') == 'Female' ? 'selected' : '' }}>
                                 Female</option>
-                            <option value="Other" {{ old('gender', $data->patient->gender) == 'Other' ? 'selected' : '' }}>
+                            <option value="Other" {{ old('gender', $data->patient->gender ?? '') == 'Other' ? 'selected' : '' }}>
                                 Other</option>
                         </select>
                     </div>
@@ -158,61 +148,68 @@
                     <div class="col-span-1">
                         <label class="block text-xs font-semibold uppercase tracking-wide text-[#2f5a77] mb-1"><i
                                 class="fas fa-user-friends"></i> Father / Husband</label>
-                        <input type="text" name="guardian_name" readonly
+                        <input type="text" name="guardian_name"
                             value="{{ old('guardian_name', $data->patient->father_husband_name ?? '') }}" placeholder="Name"
-                            class="w-full rounded-xl border border-[#d3dfea] px-4 py-2.5 text-sm bg-[#fafdff] input-focus">
+                            class="w-full rounded-xl border border-[#d3dfea] px-4 py-2.5 text-sm bg-white input-focus">
                     </div>
                     <!-- RCDHO GRADE -->
                     <div class="col-span-1">
                         <label class="block text-xs font-semibold uppercase tracking-wide text-[#2f5a77] mb-1"><i
                                 class="fas fa-layer-group"></i> RCDHO Grade</label>
-                        <select name="rcdho_grade" disabled
-                            class="w-full rounded-xl border border-[#d3dfea] px-4 py-2.5 text-sm bg-[#fafdff] input-focus">
+                        <select name="rcdho_grade"
+                            class="w-full rounded-xl border border-[#d3dfea] px-4 py-2.5 text-sm bg-white input-focus">
                             <option value="">Select</option>
                             <option value="Grade I"
-                                {{ old('rcdho_grade', $data->patient->rcdho_grade) == 'Grade I' ? 'selected' : '' }}>Grade I
+                                {{ old('rcdho_grade', $data->patient->rcdho_grade ?? '') == 'Grade I' ? 'selected' : '' }}>Grade I
                             </option>
                             <option value="Grade II"
-                                {{ old('rcdho_grade', $data->patient->rcdho_grade) == 'Grade II' ? 'selected' : '' }}>Grade II
+                                {{ old('rcdho_grade', $data->patient->rcdho_grade ?? '') == 'Grade II' ? 'selected' : '' }}>Grade II
                             </option>
                             <option value="Grade III"
-                                {{ old('rcdho_grade', $data->patient->rcdho_grade) == 'Grade III' ? 'selected' : '' }}>Grade
-                                III</option>
+                                {{ old('rcdho_grade', $data->patient->rcdho_grade ?? '') == 'Grade III' ? 'selected' : '' }}>Grade III</option>
                         </select>
                     </div>
                     <!-- Address -->
                     <div class="col-span-1 sm:col-span-2">
                         <label class="block text-xs font-semibold uppercase tracking-wide text-[#2f5a77] mb-1"><i
                                 class="fas fa-map-pin"></i> Address</label>
-                        <input type="text" name="address" readonly value="{{ old('address', $data->patient->address) }}"
+                        <input type="text" name="address" value="{{ old('address', $data->patient->address ?? '') }}"
                             placeholder="Street, city, state"
-                            class="w-full rounded-xl border border-[#d3dfea] px-4 py-2.5 text-sm bg-[#fafdff] input-focus">
+                            class="w-full rounded-xl border border-[#d3dfea] px-4 py-2.5 text-sm bg-white input-focus">
                     </div>
                     <!-- Mobile No -->
                     <div class="col-span-1">
                         <label class="block text-xs font-semibold uppercase tracking-wide text-[#2f5a77] mb-1"><i
                                 class="fas fa-phone-alt"></i> Mobile No.</label>
-                        <input type="tel" name="mobile" readonly value="{{ old('mobile', $data->patient->mobile_no) }}"
+                        <input type="tel" name="mobile" value="{{ old('mobile', $data->patient->mobile_no ?? '') }}"
                             placeholder="+91 98765 43210"
-                            class="w-full rounded-xl border border-[#d3dfea] px-4 py-2.5 text-sm bg-[#fafdff] input-focus">
+                            class="w-full rounded-xl border border-[#d3dfea] px-4 py-2.5 text-sm bg-white input-focus">
                     </div>
-                    <!-- New Registration No. -->
+                    <!-- Email Address -->
                     <div class="col-span-1">
                         <label class="block text-xs font-semibold uppercase tracking-wide text-[#2f5a77] mb-1"><i
-                                class="fas fa-id-card"></i> New Reg. No.</label>
-                        <input type="text" name="registration_no" readonly
-                            value="{{ old('registration_no', $data->patient->registration_no) }}"
+                                class="fas fa-envelope"></i> Email Address</label>
+                        <input type="email" name="mail" value="{{ old('mail', $data->patient->mail ?? '') }}"
+                            placeholder="patient@example.com (optional)"
+                            class="w-full rounded-xl border border-[#d3dfea] px-4 py-2.5 text-sm bg-white input-focus">
+                    </div>
+                    <!-- Registration No. -->
+                    <div class="col-span-1">
+                        <label class="block text-xs font-semibold uppercase tracking-wide text-[#2f5a77] mb-1"><i
+                                class="fas fa-id-card"></i> Reg. No.</label>
+                        <input type="text" name="registration_no"
+                            value="{{ old('registration_no', $data->patient->registration_no ?? '') }}"
                             placeholder="REG-2026-001"
-                            class="w-full rounded-xl border border-[#d3dfea] px-4 py-2.5 text-sm bg-[#fafdff] input-focus">
+                            class="w-full rounded-xl border border-[#d3dfea] px-4 py-2.5 text-sm bg-white input-focus">
                     </div>
                     <!-- Follow-up Reg. No. -->
                     <div class="col-span-1">
                         <label class="block text-xs font-semibold uppercase tracking-wide text-[#2f5a77] mb-1"><i
                                 class="fas fa-file-medical"></i> Follow-up Reg. No.</label>
                         <input type="text" name="follow_up_reg_no"
-                            value="{{ old('follow_up_reg_no', $data->patient->follow_up_reg_no) }}"
+                            value="{{ old('follow_up_reg_no', $data->patient->follow_up_reg_no ?? '') }}"
                             placeholder="e.g. F-2026-001 (optional)"
-                            class="w-full rounded-xl border border-[#d3dfea] px-4 py-2.5 text-sm bg-[#fafdff] input-focus">
+                            class="w-full rounded-xl border border-[#d3dfea] px-4 py-2.5 text-sm bg-white input-focus">
                     </div>
                 </div>
             </div>
@@ -695,34 +692,7 @@
     </div>
 
     <script>
-        function calculateDobAge(dobStr) {
-            const ageBadge = document.getElementById('dobCalculatedAge');
-            if (!dobStr) {
-                if (ageBadge) ageBadge.textContent = '';
-                return;
-            }
-            const dob = new Date(dobStr);
-            if (isNaN(dob.getTime())) {
-                if (ageBadge) ageBadge.textContent = '';
-                return;
-            }
-            const today = new Date();
-            let age = today.getFullYear() - dob.getFullYear();
-            const m = today.getMonth() - dob.getMonth();
-            if (m < 0 || (m === 0 && today.getDate() < dob.getDate())) {
-                age--;
-            }
-            if (ageBadge) {
-                ageBadge.textContent = age >= 0 ? `(${age} yrs)` : '';
-            }
-        }
-
         document.addEventListener('DOMContentLoaded', function() {
-            const dobInput = document.getElementById('patientDobInput');
-            if (dobInput && dobInput.value) {
-                calculateDobAge(dobInput.value);
-            }
-
             const toggle = document.getElementById('diabetes_toggle');
             const fields = document.getElementById('diabetes_fields');
             if (toggle && fields) {
@@ -740,6 +710,14 @@
             if (hDate && sDate) {
                 hDate.addEventListener('change', () => { sDate.value = hDate.value; });
                 sDate.addEventListener('change', () => { hDate.value = sDate.value; });
+                sDate.addEventListener('input', () => { hDate.value = sDate.value; });
+            }
+
+            const form = document.getElementById('newRecordForm');
+            if (form && hDate && sDate) {
+                form.addEventListener('submit', () => {
+                    if (sDate.value) hDate.value = sDate.value;
+                });
             }
         });
     </script>

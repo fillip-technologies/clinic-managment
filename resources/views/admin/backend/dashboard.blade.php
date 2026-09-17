@@ -112,7 +112,7 @@
                         <th class="text-left py-3 px-4 font-medium">Mobile No</th>
                         <th class="text-left py-3 px-4 font-medium">Registration No</th>
                         <th class="text-left py-3 px-4 font-medium">Record Date</th>
-                        <th class="text-left py-3 px-4 font-medium">DOB / Age</th>
+                        <th class="text-left py-3 px-4 font-medium">Age</th>
                         <th class="text-left py-3 px-4 font-medium">Gender</th>
                         <th class="text-left py-3 px-4 font-medium">Address</th>
                         <th class="text-left py-3 px-4 font-medium">RCDHO Grade</th>
@@ -144,7 +144,7 @@
                             </td>
 
                             <td class="py-3 px-4">
-                                {{ $data->dob ? \Carbon\Carbon::parse($data->dob)->format('d M Y') . ($data->age ? ' (' . $data->age . 'y)' : '') : ($data->age ? $data->age . ' yrs' : '-') }}
+                                {{ $data->age ? $data->age . ' yrs' : '-' }}
                             </td>
 
                             <td class="py-3 px-4">

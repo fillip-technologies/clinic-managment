@@ -196,7 +196,7 @@
                     <i class="fas fa-print"></i> Print Profile
                 </button>
 
-                <a href="{{ route('addnewReport', $record->id ?? $patient->id) }}"
+                <a href="{{ route('addnewReport', $patient->id) }}"
                     class="px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold flex items-center gap-1.5 shadow-sm hover:shadow transition">
                     <i class="fas fa-plus-circle"></i> Add Follow-up Visit
                 </a>
@@ -260,8 +260,8 @@
                         <!-- Demographics: Age, Guardian, Reg Date, Mobile -->
                         <div class="grid grid-cols-2 sm:grid-cols-4 gap-x-6 gap-y-1.5 text-xs text-slate-300 mt-2">
                             <div>
-                                <span class="text-slate-400">DOB:</span>
-                                <span class="font-semibold text-white ml-1">{{ $patient->dob ? \Carbon\Carbon::parse($patient->dob)->format('d M Y') . ($patient->age ? ' (' . $patient->age . ' yrs)' : '') : ($patient->age ? $patient->age . ' yrs' : 'N/A') }}</span>
+                                <span class="text-slate-400">Age:</span>
+                                <span class="font-semibold text-white ml-1">{{ $patient->age ? $patient->age . ' yrs' : 'N/A' }}</span>
                             </div>
                             <div>
                                 <span class="text-slate-400">Guardian:</span>
