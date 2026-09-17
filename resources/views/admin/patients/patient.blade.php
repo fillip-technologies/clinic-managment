@@ -543,8 +543,8 @@
                         <input type="text" name="dex_skip_test" value="{{ old('dex_skip_test') }}" placeholder="result"
                             class="w-full rounded-xl border border-[#d3dfea] px-3 py-2 text-sm input-focus"></div>
 
-                             <div><label class="block text-xs font-semibold text-[#2f5a77]">Temparature</label>
-                        <input type="number" name="temprature" value="{{ old('temprature') }}" placeholder="number"
+                    <div><label class="block text-xs font-semibold text-[#2f5a77]">Temperature (°F)</label>
+                        <input type="number" step="0.01" min="0" max="150" name="temprature" value="{{ old('temprature') }}" placeholder="e.g. 98.60"
                             class="w-full rounded-xl border border-[#d3dfea] px-3 py-2 text-sm input-focus"></div>
                 </div>
             </div>

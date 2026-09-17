@@ -85,6 +85,11 @@ class PatientClinicalRecord extends Model
         'infection'
     ];
 
+    protected $casts = [
+        'record_date' => 'date',
+        'temprature' => 'decimal:2',
+    ];
+
     public function patient(){
         return $this->belongsTo(Patient::class);
     }
