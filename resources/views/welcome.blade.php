@@ -4,13 +4,13 @@
 
 <section class="relative overflow-hidden pt-32 pb-16 lg:pt-40 lg:pb-24" style="background: var(--color-light);">
     <div class="absolute inset-0">
-        <img src="{{ asset('images/front2.jpeg') }}" class="w-full h-full object-cover" alt="Clinic care team">
+        <img src="{{ asset('images/front2.jpeg') }}" class="w-full h-full object-cover object-[center_25%]" style="object-position: center 25%;" alt="Clinic care team">
         <div class="absolute inset-0" style="background: linear-gradient(90deg, rgba(15,118,110,0.96), rgba(244,251,248,0.70));"></div>
     </div>
 
     <div class="relative max-w-7xl mx-auto px-6">
-        <div class="grid lg:grid-cols-2 gap-10 items-center">
-            <div class="text-white">
+        <div class="grid lg:grid-cols-12 gap-8 items-center">
+            <div class="text-white lg:col-span-7">
                 <span class="inline-block px-4 py-2 rounded-full text-sm font-bold border border-white/25 bg-white/15">
                     RCDHO | Established 2002
                 </span>
@@ -31,29 +31,31 @@
                 </div>
             </div>
 
-            <div class="bg-white/95 rounded-2xl shadow-2xl p-6 lg:p-8 border border-white/70">
-                <p class="text-xs font-extrabold uppercase tracking-widest mb-3" style="color: var(--color-primary);">Clinical Team</p>
-                <div class="space-y-5">
-                    <div>
-                        <div class="text-xs font-extrabold uppercase tracking-widest mb-1.5 leading-snug space-y-0.5" style="color: var(--color-primary);">
-                            <div>RCDHO, DIRECTOR PROGRAMME & RESEARCH</div>
+            <div class="lg:col-span-5 flex justify-center lg:justify-end">
+                <div class="w-full max-w-[415px] bg-white/90 backdrop-blur-md rounded-2xl shadow-2xl p-4 sm:p-5 border border-white/80 -translate-y-6 lg:-translate-y-[75px] lg:translate-x-6 xl:translate-x-8 lg:ml-auto">
+                    <p class="text-[10px] font-black uppercase tracking-widest mb-2 text-[#0d5550]">Clinical Team</p>
+                    <div class="space-y-3.5">
+                        <div>
+                            <div class="text-[11px] font-extrabold uppercase tracking-wider mb-1 leading-tight text-[#0d5550]">
+                                <div>RCDHO, DIRECTOR PROGRAMME & RESEARCH</div>
+                            </div>
+                            <h2 class="text-xl font-black text-slate-900">Dr. Supriyo Mukherjee</h2>
+                            <ul class="space-y-1 text-xs font-semibold text-slate-800 mt-2">
+                                <li>M.D. Internal Medicine, KGMC (Lucknow)</li>
+                                <li>M.Sc. (Distinction) Advancing Diabetes Care (UK)</li>
+                                <li class="lg:whitespace-nowrap">Senior Fellow, International Diabetes Federation (IDF)</li>
+                                <li>Fellow Indian College of Physicians (FICP)</li>
+                                <li>Fellow Diabetes India (FDI)</li>
+                                <li class="font-extrabold pt-0.5 text-amber-700">Gold Medal in Medicine</li>
+                            </ul>
                         </div>
-                        <h2 class="text-2xl font-extrabold" style="color: var(--color-dark);">Dr. Supriyo Mukherjee</h2>
-                        <ul class="space-y-1.5 text-sm text-gray-600 mt-2">
-                            <li>M.D. Internal Medicine, KGMC (Lucknow)</li>
-                            <li>M.Sc. (Distinction) Advancing Diabetes Care (UK)</li>
-                            <li>Senior Fellow, International Diabetes Federation (IDF)</li>
-                            <li>Fellow Indian College of Physicians (FICP)</li>
-                            <li>Fellow Diabetes India (FDI)</li>
-                            <li class="font-bold pt-1" style="color: var(--color-secondary);">Gold Medal in Medicine</li>
-                        </ul>
-                    </div>
-                    <div class="border-t border-gray-100 pt-5">
-                        <div class="text-xs font-extrabold uppercase tracking-widest mb-1.5 leading-snug space-y-0.5" style="color: var(--color-primary);">
-                            <div>RCDHO, DIRECTOR DIAGNOSTICS & IMAGING</div>
+                        <div class="border-t border-slate-300/60 pt-3.5">
+                            <div class="text-[11px] font-extrabold uppercase tracking-wider mb-1 leading-tight text-[#0d5550]">
+                                <div>RCDHO, DIRECTOR DIAGNOSTICS & IMAGING</div>
+                            </div>
+                            <h2 class="text-xl font-black text-slate-900">Dr. Sushmita Mukherjee</h2>
+                            <p class="text-xs font-semibold text-slate-800 mt-1">M.B.B.S. (B.U.), CC.USG</p>
                         </div>
-                        <h2 class="text-2xl font-extrabold" style="color: var(--color-dark);">Dr. Sushmita Mukherjee</h2>
-                        <p class="text-sm text-gray-600 mt-1">M.B.B.S. (B.U.), CC.USG</p>
                     </div>
                 </div>
             </div>
