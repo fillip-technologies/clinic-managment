@@ -260,8 +260,8 @@
                         <!-- Demographics: Age, Guardian, Reg Date, Mobile -->
                         <div class="grid grid-cols-2 sm:grid-cols-4 gap-x-6 gap-y-1.5 text-xs text-slate-300 mt-2">
                             <div>
-                                <span class="text-slate-400">Age:</span>
-                                <span class="font-semibold text-white ml-1">{{ $patient->age ? $patient->age . ' yrs' : 'N/A' }}</span>
+                                <span class="text-slate-400">DOB:</span>
+                                <span class="font-semibold text-white ml-1">{{ $patient->dob ? \Carbon\Carbon::parse($patient->dob)->format('d M Y') . ($patient->age ? ' (' . $patient->age . ' yrs)' : '') : ($patient->age ? $patient->age . ' yrs' : 'N/A') }}</span>
                             </div>
                             <div>
                                 <span class="text-slate-400">Guardian:</span>

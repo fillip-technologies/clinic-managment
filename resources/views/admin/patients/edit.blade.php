@@ -200,14 +200,23 @@
                                 class="w-full rounded-xl border border-[#d3dfea] px-4 py-2.5 text-sm bg-[#fafdff] input-focus">
                         </div>
 
-                        <!-- AGE -->
+                        <!-- DATE OF BIRTH (DOB) -->
                         <div class="col-span-1">
                             <label class="block text-xs font-semibold uppercase tracking-wide text-[#2f5a77] mb-1">
-                                <i class="far fa-calendar"></i> Age
+                                <i class="far fa-calendar-alt"></i> Date of Birth (DOB)
+                                <span id="dobCalculatedAge" class="text-indigo-600 font-bold ml-1"></span>
                             </label>
-                            <input type="number" name="age" value="{{ old('age', $record->patient->age ?? '') }}"
-                                placeholder="Years"
-                                class="w-full rounded-xl border border-[#d3dfea] px-4 py-2.5 text-sm bg-[#fafdff] input-focus">
+                            @php
+                                $patientDobVal = old('dob', !empty($patient->dob ?? $record->patient->dob) ? \Carbon\Carbon::parse($patient->dob ?? $record->patient->dob)->format('Y-m-d') : '');
+                            @endphp
+                        <input type="date" name="dob" id="patientDobInput" max="{{ date('Y-m-d') }}"
+                            value="{{ $patientDobVal }}"
+                            onchange="calculateDobAge(this.value)"
+                            onclick="try { this.showPicker(); } catch(e) {}"
+                            class="w-full rounded-xl border border-[#d3dfea] px-4 py-2.5 text-sm bg-white input-focus cursor-pointer">
+                            @error('dob')
+                                <p class="text-xs text-red-500 mt-1">{{ $message }}</p>
+                            @enderror
                         </div>
 
                         <!-- GENDER -->
@@ -1039,6 +1048,33 @@
                 hDate.addEventListener('change', () => { sDate.value = hDate.value; });
                 sDate.addEventListener('change', () => { hDate.value = sDate.value; });
             }
+
+            const dobInput = document.getElementById('patientDobInput');
+            if (dobInput && dobInput.value) {
+                calculateDobAge(dobInput.value);
+            }
         });
+
+        function calculateDobAge(dobStr) {
+            const ageBadge = document.getElementById('dobCalculatedAge');
+            if (!dobStr) {
+                if (ageBadge) ageBadge.textContent = '';
+                return;
+            }
+            const dob = new Date(dobStr);
+            if (isNaN(dob.getTime())) {
+                if (ageBadge) ageBadge.textContent = '';
+                return;
+            }
+            const today = new Date();
+            let age = today.getFullYear() - dob.getFullYear();
+            const m = today.getMonth() - dob.getMonth();
+            if (m < 0 || (m === 0 && today.getDate() < dob.getDate())) {
+                age--;
+            }
+            if (ageBadge) {
+                ageBadge.textContent = age >= 0 ? `(${age} yrs)` : '';
+            }
+        }
     </script>
 @endsection

@@ -563,7 +563,9 @@
                         <td>
                             <span class="font-medium text-slate-700">{{ $clinical?->median_stiffness ? (is_numeric($clinical->median_stiffness) ? rtrim(rtrim($clinical->median_stiffness, '0'), '.') : $clinical->median_stiffness) : '-' }}</span>
                         </td>
-                        <td>{{ $patient->age ?? '-' }} / {{ $patient->gender ?? '-' }}</td>
+                        <td>
+                            <span title="{{ $patient->dob ? 'DOB: ' . \Carbon\Carbon::parse($patient->dob)->format('d M Y') : '' }}">{{ $patient->age ? $patient->age . ' yrs' : '-' }} / {{ $patient->gender ?? '-' }}</span>
+                        </td>
                         <td>
                             <div>{{ $patient->mobile_no ?? '-' }}</div>
                             @if(!empty($patient->mail))

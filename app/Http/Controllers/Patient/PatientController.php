@@ -32,7 +32,7 @@ class PatientController extends Controller
         $validator = Validator::make($request->all(), [
             'record_date' => 'required|date',
             'patient_name' => 'required|string|max:255',
-            'age' => 'nullable|integer|min:0|max:150',
+            'dob' => 'nullable|date|before_or_equal:today',
             'gender' => 'nullable|string|max:50',
             'guardian_name' => 'nullable|string|max:255',
             'father_husband_name' => 'nullable|string|max:255',
@@ -206,7 +206,7 @@ class PatientController extends Controller
         $patient = Patient::create([
             'record_date' => $request->record_date,
             'patient_name' => $request->patient_name,
-            'age' => $request->age,
+            'dob' => $request->dob,
             'gender' => $request->gender,
             'father_husband_name' => $request->guardian_name ?? $request->father_husband_name,
             'rcdho_grade' => $request->rcdho_grade,
@@ -375,7 +375,7 @@ class PatientController extends Controller
         $validator = Validator::make($request->all(), [
             'record_date' => 'required|date',
             'patient_name' => 'required|string|max:255',
-            'age' => 'nullable|integer|min:0|max:150',
+            'dob' => 'nullable|date|before_or_equal:today',
             'gender' => 'nullable|string|max:50',
             'guardian_name' => 'nullable|string|max:255',
             'father_husband_name' => 'nullable|string|max:255',
@@ -564,7 +564,7 @@ class PatientController extends Controller
         $patient->update([
             'record_date' => $request->record_date,
             'patient_name' => $request->patient_name,
-            'age' => $request->age,
+            'dob' => $request->dob,
             'gender' => $request->gender,
             'father_husband_name' => $request->guardian_name ?? $request->father_husband_name,
             'rcdho_grade' => $request->rcdho_grade,
@@ -739,6 +739,7 @@ class PatientController extends Controller
     {
         $request->validate([
             'record_date' => 'nullable|date',
+            'dob' => 'nullable|date|before_or_equal:today',
             'has_diabetes' => 'nullable',
             'newly_detected' => 'nullable|string|max:50',
             'diabetes_duration' => 'nullable|string|max:50',
@@ -847,8 +848,17 @@ class PatientController extends Controller
             $patient = Patient::find($patientId);
         }
 
-        if ($patient && $request->filled('follow_up_reg_no')) {
-            $patient->update(['follow_up_reg_no' => trim($request->follow_up_reg_no)]);
+        if ($patient) {
+            $patientUpdates = [];
+            if ($request->filled('follow_up_reg_no')) {
+                $patientUpdates['follow_up_reg_no'] = trim($request->follow_up_reg_no);
+            }
+            if ($request->filled('dob')) {
+                $patientUpdates['dob'] = $request->dob;
+            }
+            if (!empty($patientUpdates)) {
+                $patient->update($patientUpdates);
+            }
         }
 
         $diabetes = "Normal";
@@ -1619,6 +1629,7 @@ class PatientController extends Controller
             fputcsv($handle, [
                 'Patient ID',
                 'Patient Name',
+                'DOB',
                 'Age',
                 'Gender',
                 'Mobile',
@@ -1711,6 +1722,7 @@ class PatientController extends Controller
                 fputcsv($handle, [
                     $patient->id,
                     $patient->patient_name ?? 'N/A',
+                    $patient->dob ? $patient->dob->format('Y-m-d') : 'N/A',
                     $patient->age ?? 'N/A',
                     $patient->gender ?? 'N/A',
                     $patient->mobile_no ?? $patient->mobile ?? 'N/A',

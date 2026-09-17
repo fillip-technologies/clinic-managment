@@ -10,7 +10,7 @@ class Patient extends Model
     protected $table = "patients";
     protected $fillable = [
         'patient_name',
-        'age',
+        'dob',
         'gender',
         'record_date',
         'address',
@@ -21,6 +21,22 @@ class Patient extends Model
         'follow_up_reg_no',
         'father_husband_name',
     ];
+
+    protected $casts = [
+        'dob' => 'date',
+        'record_date' => 'date',
+    ];
+
+    /**
+     * Dynamically compute the patient's age from dob.
+     */
+    public function getAgeAttribute()
+    {
+        if ($this->dob) {
+            return \Carbon\Carbon::parse($this->dob)->age;
+        }
+        return null;
+    }
 
 
     public function clinicalRecords()
