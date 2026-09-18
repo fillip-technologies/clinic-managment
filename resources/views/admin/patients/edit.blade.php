@@ -887,6 +887,9 @@
                             <label class="block text-xs font-semibold text-[#2f5a77]">BSPP</label>
                             <input type="text" name="bspp" value="{{ old('bspp', $record->bspp ?? '') }}"
                                 placeholder="mg/dL"
+                                pattern="^\d+(\.\d+)?(\s*\([rR]\))?$"
+                                title="Please enter a valid number (e.g. 140, 45.56) or number with (R) (e.g. 45.56 (R))"
+                                data-bspp-input="true"
                                 class="w-full rounded-xl border border-[#d3dfea] px-3 py-2 text-sm input-focus">
                         </div>
                         <div>

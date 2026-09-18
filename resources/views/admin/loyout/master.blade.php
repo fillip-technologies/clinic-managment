@@ -172,6 +172,74 @@
                 });
             });
         })();
+
+        // BSPP real-time character restriction & blur auto-formatter
+        (function() {
+            function attachBsppHandler(input) {
+                if (!input || input._bsppAttached) return;
+                input._bsppAttached = true;
+
+                input.addEventListener('input', function() {
+                    const orig = this.value;
+                    // Allow digits, decimal dot, space, parentheses, and letters r/R
+                    let cleaned = orig.replace(/[^0-9.()rR\s]/g, '');
+
+                    // Allow at most one decimal dot before parenthesis
+                    const firstDot = cleaned.indexOf('.');
+                    if (firstDot !== -1) {
+                        cleaned = cleaned.substring(0, firstDot + 1) + cleaned.substring(firstDot + 1).replace(/\./g, '');
+                    }
+
+                    if (orig !== cleaned) {
+                        const selStart = this.selectionStart;
+                        this.value = cleaned;
+                        if (selStart !== null) {
+                            const newPos = Math.max(0, selStart - (orig.length - cleaned.length));
+                            this.setSelectionRange(newPos, newPos);
+                        }
+                    }
+                    this.setCustomValidity('');
+                });
+
+                input.addEventListener('blur', function() {
+                    let v = this.value.trim();
+                    if (!v) {
+                        this.setCustomValidity('');
+                        return;
+                    }
+
+                    // Remove trailing dot if any, e.g. "140." -> "140"
+                    v = v.replace(/\.(?=\s|\(|$)/g, '');
+
+                    // Match number and optional (R) or (r)
+                    const match = v.match(/^(\d+(?:\.\d+)?)\s*(?:\(?\s*[rR]\s*\)?)?$/);
+                    if (match) {
+                        const num = match[1];
+                        const hasR = /[rR]/.test(v);
+                        this.value = hasR ? `${num} (R)` : num;
+                        this.setCustomValidity('');
+                    } else {
+                        const isValid = /^\d+(\.\d+)?(\s*\([rR]\))?$/.test(v);
+                        if (!isValid) {
+                            this.setCustomValidity('Please enter a valid number (e.g. 140, 45.56) or number with (R) (e.g. 45.56 (R))');
+                        } else {
+                            this.setCustomValidity('');
+                        }
+                    }
+                });
+            }
+
+            function initBsppInputs() {
+                document.querySelectorAll('input[name="bspp"], [data-bspp-input="true"]').forEach(attachBsppHandler);
+            }
+
+            if (document.readyState === 'loading') {
+                document.addEventListener('DOMContentLoaded', initBsppInputs);
+            } else {
+                initBsppInputs();
+            }
+        })();
+
         toastr.options = {
             "closeButton": true,
             "progressBar": true,

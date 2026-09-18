@@ -983,14 +983,22 @@
                         $data = [];
                         foreach ($records as $r) {
                             $val = $r->$field;
-                            if (!is_null($val) && $val !== '' && is_numeric($val)) {
-                                $dateStr = $r->created_at ? $r->created_at->format('d M') : ($r->record_date ? \Carbon\Carbon::parse($r->record_date)->format('d M') : 'V#' . $r->id);
-                                $data[] = [
-                                    'label' => $dateStr,
-                                    'full_date' => $r->created_at ? $r->created_at->format('d M Y') : 'Visit #' . $r->id,
-                                    'value' => floatval($val),
-                                    'id' => $r->id
-                                ];
+                            if (!is_null($val) && $val !== '') {
+                                $numVal = null;
+                                if (is_numeric($val)) {
+                                    $numVal = floatval($val);
+                                } elseif (preg_match('/^(\d+(?:\.\d+)?)/', trim((string)$val), $m)) {
+                                    $numVal = floatval($m[1]);
+                                }
+                                if ($numVal !== null) {
+                                    $dateStr = $r->created_at ? $r->created_at->format('d M') : ($r->record_date ? \Carbon\Carbon::parse($r->record_date)->format('d M') : 'V#' . $r->id);
+                                    $data[] = [
+                                        'label' => $dateStr,
+                                        'full_date' => $r->created_at ? $r->created_at->format('d M Y') : 'Visit #' . $r->id,
+                                        'value' => $numVal,
+                                        'id' => $r->id
+                                    ];
+                                }
                             }
                         }
                         if (empty($data)) return null;

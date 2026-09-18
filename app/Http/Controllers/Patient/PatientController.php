@@ -35,6 +35,9 @@ class PatientController extends Controller
                 $dateMerges[$field] = $this->normalizeDateValue($request->input($field));
             }
         }
+        if ($request->has('bspp') && $request->filled('bspp')) {
+            $dateMerges['bspp'] = $this->normalizeBsppValue($request->input('bspp'));
+        }
         if (!empty($dateMerges)) {
             $request->merge($dateMerges);
         }
@@ -125,7 +128,7 @@ class PatientController extends Controller
             'hdl' => 'nullable|string|max:20',
             'ldl' => 'nullable|string|max:20',
             'bsf' => 'nullable|string|max:20',
-            'bspp' => 'nullable|string|max:20',
+            'bspp' => ['nullable', 'string', 'max:50', 'regex:/^\d+(\.\d+)?(\s*\([rR]\))?$/'],
             'hba1c' => 'nullable|string|max:20',
             'tsh' => 'nullable|string|max:20',
             't3' => 'nullable|string|max:20',
@@ -144,6 +147,8 @@ class PatientController extends Controller
             'foot_exam' => 'nullable|string|max:500',
             'car_echo_ev' => 'nullable|string|max:500',
             'echo_exam' => 'nullable|string|max:500',
+        ], [
+            'bspp.regex' => 'The BSPP value must be a valid number (e.g. 140, 45.56) or number with (R) (e.g. 45.56 (R)).',
         ]);
 
         if ($validator->fails()) {
@@ -161,14 +166,21 @@ class PatientController extends Controller
         $bsf = $request->bsf ?? $request->fbs;
         $bspp = $request->bspp ?? $request->rbs;
 
+        $bsppNum = null;
+        if (!empty($bspp)) {
+            if (preg_match('/^(\d+(?:\.\d+)?)/', trim((string)$bspp), $m)) {
+                $bsppNum = (float)$m[1];
+            }
+        }
+
         if (
             $request->has_diabetes ||
             $request->newly_detected === 'Yes' ||
             ($request->filled('hba1c') && (float)$hba1c >= 6.5) ||
             ($request->filled('bsf') && (float)$bsf >= 126) ||
             ($request->filled('fbs') && (float)$bsf >= 126) ||
-            ($request->filled('bspp') && (float)$bspp >= 200) ||
-            ($request->filled('rbs') && (float)$bspp >= 200)
+            ($bsppNum !== null && $bsppNum >= 200) ||
+            ($request->filled('rbs') && $bsppNum !== null && $bsppNum >= 200)
         ) {
             $diabetes = "Diabetes";
         }
@@ -389,6 +401,9 @@ class PatientController extends Controller
                 $dateMerges[$field] = $this->normalizeDateValue($request->input($field));
             }
         }
+        if ($request->has('bspp') && $request->filled('bspp')) {
+            $dateMerges['bspp'] = $this->normalizeBsppValue($request->input('bspp'));
+        }
         if (!empty($dateMerges)) {
             $request->merge($dateMerges);
         }
@@ -480,7 +495,7 @@ class PatientController extends Controller
             'hdl' => 'nullable|string|max:20',
             'ldl' => 'nullable|string|max:20',
             'bsf' => 'nullable|string|max:20',
-            'bspp' => 'nullable|string|max:20',
+            'bspp' => ['nullable', 'string', 'max:50', 'regex:/^\d+(\.\d+)?(\s*\([rR]\))?$/'],
             'hba1c' => 'nullable|string|max:20',
             'tsh' => 'nullable|string|max:20',
             't3' => 'nullable|string|max:20',
@@ -499,6 +514,8 @@ class PatientController extends Controller
             'foot_exam' => 'nullable|string|max:500',
             'car_echo_ev' => 'nullable|string|max:500',
             'echo_exam' => 'nullable|string|max:500',
+        ], [
+            'bspp.regex' => 'The BSPP value must be a valid number (e.g. 140, 45.56) or number with (R) (e.g. 45.56 (R)).',
         ]);
 
         if ($validator->fails()) {
@@ -514,14 +531,21 @@ class PatientController extends Controller
         $bsf = $request->bsf ?? $request->fbs;
         $bspp = $request->bspp ?? $request->rbs;
 
+        $bsppNum = null;
+        if (!empty($bspp)) {
+            if (preg_match('/^(\d+(?:\.\d+)?)/', trim((string)$bspp), $m)) {
+                $bsppNum = (float)$m[1];
+            }
+        }
+
         if (
             $request->has_diabetes ||
             $request->newly_detected === 'Yes' ||
             ($request->filled('hba1c') && (float)$hba1c >= 6.5) ||
             ($request->filled('bsf') && (float)$bsf >= 126) ||
             ($request->filled('fbs') && (float)$bsf >= 126) ||
-            ($request->filled('bspp') && (float)$bspp >= 200) ||
-            ($request->filled('rbs') && (float)$bspp >= 200)
+            ($bsppNum !== null && $bsppNum >= 200) ||
+            ($request->filled('rbs') && $bsppNum !== null && $bsppNum >= 200)
         ) {
             $diabetes = "Diabetes";
         }
@@ -777,6 +801,9 @@ class PatientController extends Controller
                 $dateMerges[$field] = $this->normalizeDateValue($request->input($field));
             }
         }
+        if ($request->has('bspp') && $request->filled('bspp')) {
+            $dateMerges['bspp'] = $this->normalizeBsppValue($request->input('bspp'));
+        }
         if (!empty($dateMerges)) {
             $request->merge($dateMerges);
         }
@@ -866,7 +893,7 @@ class PatientController extends Controller
             'hdl' => 'nullable|string|max:20',
             'ldl' => 'nullable|string|max:20',
             'bsf' => 'nullable|string|max:20',
-            'bspp' => 'nullable|string|max:20',
+            'bspp' => ['nullable', 'string', 'max:50', 'regex:/^\d+(\.\d+)?(\s*\([rR]\))?$/'],
             'hba1c' => 'nullable|string|max:20',
             'tsh' => 'nullable|string|max:20',
             't3' => 'nullable|string|max:20',
@@ -886,6 +913,8 @@ class PatientController extends Controller
             'car_echo_ev' => 'nullable|string|max:500',
             'echo_exam' => 'nullable|string|max:500',
             'follow_up_reg_no' => 'nullable|string|max:50',
+        ], [
+            'bspp.regex' => 'The BSPP value must be a valid number (e.g. 140, 45.56) or number with (R) (e.g. 45.56 (R)).',
         ]);
 
         $patientId = $request->patient_id;
@@ -949,14 +978,21 @@ class PatientController extends Controller
         $bsf = $request->bsf ?? $request->fbs;
         $bspp = $request->bspp ?? $request->rbs;
 
+        $bsppNum = null;
+        if (!empty($bspp)) {
+            if (preg_match('/^(\d+(?:\.\d+)?)/', trim((string)$bspp), $m)) {
+                $bsppNum = (float)$m[1];
+            }
+        }
+
         if (
             $request->has_diabetes ||
             $request->newly_detected === 'Yes' ||
             ($request->filled('hba1c') && (float)$hba1c >= 6.5) ||
             ($request->filled('bsf') && (float)$bsf >= 126) ||
             ($request->filled('fbs') && (float)$bsf >= 126) ||
-            ($request->filled('bspp') && (float)$bspp >= 200) ||
-            ($request->filled('rbs') && (float)$bspp >= 200)
+            ($bsppNum !== null && $bsppNum >= 200) ||
+            ($request->filled('rbs') && $bsppNum !== null && $bsppNum >= 200)
         ) {
             $diabetes = "Diabetes";
         }
@@ -1927,6 +1963,20 @@ class PatientController extends Controller
         } catch (\Exception $e) {
             return $val;
         }
+    }
+
+    private function normalizeBsppValue($value)
+    {
+        if ($value === null || trim((string)$value) === '') {
+            return null;
+        }
+        $val = trim((string)$value);
+        $val = preg_replace('/\.(?=\s|\(|$)/', '', $val);
+        if (preg_match('/^(\d+(?:\.\d+)?)\s*(?:\(?\s*[rR]\s*\)?)?$/', $val, $m)) {
+            $num = $m[1];
+            return preg_match('/[rR]/i', $val) ? "{$num} (R)" : $num;
+        }
+        return $val;
     }
 }
 
