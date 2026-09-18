@@ -140,7 +140,7 @@
                                 Download Clinical Datasets (CSV)
                             </div>
                             <div class="py-1">
-                                <a href="{{ route('analytics.disease.export', ['type' => 'all']) }}"
+                                <a href="{{ route('analytics.disease.export', array_filter(['type' => 'all', 'start_date' => $startDate, 'end_date' => $endDate])) }}"
                                     class="flex items-center gap-2.5 px-3.5 py-2 hover:bg-white/10 text-white font-semibold transition">
                                     <i class="fas fa-database text-indigo-400 w-4 text-center"></i>
                                     <div>
@@ -150,7 +150,7 @@
                                 </a>
                             </div>
                             <div class="py-1">
-                                <a href="{{ route('analytics.disease.export', ['type' => 'diabetes']) }}"
+                                <a href="{{ route('analytics.disease.export', array_filter(['type' => 'diabetes', 'start_date' => $startDate, 'end_date' => $endDate])) }}"
                                     class="flex items-center gap-2.5 px-3.5 py-2 hover:bg-white/10 text-rose-300 font-semibold transition">
                                     <i class="fas fa-droplet text-rose-400 w-4 text-center"></i>
                                     <div>
@@ -158,7 +158,7 @@
                                         <div class="text-[10px] text-slate-400">HbA1c, BSF, BSPP, Insulin</div>
                                     </div>
                                 </a>
-                                <a href="{{ route('analytics.disease.export', ['type' => 'hypertension']) }}"
+                                <a href="{{ route('analytics.disease.export', array_filter(['type' => 'hypertension', 'start_date' => $startDate, 'end_date' => $endDate])) }}"
                                     class="flex items-center gap-2.5 px-3.5 py-2 hover:bg-white/10 text-amber-300 font-semibold transition">
                                     <i class="fas fa-heart-pulse text-amber-400 w-4 text-center"></i>
                                     <div>
@@ -166,7 +166,7 @@
                                         <div class="text-[10px] text-slate-400">SBP, DBP, MAP, Echo, Renal</div>
                                     </div>
                                 </a>
-                                <a href="{{ route('analytics.disease.export', ['type' => 'obesity']) }}"
+                                <a href="{{ route('analytics.disease.export', array_filter(['type' => 'obesity', 'start_date' => $startDate, 'end_date' => $endDate])) }}"
                                     class="flex items-center gap-2.5 px-3.5 py-2 hover:bg-white/10 text-emerald-300 font-semibold transition">
                                     <i class="fas fa-weight-scale text-emerald-400 w-4 text-center"></i>
                                     <div>
@@ -174,7 +174,7 @@
                                         <div class="text-[10px] text-slate-400">BMI, WHR, WHtR, Liver, USG</div>
                                     </div>
                                 </a>
-                                <a href="{{ route('analytics.disease.export', ['type' => 'infection']) }}"
+                                <a href="{{ route('analytics.disease.export', array_filter(['type' => 'infection', 'start_date' => $startDate, 'end_date' => $endDate])) }}"
                                     class="flex items-center gap-2.5 px-3.5 py-2 hover:bg-white/10 text-purple-300 font-semibold transition">
                                     <i class="fas fa-virus text-purple-400 w-4 text-center"></i>
                                     <div>
@@ -184,7 +184,7 @@
                                 </a>
                             </div>
                             <div class="py-1">
-                                <a href="{{ route('analytics.disease.export', ['type' => 'triad']) }}"
+                                <a href="{{ route('analytics.disease.export', array_filter(['type' => 'triad', 'start_date' => $startDate, 'end_date' => $endDate])) }}"
                                     class="flex items-center gap-2.5 px-3.5 py-2 hover:bg-white/10 text-orange-300 font-semibold transition">
                                     <i class="fas fa-project-diagram text-orange-400 w-4 text-center"></i>
                                     <div>
@@ -239,6 +239,82 @@
                     </div>
                 </div>
             </div>
+        </div>
+
+        <!-- Interactive Date Range Filter Bar (Based on Record Date) -->
+        <div class="bg-white rounded-3xl p-5 border border-slate-200 shadow-sm">
+            <form id="dateFilterForm" method="GET" action="{{ route('analytics.disease') }}" class="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+                <div class="flex flex-wrap items-center gap-3">
+                    <div class="flex items-center gap-2 text-slate-700 font-bold text-xs uppercase tracking-wider">
+                        <div class="w-8 h-8 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center font-bold">
+                            <i class="fas fa-calendar-alt text-sm"></i>
+                        </div>
+                        <span>Filter by Record Date:</span>
+                    </div>
+
+                    <div class="flex items-center gap-2">
+                        <div class="relative">
+                            <input type="date" id="start_date_input" name="start_date" value="{{ $startDate }}"
+                                class="bg-slate-50 border border-slate-200 text-slate-700 text-xs font-semibold rounded-xl px-3 py-2 outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100 transition shadow-inner">
+                        </div>
+                        <span class="text-slate-400 text-xs font-bold">to</span>
+                        <div class="relative">
+                            <input type="date" id="end_date_input" name="end_date" value="{{ $endDate }}"
+                                class="bg-slate-50 border border-slate-200 text-slate-700 text-xs font-semibold rounded-xl px-3 py-2 outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100 transition shadow-inner">
+                        </div>
+                    </div>
+
+                    <div class="flex items-center gap-2">
+                        <button type="submit"
+                            class="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold rounded-xl shadow-sm hover:shadow transition flex items-center gap-1.5">
+                            <i class="fas fa-filter text-[11px]"></i>
+                            <span>Apply</span>
+                        </button>
+                        @if($startDate || $endDate)
+                            <a href="{{ route('analytics.disease') }}"
+                                class="px-3.5 py-2 bg-slate-100 hover:bg-slate-200 text-slate-600 text-xs font-bold rounded-xl transition flex items-center gap-1">
+                                <i class="fas fa-rotate-left text-[11px]"></i>
+                                <span>Reset</span>
+                            </a>
+                        @endif
+                    </div>
+                </div>
+
+                <!-- Quick Presets -->
+                <div class="flex flex-wrap items-center gap-1.5">
+                    <span class="text-[11px] font-bold text-slate-400 mr-1 uppercase">Presets:</span>
+                    <button type="button" onclick="applyDatePreset('all')"
+                        class="px-2.5 py-1 rounded-lg text-xs font-semibold transition {{ !$startDate && !$endDate ? 'bg-indigo-600 text-white' : 'bg-slate-100 text-slate-600 hover:bg-slate-200' }}">
+                        All Time
+                    </button>
+                    <button type="button" onclick="applyDatePreset('this_month')"
+                        class="px-2.5 py-1 rounded-lg text-xs font-semibold transition bg-slate-100 text-slate-600 hover:bg-slate-200">
+                        This Month
+                    </button>
+                    <button type="button" onclick="applyDatePreset('last_30_days')"
+                        class="px-2.5 py-1 rounded-lg text-xs font-semibold transition bg-slate-100 text-slate-600 hover:bg-slate-200">
+                        Last 30 Days
+                    </button>
+                    <button type="button" onclick="applyDatePreset('last_6_months')"
+                        class="px-2.5 py-1 rounded-lg text-xs font-semibold transition bg-slate-100 text-slate-600 hover:bg-slate-200">
+                        Last 6 Months
+                    </button>
+                    <button type="button" onclick="applyDatePreset('this_year')"
+                        class="px-2.5 py-1 rounded-lg text-xs font-semibold transition bg-slate-100 text-slate-600 hover:bg-slate-200">
+                        This Year
+                    </button>
+                </div>
+            </form>
+
+            @if($startDate || $endDate)
+                <div class="mt-3 pt-3 border-t border-slate-100 flex items-center justify-between text-xs">
+                    <div class="flex items-center gap-2 text-indigo-700 font-semibold">
+                        <i class="fas fa-circle-check text-xs text-indigo-500"></i>
+                        <span>Filtered Period: <strong>{{ $startDate ? \Carbon\Carbon::parse($startDate)->format('d M Y') : 'Start' }}</strong> &mdash; <strong>{{ $endDate ? \Carbon\Carbon::parse($endDate)->format('d M Y') : 'End' }}</strong></span>
+                    </div>
+                    <span class="text-slate-500 text-[11px] font-medium">All statistics and charts reflect consultations within this window</span>
+                </div>
+            @endif
         </div>
 
         <!-- 4 Core Disease Spectrum Analysis Cards (Stratified by Pre-Condition vs Disease) -->
@@ -609,14 +685,113 @@
                 </div>
             </div>
 
-            <!-- Chart 2: Monthly Longitudinal Progression -->
-            <div class="bg-white rounded-3xl p-6 border border-slate-200 shadow-sm">
-                <div class="flex items-center justify-between mb-4 pb-3 border-b border-slate-100">
+            <!-- Chart 2: Longitudinal Consultation Progression -->
+            <div class="bg-white rounded-3xl p-6 border border-slate-200 shadow-sm relative">
+                <div class="flex flex-col md:flex-row md:items-center justify-between gap-3 mb-4 pb-3 border-b border-slate-100">
                     <div>
-                        <h4 class="text-sm font-bold text-slate-800">Longitudinal Consultation Progression</h4>
-                        <span class="text-xs text-slate-500">Monthly patient volume & disease trends</span>
+                        <div class="flex flex-wrap items-center gap-2">
+                            <h4 class="text-sm font-bold text-slate-800">Longitudinal Consultation Progression</h4>
+
+                            <!-- Interactive Calendar Date Range Popover -->
+                            <div class="relative" x-data="{ chartPickerOpen: false }">
+                                <button type="button" @click="chartPickerOpen = !chartPickerOpen"
+                                    class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-xl text-xs font-bold border transition shadow-sm {{ ($startDate || $endDate) ? 'bg-indigo-50 border-indigo-200 text-indigo-700' : 'bg-slate-50 border-slate-200 text-slate-700 hover:bg-slate-100' }}">
+                                    <i class="fas fa-calendar-alt text-indigo-500"></i>
+                                    <span>
+                                        @if($startDate && $endDate)
+                                            {{ \Carbon\Carbon::parse($startDate)->format('d M Y') }} - {{ \Carbon\Carbon::parse($endDate)->format('d M Y') }}
+                                        @elseif($startDate)
+                                            From {{ \Carbon\Carbon::parse($startDate)->format('d M Y') }}
+                                        @elseif($endDate)
+                                            Until {{ \Carbon\Carbon::parse($endDate)->format('d M Y') }}
+                                        @else
+                                            Custom Date Range
+                                        @endif
+                                    </span>
+                                    <i class="fas fa-chevron-down text-[10px] opacity-70"></i>
+                                </button>
+
+                                <!-- Popover Modal -->
+                                <div x-show="chartPickerOpen" x-cloak @click.away="chartPickerOpen = false" x-transition
+                                    class="absolute left-0 top-full mt-2 w-80 bg-white border border-slate-200 rounded-2xl shadow-2xl z-50 p-4 text-xs">
+                                    <div class="flex items-center justify-between pb-2 mb-3 border-b border-slate-100">
+                                        <span class="font-bold text-slate-800 flex items-center gap-1.5">
+                                            <i class="fas fa-calendar-days text-indigo-600"></i> Custom Date Range
+                                        </span>
+                                        <button type="button" @click="chartPickerOpen = false" class="text-slate-400 hover:text-slate-600">
+                                            <i class="fas fa-times"></i>
+                                        </button>
+                                    </div>
+
+                                    <form onsubmit="applyChartDateRange(event)" class="space-y-3">
+                                        <div>
+                                            <label class="block text-[11px] font-semibold text-slate-600 mb-1">Start Date</label>
+                                            <input type="date" id="chart_start_input" value="{{ $startDate }}"
+                                                class="w-full bg-slate-50 border border-slate-200 rounded-xl px-2.5 py-1.5 text-xs text-slate-800 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500">
+                                        </div>
+                                        <div>
+                                            <label class="block text-[11px] font-semibold text-slate-600 mb-1">End Date</label>
+                                            <input type="date" id="chart_end_input" value="{{ $endDate }}"
+                                                class="w-full bg-slate-50 border border-slate-200 rounded-xl px-2.5 py-1.5 text-xs text-slate-800 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500">
+                                        </div>
+
+                                        <!-- Quick Presets -->
+                                        <div class="pt-1">
+                                            <span class="text-[10px] font-bold uppercase text-slate-400 block mb-1.5">Quick Presets</span>
+                                            <div class="grid grid-cols-2 gap-1.5">
+                                                <button type="button" onclick="setChartPreset('last_7_days')"
+                                                    class="px-2 py-1 bg-slate-50 hover:bg-indigo-50 hover:text-indigo-600 rounded-lg text-[11px] font-medium text-slate-600 border border-slate-200 text-left transition">
+                                                    Last 7 Days (Daily)
+                                                </button>
+                                                <button type="button" onclick="setChartPreset('last_30_days')"
+                                                    class="px-2 py-1 bg-slate-50 hover:bg-indigo-50 hover:text-indigo-600 rounded-lg text-[11px] font-medium text-slate-600 border border-slate-200 text-left transition">
+                                                    Last 30 Days (Daily)
+                                                </button>
+                                                <button type="button" onclick="setChartPreset('last_6_months')"
+                                                    class="px-2 py-1 bg-slate-50 hover:bg-indigo-50 hover:text-indigo-600 rounded-lg text-[11px] font-medium text-slate-600 border border-slate-200 text-left transition">
+                                                    Last 6 Mos (Monthly)
+                                                </button>
+                                                <button type="button" onclick="setChartPreset('this_year')"
+                                                    class="px-2 py-1 bg-slate-50 hover:bg-indigo-50 hover:text-indigo-600 rounded-lg text-[11px] font-medium text-slate-600 border border-slate-200 text-left transition">
+                                                    This Year (Monthly)
+                                                </button>
+                                            </div>
+                                        </div>
+
+                                        <div class="flex items-center gap-2 pt-2 border-t border-slate-100">
+                                            <button type="submit"
+                                                class="flex-1 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-xl text-xs transition shadow-sm">
+                                                Apply Range
+                                            </button>
+                                            @if($startDate || $endDate)
+                                                <button type="button" onclick="applyDatePreset('all')"
+                                                    class="px-2.5 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-600 font-bold rounded-xl text-xs transition">
+                                                    Reset
+                                                </button>
+                                            @endif
+                                        </div>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                        <span class="text-xs text-slate-500">Unique patient count grouped per interval</span>
                     </div>
-                    <span class="text-xs font-bold px-2.5 py-1 rounded-full bg-indigo-50 text-indigo-700">Monthly</span>
+
+                    <!-- View Mode Switcher -->
+                    <div class="inline-flex rounded-xl bg-slate-100 p-1 border border-slate-200 text-xs font-bold self-start md:self-auto">
+                        <button type="button" id="trendViewDailyBtn" onclick="switchTrendView('daily')"
+                            class="px-2.5 py-1 rounded-lg transition text-slate-600 hover:text-slate-900">
+                            Date-Wise View
+                        </button>
+                        <button type="button" id="trendViewMonthlyBtn" onclick="switchTrendView('monthly')"
+                            class="px-2.5 py-1 rounded-lg transition bg-white text-indigo-600 shadow-sm">
+                            Monthly View
+                        </button>
+                        <button type="button" id="trendViewYearlyBtn" onclick="switchTrendView('yearly')"
+                            class="px-2.5 py-1 rounded-lg transition text-slate-600 hover:text-slate-900">
+                            Yearly View
+                        </button>
+                    </div>
                 </div>
                 <div class="h-64 relative">
                     <canvas id="monthlyTrendChart"></canvas>
@@ -864,6 +1039,48 @@
             }
         }
 
+        // Date Presets Helper
+        function applyDatePreset(preset) {
+            const today = new Date();
+            const formatDate = (d) => {
+                const year = d.getFullYear();
+                const month = String(d.getMonth() + 1).padStart(2, '0');
+                const day = String(d.getDate()).padStart(2, '0');
+                return `${year}-${month}-${day}`;
+            };
+
+            const startInput = document.getElementById('start_date_input');
+            const endInput = document.getElementById('end_date_input');
+            const form = document.getElementById('dateFilterForm');
+
+            if (preset === 'all') {
+                startInput.value = '';
+                endInput.value = '';
+            } else if (preset === 'this_month') {
+                const start = new Date(today.getFullYear(), today.getMonth(), 1);
+                const end = new Date(today.getFullYear(), today.getMonth() + 1, 0);
+                startInput.value = formatDate(start);
+                endInput.value = formatDate(end);
+            } else if (preset === 'last_30_days') {
+                const start = new Date();
+                start.setDate(today.getDate() - 30);
+                startInput.value = formatDate(start);
+                endInput.value = formatDate(today);
+            } else if (preset === 'last_6_months') {
+                const start = new Date();
+                start.setMonth(today.getMonth() - 6);
+                startInput.value = formatDate(start);
+                endInput.value = formatDate(today);
+            } else if (preset === 'this_year') {
+                const start = new Date(today.getFullYear(), 0, 1);
+                const end = new Date(today.getFullYear(), 11, 31);
+                startInput.value = formatDate(start);
+                endInput.value = formatDate(end);
+            }
+
+            form.submit();
+        }
+
         function exportCurrentCohort() {
             let exportType = 'all';
             if (currentFilterType === 'diabetic') exportType = 'diabetes';
@@ -872,7 +1089,197 @@
             else if (currentFilterType === 'infection') exportType = 'infection';
             else if (currentFilterType === 'triad') exportType = 'triad';
 
-            window.location.href = "{{ route('analytics.disease.export') }}?type=" + exportType;
+            let url = "{{ route('analytics.disease.export') }}?type=" + exportType;
+            const startDate = "{{ $startDate }}";
+            const endDate = "{{ $endDate }}";
+            if (startDate) url += "&start_date=" + encodeURIComponent(startDate);
+            if (endDate) url += "&end_date=" + encodeURIComponent(endDate);
+
+            window.location.href = url;
+        }
+
+        // Global Chart Reference for Dynamic Switching
+        let trendChartInstance = null;
+        let currentTrendMode = 'monthly';
+        const monthlyData = @json($monthlyTrend);
+        const dailyData = @json($dailyTrend);
+        const yearlyData = @json($yearlyTrend);
+
+        function determineViewFromDates(startDateStr, endDateStr) {
+            if (!startDateStr || !endDateStr) {
+                return 'monthly';
+            }
+            const s = new Date(startDateStr);
+            const e = new Date(endDateStr);
+            const diffDays = Math.round((e - s) / (1000 * 60 * 60 * 24));
+
+            if (diffDays <= 30) {
+                return 'daily';
+            } else if (diffDays <= 365) {
+                return 'monthly';
+            } else {
+                return 'yearly';
+            }
+        }
+
+        function setChartPreset(preset) {
+            const today = new Date();
+            const formatDate = (d) => {
+                const year = d.getFullYear();
+                const month = String(d.getMonth() + 1).padStart(2, '0');
+                const day = String(d.getDate()).padStart(2, '0');
+                return `${year}-${month}-${day}`;
+            };
+
+            const startInput = document.getElementById('chart_start_input');
+            const endInput = document.getElementById('chart_end_input');
+
+            if (preset === 'last_7_days') {
+                const start = new Date();
+                start.setDate(today.getDate() - 7);
+                startInput.value = formatDate(start);
+                endInput.value = formatDate(today);
+            } else if (preset === 'last_30_days') {
+                const start = new Date();
+                start.setDate(today.getDate() - 30);
+                startInput.value = formatDate(start);
+                endInput.value = formatDate(today);
+            } else if (preset === 'last_6_months') {
+                const start = new Date();
+                start.setMonth(today.getMonth() - 6);
+                startInput.value = formatDate(start);
+                endInput.value = formatDate(today);
+            } else if (preset === 'this_year') {
+                const start = new Date(today.getFullYear(), 0, 1);
+                const end = new Date(today.getFullYear(), 11, 31);
+                startInput.value = formatDate(start);
+                endInput.value = formatDate(end);
+            }
+        }
+
+        function applyChartDateRange(e) {
+            e.preventDefault();
+            const startVal = document.getElementById('chart_start_input').value;
+            const endVal = document.getElementById('chart_end_input').value;
+
+            const topStart = document.getElementById('start_date_input');
+            const topEnd = document.getElementById('end_date_input');
+            if (topStart) topStart.value = startVal;
+            if (topEnd) topEnd.value = endVal;
+
+            const form = document.getElementById('dateFilterForm');
+            if (form) {
+                form.submit();
+            } else {
+                let url = "{{ route('analytics.disease') }}";
+                const params = [];
+                if (startVal) params.push('start_date=' + encodeURIComponent(startVal));
+                if (endVal) params.push('end_date=' + encodeURIComponent(endVal));
+                if (params.length > 0) url += '?' + params.join('&');
+                window.location.href = url;
+            }
+        }
+
+        function renderTrendChart(mode) {
+            currentTrendMode = mode;
+            const ctxTrend = document.getElementById('monthlyTrendChart');
+            if (!ctxTrend) return;
+
+            let dataList = monthlyData;
+            if (mode === 'daily') dataList = dailyData;
+            else if (mode === 'yearly') dataList = yearlyData;
+
+            let labels = dataList.map(d => d.label);
+
+            if (labels.length === 0) {
+                labels = ['No Records in Range'];
+            }
+
+            const chartData = {
+                labels: labels,
+                datasets: [
+                    {
+                        label: 'Total Unique Patients',
+                        data: dataList.length > 0 ? dataList.map(m => m.total_patients) : [0],
+                        backgroundColor: '#6366f1',
+                        borderRadius: 6
+                    },
+                    {
+                        label: 'Diabetes',
+                        data: dataList.length > 0 ? dataList.map(m => m.diabetes_count) : [0],
+                        backgroundColor: '#ef4444',
+                        borderRadius: 6
+                    },
+                    {
+                        label: 'Hypertension',
+                        data: dataList.length > 0 ? dataList.map(m => m.hypertension_count) : [0],
+                        backgroundColor: '#f59e0b',
+                        borderRadius: 6
+                    },
+                    {
+                        label: 'Obesity',
+                        data: dataList.length > 0 ? dataList.map(m => m.obesity_count) : [0],
+                        backgroundColor: '#10b981',
+                        borderRadius: 6
+                    },
+                    {
+                        label: 'Infection',
+                        data: dataList.length > 0 ? dataList.map(m => m.infection_count) : [0],
+                        backgroundColor: '#8b5cf6',
+                        borderRadius: 6
+                    }
+                ]
+            };
+
+            if (trendChartInstance) {
+                trendChartInstance.data = chartData;
+                trendChartInstance.update();
+            } else {
+                trendChartInstance = new Chart(ctxTrend, {
+                    type: 'bar',
+                    data: chartData,
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                position: 'top',
+                                labels: { boxWidth: 12, font: { size: 11, weight: 'bold' } }
+                            },
+                            tooltip: {
+                                callbacks: {
+                                    afterBody: function() {
+                                        return 'Grouped by unique patients';
+                                    }
+                                }
+                            }
+                        },
+                        scales: {
+                            y: { beginAtZero: true, suggestedMax: 5, ticks: { precision: 0 } }
+                        }
+                    }
+                });
+            }
+        }
+
+        function switchTrendView(mode) {
+            const dailyBtn = document.getElementById('trendViewDailyBtn');
+            const monthlyBtn = document.getElementById('trendViewMonthlyBtn');
+            const yearlyBtn = document.getElementById('trendViewYearlyBtn');
+
+            [dailyBtn, monthlyBtn, yearlyBtn].forEach(btn => {
+                if (btn) btn.className = "px-2.5 py-1 rounded-lg transition text-slate-600 hover:text-slate-900";
+            });
+
+            if (mode === 'daily' && dailyBtn) {
+                dailyBtn.className = "px-2.5 py-1 rounded-lg transition bg-white text-indigo-600 shadow-sm";
+            } else if (mode === 'yearly' && yearlyBtn) {
+                yearlyBtn.className = "px-2.5 py-1 rounded-lg transition bg-white text-indigo-600 shadow-sm";
+            } else if (monthlyBtn) {
+                monthlyBtn.className = "px-2.5 py-1 rounded-lg transition bg-white text-indigo-600 shadow-sm";
+            }
+
+            renderTrendChart(mode);
         }
 
         // Charts Initialization
@@ -921,53 +1328,11 @@
                 });
             }
 
-            // Chart 2: Monthly Longitudinal Progression
-            const ctxTrend = document.getElementById('monthlyTrendChart');
-            if (ctxTrend) {
-                const monthlyData = @json($monthlyTrend);
-                const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-                const labels = monthlyData.map(m => monthNames[m.month - 1] || 'M' + m.month);
-
-                new Chart(ctxTrend, {
-                    type: 'bar',
-                    data: {
-                        labels: labels.length > 0 ? labels : ['Aug 2026'],
-                        datasets: [
-                            {
-                                label: 'Total Consultations',
-                                data: monthlyData.length > 0 ? monthlyData.map(m => m.total) : [{{ $totalConsultations }}],
-                                backgroundColor: '#6366f1',
-                                borderRadius: 6
-                            },
-                            {
-                                label: 'Diabetes',
-                                data: monthlyData.length > 0 ? monthlyData.map(m => m.diabetes_count) : [{{ $diabetes }}],
-                                backgroundColor: '#ef4444',
-                                borderRadius: 6
-                            },
-                            {
-                                label: 'Hypertension',
-                                data: monthlyData.length > 0 ? monthlyData.map(m => m.hypertension_count) : [{{ $hypertension }}],
-                                backgroundColor: '#f59e0b',
-                                borderRadius: 6
-                            },
-                            {
-                                label: 'Obesity',
-                                data: monthlyData.length > 0 ? monthlyData.map(m => m.obesity_count) : [{{ $obese }}],
-                                backgroundColor: '#10b981',
-                                borderRadius: 6
-                            }
-                        ]
-                    },
-                    options: {
-                        responsive: true,
-                        maintainAspectRatio: false,
-                        scales: {
-                            y: { beginAtZero: true, suggestedMax: 10 }
-                        }
-                    }
-                });
-            }
+            // Chart 2: Auto-detect view mode based on date range difference
+            const startDateVal = "{{ $startDate }}";
+            const endDateVal = "{{ $endDate }}";
+            const initialMode = determineViewFromDates(startDateVal, endDateVal);
+            switchTrendView(initialMode);
         });
     </script>
 @endsection

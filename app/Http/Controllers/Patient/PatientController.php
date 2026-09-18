@@ -1119,10 +1119,26 @@ class PatientController extends Controller
     }
 
 
-    public function diseaseAnalytics()
+    public function diseaseAnalytics(Request $request)
     {
-        $allRecords = PatientClinicalRecord::with('patient')->latest()->get();
-        $totalPatients = Patient::count();
+        $startDate = $request->get('start_date');
+        $endDate = $request->get('end_date');
+
+        $query = PatientClinicalRecord::with('patient')
+            ->whereNotNull('record_date')
+            ->orderBy('record_date', 'desc')
+            ->latest('id');
+
+        if (!empty($startDate) && !empty($endDate)) {
+            $query->whereBetween('record_date', [$startDate, $endDate]);
+        } elseif (!empty($startDate)) {
+            $query->where('record_date', '>=', $startDate);
+        } elseif (!empty($endDate)) {
+            $query->where('record_date', '<=', $endDate);
+        }
+
+        $allRecords = $query->get();
+        $totalPatients = $allRecords->pluck('patient_id')->unique()->count();
         $totalConsultations = $allRecords->count();
 
         // 1. Diagnostic Matrix Aggregation (Pre-conditions vs Frank Disease)
@@ -1257,28 +1273,147 @@ class PatientController extends Controller
             }
         }
 
-        // Monthly longitudinal trend
-        $monthlyTrend = PatientClinicalRecord::selectRaw("
-            MONTH(created_at) as month,
-            COUNT(*) as total,
-            SUM(CASE WHEN (hba1c >= 6.5 OR bsf >= 126 OR (diabetes IS NOT NULL AND LOWER(diabetes) LIKE '%diabet%')) THEN 1 ELSE 0 END) as diabetes_count,
-            SUM(CASE WHEN (sbp >= 140 OR dbp >= 90 OR (hypertension IS NOT NULL AND LOWER(hypertension) LIKE '%hyper%')) THEN 1 ELSE 0 END) as hypertension_count,
-            SUM(CASE WHEN (bmi >= 25 OR (obesity IS NOT NULL AND LOWER(obesity) LIKE '%obese%')) THEN 1 ELSE 0 END) as obesity_count,
-            SUM(CASE WHEN (temprature > 99.4 OR (infection IS NOT NULL AND LOWER(infection) != 'normal')) THEN 1 ELSE 0 END) as infection_count
-        ")
-        ->groupBy(DB::raw('MONTH(created_at)'))
-        ->orderBy(DB::raw('MONTH(created_at)'))
-        ->get();
-
-        $monthlyTrend->each(function ($item) {
-            $item->prevalence_percentage = $item->total > 0
-                ? round(($item->diabetes_count / $item->total * 100), 1)
-                : 0;
+        // 4. Longitudinal Progression (Grouped strictly by patient_clinical_records.record_date & patient_id)
+        $chronoRecords = $allRecords->sortBy(function ($r) {
+            return $r->record_date ? $r->record_date->format('Y-m-d H:i:s') : $r->created_at->format('Y-m-d H:i:s');
         });
+
+        // A. Monthly Progression (Grouped by Y-m and distinct patient_id)
+        $monthlyBuckets = $chronoRecords->groupBy(function ($r) {
+            return $r->record_date ? $r->record_date->format('Y-m') : $r->created_at->format('Y-m');
+        });
+
+        $monthlyTrend = [];
+        foreach ($monthlyBuckets as $monthKey => $recs) {
+            $patientGroups = $recs->groupBy('patient_id');
+            $diabCount = 0; $htnCount = 0; $obeseCount = 0; $infCount = 0;
+
+            foreach ($patientGroups as $pId => $pRecs) {
+                $latestInPeriod = $pRecs->sortByDesc('record_date')->first();
+                $hba1c = floatval($latestInPeriod->hba1c ?? 0);
+                $bsf = floatval($latestInPeriod->bsf ?? 0);
+                $diabStatus = strtolower($latestInPeriod->diabetes ?? '');
+                if ($hba1c >= 6.5 || $bsf >= 126 || (str_contains($diabStatus, 'diabet') && !str_contains($diabStatus, 'pre'))) $diabCount++;
+
+                $sbp = intval($latestInPeriod->sbp ?? 0);
+                $dbp = intval($latestInPeriod->dbp ?? 0);
+                $htnStatus = strtolower($latestInPeriod->hypertension ?? '');
+                if ($sbp >= 140 || $dbp >= 90 || str_contains($htnStatus, 'stage') || (str_contains($htnStatus, 'hyper') && !str_contains($htnStatus, 'pre'))) $htnCount++;
+
+                $bmi = floatval($latestInPeriod->bmi ?? 0);
+                $obStatus = strtolower($latestInPeriod->obesity ?? '');
+                if ($bmi >= 25 || str_contains($obStatus, 'obese')) $obeseCount++;
+
+                $temp = floatval($latestInPeriod->temprature ?? 0);
+                $infStatus = strtolower($latestInPeriod->infection ?? '');
+                if ($temp > 99.4 || (!empty($latestInPeriod->infection) && $infStatus !== 'normal')) $infCount++;
+            }
+
+            $dateObj = \Carbon\Carbon::createFromFormat('Y-m', $monthKey);
+            $monthlyTrend[] = [
+                'period_key' => $monthKey,
+                'label' => $dateObj->format('M Y'),
+                'total_patients' => $patientGroups->count(),
+                'total_consultations' => $recs->count(),
+                'diabetes_count' => $diabCount,
+                'hypertension_count' => $htnCount,
+                'obesity_count' => $obeseCount,
+                'infection_count' => $infCount,
+            ];
+        }
+
+        // B. Daily / Exact Date Progression (Grouped strictly by Y-m-d and distinct patient_id)
+        $dailyBuckets = $chronoRecords->groupBy(function ($r) {
+            return $r->record_date ? $r->record_date->format('Y-m-d') : $r->created_at->format('Y-m-d');
+        });
+
+        $dailyTrend = [];
+        foreach ($dailyBuckets as $dateKey => $recs) {
+            $patientGroups = $recs->groupBy('patient_id');
+            $diabCount = 0; $htnCount = 0; $obeseCount = 0; $infCount = 0;
+
+            foreach ($patientGroups as $pId => $pRecs) {
+                $latestInPeriod = $pRecs->sortByDesc('id')->first();
+                $hba1c = floatval($latestInPeriod->hba1c ?? 0);
+                $bsf = floatval($latestInPeriod->bsf ?? 0);
+                $diabStatus = strtolower($latestInPeriod->diabetes ?? '');
+                if ($hba1c >= 6.5 || $bsf >= 126 || (str_contains($diabStatus, 'diabet') && !str_contains($diabStatus, 'pre'))) $diabCount++;
+
+                $sbp = intval($latestInPeriod->sbp ?? 0);
+                $dbp = intval($latestInPeriod->dbp ?? 0);
+                $htnStatus = strtolower($latestInPeriod->hypertension ?? '');
+                if ($sbp >= 140 || $dbp >= 90 || str_contains($htnStatus, 'stage') || (str_contains($htnStatus, 'hyper') && !str_contains($htnStatus, 'pre'))) $htnCount++;
+
+                $bmi = floatval($latestInPeriod->bmi ?? 0);
+                $obStatus = strtolower($latestInPeriod->obesity ?? '');
+                if ($bmi >= 25 || str_contains($obStatus, 'obese')) $obeseCount++;
+
+                $temp = floatval($latestInPeriod->temprature ?? 0);
+                $infStatus = strtolower($latestInPeriod->infection ?? '');
+                if ($temp > 99.4 || (!empty($latestInPeriod->infection) && $infStatus !== 'normal')) $infCount++;
+            }
+
+            $dateObj = \Carbon\Carbon::parse($dateKey);
+            $dailyTrend[] = [
+                'period_key' => $dateKey,
+                'label' => $dateObj->format('d M Y'),
+                'total_patients' => $patientGroups->count(),
+                'total_consultations' => $recs->count(),
+                'diabetes_count' => $diabCount,
+                'hypertension_count' => $htnCount,
+                'obesity_count' => $obeseCount,
+                'infection_count' => $infCount,
+            ];
+        }
+
+        // C. Yearly Progression (Grouped strictly by Y and distinct patient_id)
+        $yearlyBuckets = $chronoRecords->groupBy(function ($r) {
+            return $r->record_date ? $r->record_date->format('Y') : $r->created_at->format('Y');
+        });
+
+        $yearlyTrend = [];
+        foreach ($yearlyBuckets as $yearKey => $recs) {
+            $patientGroups = $recs->groupBy('patient_id');
+            $diabCount = 0; $htnCount = 0; $obeseCount = 0; $infCount = 0;
+
+            foreach ($patientGroups as $pId => $pRecs) {
+                $latestInPeriod = $pRecs->sortByDesc('id')->first();
+                $hba1c = floatval($latestInPeriod->hba1c ?? 0);
+                $bsf = floatval($latestInPeriod->bsf ?? 0);
+                $diabStatus = strtolower($latestInPeriod->diabetes ?? '');
+                if ($hba1c >= 6.5 || $bsf >= 126 || (str_contains($diabStatus, 'diabet') && !str_contains($diabStatus, 'pre'))) $diabCount++;
+
+                $sbp = intval($latestInPeriod->sbp ?? 0);
+                $dbp = intval($latestInPeriod->dbp ?? 0);
+                $htnStatus = strtolower($latestInPeriod->hypertension ?? '');
+                if ($sbp >= 140 || $dbp >= 90 || str_contains($htnStatus, 'stage') || (str_contains($htnStatus, 'hyper') && !str_contains($htnStatus, 'pre'))) $htnCount++;
+
+                $bmi = floatval($latestInPeriod->bmi ?? 0);
+                $obStatus = strtolower($latestInPeriod->obesity ?? '');
+                if ($bmi >= 25 || str_contains($obStatus, 'obese')) $obeseCount++;
+
+                $temp = floatval($latestInPeriod->temprature ?? 0);
+                $infStatus = strtolower($latestInPeriod->infection ?? '');
+                if ($temp > 99.4 || (!empty($latestInPeriod->infection) && $infStatus !== 'normal')) $infCount++;
+            }
+
+            $yearlyTrend[] = [
+                'period_key' => $yearKey,
+                'label' => $yearKey,
+                'total_patients' => $patientGroups->count(),
+                'total_consultations' => $recs->count(),
+                'diabetes_count' => $diabCount,
+                'hypertension_count' => $htnCount,
+                'obesity_count' => $obeseCount,
+                'infection_count' => $infCount,
+            ];
+        }
 
         $obese = $obesity;
 
         return view('admin.analytics.analytics', compact(
+            'startDate',
+            'endDate',
             'totalPatients',
             'totalConsultations',
             'allRecords',
@@ -1307,16 +1442,41 @@ class PatientController extends Controller
             'age30to45',
             'age46to60',
             'ageOver60',
-            'monthlyTrend'
+            'monthlyTrend',
+            'dailyTrend',
+            'yearlyTrend'
         ));
     }
 
     public function exportDiseaseAnalytics(Request $request)
     {
         $type = strtolower($request->get('type', 'all'));
-        $filename = 'disease_analytics_' . $type . '_' . date('Y-m-d_His') . '.csv';
+        $startDate = $request->get('start_date');
+        $endDate = $request->get('end_date');
 
-        $query = PatientClinicalRecord::with(['patient.latestRecord', 'patient.firstRecord', 'patient.clinicalRecords'])->latest();
+        $dateSuffix = '';
+        if (!empty($startDate) && !empty($endDate)) {
+            $dateSuffix = '_' . $startDate . '_to_' . $endDate;
+        } elseif (!empty($startDate)) {
+            $dateSuffix = '_from_' . $startDate;
+        } elseif (!empty($endDate)) {
+            $dateSuffix = '_until_' . $endDate;
+        }
+
+        $filename = 'disease_analytics_' . $type . $dateSuffix . '_' . date('Y-m-d_His') . '.csv';
+
+        $query = PatientClinicalRecord::with(['patient.latestRecord', 'patient.firstRecord', 'patient.clinicalRecords'])
+            ->whereNotNull('record_date')
+            ->orderBy('record_date', 'desc')
+            ->latest('id');
+
+        if (!empty($startDate) && !empty($endDate)) {
+            $query->whereBetween('record_date', [$startDate, $endDate]);
+        } elseif (!empty($startDate)) {
+            $query->where('record_date', '>=', $startDate);
+        } elseif (!empty($endDate)) {
+            $query->where('record_date', '<=', $endDate);
+        }
 
         // Specific disease filters
         if ($type === 'diabetes') {
