@@ -347,7 +347,7 @@
         <table id="patientTable" class="display responsive nowrap w-full min-w-[2150px]" style="width:100%">
             <thead class="bg-[#f4f9ff] text-[#124263]">
                 <tr>
-                    <th class="w-10 all">#</th>
+                    <th class="w-10 all">Sr no</th>
                     <th class="all">First Visit</th>
                     <th class="all">Patient Name</th>
                     <th class="all">Reg No.</th>
