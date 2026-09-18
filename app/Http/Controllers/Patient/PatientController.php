@@ -16,7 +16,7 @@ class PatientController extends Controller
 {
     public function patientList()
     {
-        $records = Patient::with(['latestRecord', 'clinicalRecords'])->latest()->get();
+        $records = Patient::with(['latestRecord', 'firstRecord', 'clinicalRecords'])->latest()->get();
 
         return view('admin.patients.listing', compact('records'));
     }

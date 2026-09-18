@@ -14,7 +14,7 @@ class ReportController extends Controller
     {
         $records = Patient::whereHas('clinicalRecords', function ($q) {
             $q->where('diabetes', 'Diabetes');
-        })->with(['latestRecord', 'clinicalRecords'])->latest()->get();
+        })->with(['latestRecord', 'firstRecord', 'clinicalRecords'])->latest()->get();
 
         return view('admin.reports.diabetes', compact('records'));
     }
@@ -23,7 +23,7 @@ class ReportController extends Controller
     {
         $records = Patient::whereHas('clinicalRecords', function ($q) {
             $q->where('obesity', 'Obesity');
-        })->with(['latestRecord', 'clinicalRecords'])->latest()->get();
+        })->with(['latestRecord', 'firstRecord', 'clinicalRecords'])->latest()->get();
 
         return view('admin.reports.obesity', compact('records'));
     }
@@ -32,7 +32,7 @@ class ReportController extends Controller
     {
         $records = Patient::whereHas('clinicalRecords', function ($q) {
             $q->where('hypertension', 'Hypertension')->orWhere('htn', 'Yes');
-        })->with(['latestRecord', 'clinicalRecords'])->latest()->get();
+        })->with(['latestRecord', 'firstRecord', 'clinicalRecords'])->latest()->get();
 
         return view('admin.reports.hypertension', compact('records'));
     }
@@ -41,7 +41,7 @@ class ReportController extends Controller
     {
         $records = Patient::whereHas('clinicalRecords', function ($q) {
             $q->where('infection', 'Infection');
-        })->with(['latestRecord', 'clinicalRecords'])->latest()->get();
+        })->with(['latestRecord', 'firstRecord', 'clinicalRecords'])->latest()->get();
 
         return view('admin.reports.infection', compact('records'));
     }

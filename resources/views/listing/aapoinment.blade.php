@@ -446,6 +446,8 @@
                                 $typeMap = [
                                     'n' => ['bg' => 'bg-sky-50', 'text' => 'text-sky-700', 'border' => 'border-sky-200', 'dot' => 'bg-sky-500'],
                                     'on' => ['bg' => 'bg-indigo-50', 'text' => 'text-indigo-700', 'border' => 'border-indigo-200', 'dot' => 'bg-indigo-500'],
+                                    'on dm' => ['bg' => 'bg-blue-50', 'text' => 'text-blue-700', 'border' => 'border-blue-200', 'dot' => 'bg-blue-500'],
+                                    'ondm' => ['bg' => 'bg-blue-50', 'text' => 'text-blue-700', 'border' => 'border-blue-200', 'dot' => 'bg-blue-500'],
                                     'dmf' => ['bg' => 'bg-amber-50', 'text' => 'text-amber-700', 'border' => 'border-amber-200', 'dot' => 'bg-amber-500'],
                                     'ndm' => ['bg' => 'bg-rose-50', 'text' => 'text-rose-700', 'border' => 'border-rose-200', 'dot' => 'bg-rose-500'],
                                     'nm' => ['bg' => 'bg-teal-50', 'text' => 'text-teal-700', 'border' => 'border-teal-200', 'dot' => 'bg-teal-500'],
@@ -606,6 +608,7 @@
                         <option value="" disabled selected>Select Visit Type</option>
                         <option value="N">N</option>
                         <option value="ON">ON</option>
+                        <option value="ON DM">ON DM</option>
                         <option value="DMF">DMF</option>
                         <option value="NDM">NDM</option>
                         <option value="NM">NM</option>

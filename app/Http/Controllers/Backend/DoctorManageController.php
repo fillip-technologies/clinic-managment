@@ -124,7 +124,7 @@ class DoctorManageController extends Controller
             'patient_name'     => 'required|string|max:255',
             'father_name'      => 'nullable|string|max:255',
             'age'              => 'nullable|numeric|min:0|max:150',
-            'patient_type'     => 'required|string|in:N,ON,DMF,NDM,NM,NMDM,complimentry,Complimentry,complementary,Complementary,complimentary,Complimentary',
+            'patient_type'     => 'required|string|in:N,ON,ON DM,ON-DM,DMF,NDM,NM,NMDM,complimentry,Complimentry,complementary,Complementary,complimentary,Complimentary',
             'phone'            => 'required|string|max:20',
             'mail'             => 'nullable|email|max:255',
             'address'          => 'nullable|string',
@@ -140,6 +140,8 @@ class DoctorManageController extends Controller
         $rawPatientType = trim($request->patient_type);
         if (in_array(strtolower($rawPatientType), ['complimentry', 'complementary', 'complimentary'])) {
             $patientType = 'Complementary';
+        } elseif (in_array(strtolower($rawPatientType), ['on dm', 'on-dm', 'ondm'])) {
+            $patientType = 'ON DM';
         } else {
             $patientType = $rawPatientType;
         }

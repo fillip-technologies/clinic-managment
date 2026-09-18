@@ -348,6 +348,7 @@
             <thead class="bg-[#f4f9ff] text-[#124263]">
                 <tr>
                     <th class="w-10 all">#</th>
+                    <th class="all">First Visit</th>
                     <th class="all">Patient Name</th>
                     <th class="all">Reg No.</th>
                     <th class="all">Duration DM</th>
@@ -428,7 +429,7 @@
                             $hba1cStatus === 'critical' ||
                             $bpStatus === 'critical'
                         ) {
-                            $overallStatus === 'critical';
+                            $overallStatus = 'critical';
                             $statusLabel = 'Critical';
                         } elseif (
                             $bmiStatus === 'warning' ||
@@ -459,9 +460,35 @@
                         if ($temp > 99.4) {
                             $abnormalCount++;
                         }
+
+                        // First visit on the basis of record_date
+                        $firstRecord = $patient->firstRecord
+                            ?? ($patient->clinicalRecords && $patient->clinicalRecords->isNotEmpty()
+                                ? ($patient->clinicalRecords->filter(fn($r) => !empty($r->record_date))->sortBy('record_date')->first()
+                                  ?? $patient->clinicalRecords->sortBy('created_at')->first())
+                                : null);
+
+                        $firstVisitDate = $firstRecord?->record_date
+                            ? \Carbon\Carbon::parse($firstRecord->record_date)->format('d/m/Y')
+                            : ($firstRecord?->created_at
+                                ? $firstRecord->created_at->format('d/m/Y')
+                                : ($patient->record_date
+                                    ? \Carbon\Carbon::parse($patient->record_date)->format('d/m/Y')
+                                    : '-'));
+
+                        $firstVisitSortKey = $firstRecord?->record_date
+                            ? \Carbon\Carbon::parse($firstRecord->record_date)->format('Y-m-d')
+                            : ($firstRecord?->created_at
+                                ? $firstRecord->created_at->format('Y-m-d')
+                                : ($patient->record_date
+                                    ? \Carbon\Carbon::parse($patient->record_date)->format('Y-m-d')
+                                    : '0000-00-00'));
                     @endphp
                     <tr>
                         <td class="dtr-control">{{ $loop->iteration }}</td>
+                        <td data-order="{{ $firstVisitSortKey }}">
+                            <span class="font-medium text-slate-700 whitespace-nowrap">{{ $firstVisitDate }}</span>
+                        </td>
                         <td>
                             <a href="{{ route('patient.show', $patient->id) }}" class="font-bold text-[#1f6e96] hover:underline">
                                 {{ $patient->patient_name ?? 'N/A' }}
@@ -683,7 +710,7 @@
                     searchable: false
                 },
                 {
-                    targets: [20],
+                    targets: [-1],
                     orderable: false
                 }
             ]
