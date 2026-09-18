@@ -251,7 +251,7 @@
                                 class="w-full rounded-xl border border-[#d3dfea] px-4 py-2.5 text-sm bg-[#fafdff] input-focus">
                         </div>
                         <div><label class="block text-xs font-semibold uppercase text-[#2f5a77] mb-1"><i
-                                    class="fas fa-tag"></i> Insulin Brand</label>
+                                    class="fas fa-tag"></i> Injectables</label>
                             <input type="text" name="insuline_brand" value="{{ old('insuline_brand') }}" placeholder="e.g. Lantus, Humalog"
                                 class="w-full rounded-xl border border-[#d3dfea] px-4 py-2.5 text-sm bg-[#fafdff] input-focus">
                         </div>

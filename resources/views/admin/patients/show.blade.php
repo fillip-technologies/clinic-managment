@@ -582,7 +582,7 @@
                             </span>
                         </div>
                         <div class="flex items-center justify-between pb-2 border-b border-slate-100">
-                            <span class="text-xs text-slate-600 font-medium">Insulin Brand:</span>
+                            <span class="text-xs text-slate-600 font-medium">Injectables:</span>
                             <span class="text-xs font-bold text-slate-800">{{ $record->insuline_brand ?: 'N/A' }}</span>
                         </div>
                         <div class="flex items-center justify-between pb-2 border-b border-slate-100">

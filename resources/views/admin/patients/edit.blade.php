@@ -391,7 +391,7 @@
 
                             <div>
                                 <label class="block text-xs font-semibold uppercase text-[#2f5a77] mb-1">
-                                    <i class="fas fa-tag"></i> Insulin Brand
+                                    <i class="fas fa-tag"></i> Injectables
                                 </label>
                                 <input type="text" name="insuline_brand"
                                     value="{{ old('insuline_brand', $record->insuline_brand ?? '') }}"
