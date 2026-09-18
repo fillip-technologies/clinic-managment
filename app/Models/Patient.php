@@ -39,7 +39,7 @@ class Patient extends Model
 
     public function latestRecord()
     {
-        return $this->hasOne(PatientClinicalRecord::class, 'patient_id')->latestOfMany('id');
+        return $this->hasOne(PatientClinicalRecord::class, 'patient_id')->latestOfMany('record_date');
     }
 
     public function firstRecord()

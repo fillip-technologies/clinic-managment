@@ -1316,7 +1316,7 @@ class PatientController extends Controller
         $type = strtolower($request->get('type', 'all'));
         $filename = 'disease_analytics_' . $type . '_' . date('Y-m-d_His') . '.csv';
 
-        $query = PatientClinicalRecord::with('patient')->latest();
+        $query = PatientClinicalRecord::with(['patient.latestRecord', 'patient.firstRecord', 'patient.clinicalRecords'])->latest();
 
         // Specific disease filters
         if ($type === 'diabetes') {
@@ -1373,7 +1373,7 @@ class PatientController extends Controller
 
             if ($type === 'diabetes' || $type === 'pre_diabetes') {
                 fputcsv($handle, [
-                    'Record ID', 'Patient ID', 'Patient Name', 'Age', 'Gender', 'Mobile', 'Address', 'Consultation Date',
+                    'Sr No', 'First Visit Date', 'Patient Name', 'Age', 'Gender', 'Mobile', 'Address', 'Last Visit Date',
                     'Diagnostic Status', 'HbA1c (%)', 'Fasting Blood Sugar (BSF mg/dL)', 'Postprandial Sugar (BSPP mg/dL)',
                     'Newly Detected', 'Duration of Diabetes (Yrs)', 'Insulin Start Date', 'Insulin Stop Date',
                     'Insulin Brand', 'Insulin Unit', 'C-Peptide', 'Insulin Antibodies', 'MODY Biomarkers',
@@ -1383,20 +1383,30 @@ class PatientController extends Controller
                     'Ophthalmic Exam', 'Foot Exam', 'Echo / Cardiac Exam'
                 ]);
 
-                foreach ($records as $r) {
+                foreach ($records as $index => $r) {
                     $hba1c = floatval($r->hba1c ?? 0);
                     $bsf = floatval($r->bsf ?? 0);
                     $status = ($hba1c >= 6.5 || $bsf >= 126 || str_contains(strtolower($r->diabetes ?? ''), 'diabet')) ? 'Diabetes' : (($hba1c >= 5.7 || $bsf >= 100) ? 'Pre-Diabetes' : ($r->diabetes ?? 'Normal'));
 
+                    $latestRec = $r->patient?->latestRecord ?? $r->patient?->clinicalRecords?->sortByDesc('record_date')->first() ?? $r;
+                    $lastVisitDate = $latestRec?->record_date 
+                        ? \Carbon\Carbon::parse($latestRec->record_date)->format('d/m/Y') 
+                        : ($latestRec?->created_at ? $latestRec->created_at->format('d/m/Y') : ($r->record_date ? \Carbon\Carbon::parse($r->record_date)->format('d/m/Y') : 'N/A'));
+
+                    $firstRec = $r->patient?->firstRecord ?? $r->patient?->clinicalRecords?->sortBy('record_date')->first() ?? $r;
+                    $firstVisitDate = $firstRec?->record_date 
+                        ? \Carbon\Carbon::parse($firstRec->record_date)->format('d/m/Y') 
+                        : ($firstRec?->created_at ? $firstRec->created_at->format('d/m/Y') : ($r->patient?->record_date ? \Carbon\Carbon::parse($r->patient->record_date)->format('d/m/Y') : 'N/A'));
+
                     fputcsv($handle, [
-                        $r->id,
-                        $r->patient_id,
+                        $index + 1,
+                        $firstVisitDate,
                         $r->patient->patient_name ?? 'N/A',
                         $r->patient->age ?? 'N/A',
                         $r->patient->gender ?? 'N/A',
-                        $r->patient->mobile ?? 'N/A',
+                        $r->patient->mobile_no ?? $r->patient->mobile ?? 'N/A',
                         $r->patient->address ?? 'N/A',
-                        $r->created_at ? $r->created_at->format('Y-m-d H:i') : 'N/A',
+                        $lastVisitDate,
                         $status,
                         $r->hba1c ?: '-',
                         $r->bsf ?: '-',
@@ -1428,7 +1438,7 @@ class PatientController extends Controller
                 }
             } elseif ($type === 'hypertension' || $type === 'pre_hypertension') {
                 fputcsv($handle, [
-                    'Record ID', 'Patient ID', 'Patient Name', 'Age', 'Gender', 'Mobile', 'Address', 'Consultation Date',
+                    'Sr No', 'First Visit Date', 'Patient Name', 'Age', 'Gender', 'Mobile', 'Address', 'Last Visit Date',
                     'Vascular Status', 'Known HTN History', 'Systolic BP (SBP mmHg)', 'Diastolic BP (DBP mmHg)',
                     'Pulse Pressure (mmHg)', 'Mean Arterial Pressure (MAP mmHg)',
                     'BMI (kg/m²)', 'HbA1c (%)', 'Creatinine (mg/dL)', 'eGFR (mL/min)',
@@ -1437,22 +1447,32 @@ class PatientController extends Controller
                     'Cardiac Echo Exam', 'Ophthalmic Exam'
                 ]);
 
-                foreach ($records as $r) {
+                foreach ($records as $index => $r) {
                     $sbp = intval($r->sbp ?? 0);
                     $dbp = intval($r->dbp ?? 0);
                     $pp = ($sbp > 0 && $dbp > 0) ? ($sbp - $dbp) : '-';
                     $map = ($sbp > 0 && $dbp > 0) ? round($dbp + (($sbp - $dbp) / 3), 1) : '-';
                     $status = ($sbp >= 140 || $dbp >= 90 || str_contains(strtolower($r->hypertension ?? ''), 'stage')) ? 'Hypertension' : (($sbp >= 130 || $dbp >= 85) ? 'Pre-Hypertension' : ($r->hypertension ?? 'Normal'));
 
+                    $latestRec = $r->patient?->latestRecord ?? $r->patient?->clinicalRecords?->sortByDesc('record_date')->first() ?? $r;
+                    $lastVisitDate = $latestRec?->record_date 
+                        ? \Carbon\Carbon::parse($latestRec->record_date)->format('d/m/Y') 
+                        : ($latestRec?->created_at ? $latestRec->created_at->format('d/m/Y') : ($r->record_date ? \Carbon\Carbon::parse($r->record_date)->format('d/m/Y') : 'N/A'));
+
+                    $firstRec = $r->patient?->firstRecord ?? $r->patient?->clinicalRecords?->sortBy('record_date')->first() ?? $r;
+                    $firstVisitDate = $firstRec?->record_date 
+                        ? \Carbon\Carbon::parse($firstRec->record_date)->format('d/m/Y') 
+                        : ($firstRec?->created_at ? $firstRec->created_at->format('d/m/Y') : ($r->patient?->record_date ? \Carbon\Carbon::parse($r->patient->record_date)->format('d/m/Y') : 'N/A'));
+
                     fputcsv($handle, [
-                        $r->id,
-                        $r->patient_id,
+                        $index + 1,
+                        $firstVisitDate,
                         $r->patient->patient_name ?? 'N/A',
                         $r->patient->age ?? 'N/A',
                         $r->patient->gender ?? 'N/A',
-                        $r->patient->mobile ?? 'N/A',
+                        $r->patient->mobile_no ?? $r->patient->mobile ?? 'N/A',
                         $r->patient->address ?? 'N/A',
-                        $r->created_at ? $r->created_at->format('Y-m-d H:i') : 'N/A',
+                        $lastVisitDate,
                         $status,
                         $r->htn ?: ($r->hypertension ?? '-'),
                         $r->sbp ?: '-',
@@ -1475,7 +1495,7 @@ class PatientController extends Controller
                 }
             } elseif ($type === 'obesity') {
                 fputcsv($handle, [
-                    'Record ID', 'Patient ID', 'Patient Name', 'Age', 'Gender', 'Mobile', 'Address', 'Consultation Date',
+                    'Sr No', 'First Visit Date', 'Patient Name', 'Age', 'Gender', 'Mobile', 'Address', 'Last Visit Date',
                     'Adiposity Status', 'Height (cm)', 'Weight (kg)', 'BMI (kg/m²)', 'BMI Category',
                     'Waist Circumference (cm)', 'Hip Circumference (cm)', 'Waist-Hip Ratio (WHR)', 'Waist-Height Ratio (WHtR)',
                     'Physical Activity', 'Diet (Veg/Non-Veg)', 'Social Class', 'Income Class',
@@ -1484,19 +1504,29 @@ class PatientController extends Controller
                     'FibroScan Score', 'Median Stiffness', 'USG Findings'
                 ]);
 
-                foreach ($records as $r) {
+                foreach ($records as $index => $r) {
                     $bmi = floatval($r->bmi ?? 0);
                     $status = ($bmi >= 25 || str_contains(strtolower($r->obesity ?? ''), 'obese')) ? 'Obese' : (($bmi >= 23) ? 'Overweight' : (($bmi > 0 && $bmi < 18.5) ? 'Underweight' : ($r->obesity ?? 'Normal')));
 
+                    $latestRec = $r->patient?->latestRecord ?? $r->patient?->clinicalRecords?->sortByDesc('record_date')->first() ?? $r;
+                    $lastVisitDate = $latestRec?->record_date 
+                        ? \Carbon\Carbon::parse($latestRec->record_date)->format('d/m/Y') 
+                        : ($latestRec?->created_at ? $latestRec->created_at->format('d/m/Y') : ($r->record_date ? \Carbon\Carbon::parse($r->record_date)->format('d/m/Y') : 'N/A'));
+
+                    $firstRec = $r->patient?->firstRecord ?? $r->patient?->clinicalRecords?->sortBy('record_date')->first() ?? $r;
+                    $firstVisitDate = $firstRec?->record_date 
+                        ? \Carbon\Carbon::parse($firstRec->record_date)->format('d/m/Y') 
+                        : ($firstRec?->created_at ? $firstRec->created_at->format('d/m/Y') : ($r->patient?->record_date ? \Carbon\Carbon::parse($r->patient->record_date)->format('d/m/Y') : 'N/A'));
+
                     fputcsv($handle, [
-                        $r->id,
-                        $r->patient_id,
+                        $index + 1,
+                        $firstVisitDate,
                         $r->patient->patient_name ?? 'N/A',
                         $r->patient->age ?? 'N/A',
                         $r->patient->gender ?? 'N/A',
-                        $r->patient->mobile ?? 'N/A',
+                        $r->patient->mobile_no ?? $r->patient->mobile ?? 'N/A',
                         $r->patient->address ?? 'N/A',
-                        $r->created_at ? $r->created_at->format('Y-m-d H:i') : 'N/A',
+                        $lastVisitDate,
                         $status,
                         $r->height_cm ?: '-',
                         $r->weight_kg ?: '-',
@@ -1526,7 +1556,7 @@ class PatientController extends Controller
                 }
             } elseif ($type === 'infection') {
                 fputcsv($handle, [
-                    'Record ID', 'Patient ID', 'Patient Name', 'Age', 'Gender', 'Mobile', 'Address', 'Consultation Date',
+                    'Sr No', 'First Visit Date', 'Patient Name', 'Age', 'Gender', 'Mobile', 'Address', 'Last Visit Date',
                     'Infection Status', 'Body Temperature (°F)', 'Infection Diagnosis Details',
                     'Hemoglobin (Hb %)', 'Platelets (PLT)', 'MCV', 'Urine Routine / Cast Cells',
                     'HIV Serology', 'HBsAg Serology', 'HCV Serology',
@@ -1534,19 +1564,29 @@ class PatientController extends Controller
                     'Serum Creatinine', 'SGPT', 'Total Cholesterol'
                 ]);
 
-                foreach ($records as $r) {
+                foreach ($records as $index => $r) {
                     $temp = floatval($r->temprature ?? 0);
                     $status = ($temp > 99.4 || (!empty($r->infection) && strtolower($r->infection) !== 'normal')) ? 'Infection / Febrile' : ($r->infection ?? 'Normal');
 
+                    $latestRec = $r->patient?->latestRecord ?? $r->patient?->clinicalRecords?->sortByDesc('record_date')->first() ?? $r;
+                    $lastVisitDate = $latestRec?->record_date 
+                        ? \Carbon\Carbon::parse($latestRec->record_date)->format('d/m/Y') 
+                        : ($latestRec?->created_at ? $latestRec->created_at->format('d/m/Y') : ($r->record_date ? \Carbon\Carbon::parse($r->record_date)->format('d/m/Y') : 'N/A'));
+
+                    $firstRec = $r->patient?->firstRecord ?? $r->patient?->clinicalRecords?->sortBy('record_date')->first() ?? $r;
+                    $firstVisitDate = $firstRec?->record_date 
+                        ? \Carbon\Carbon::parse($firstRec->record_date)->format('d/m/Y') 
+                        : ($firstRec?->created_at ? $firstRec->created_at->format('d/m/Y') : ($r->patient?->record_date ? \Carbon\Carbon::parse($r->patient->record_date)->format('d/m/Y') : 'N/A'));
+
                     fputcsv($handle, [
-                        $r->id,
-                        $r->patient_id,
+                        $index + 1,
+                        $firstVisitDate,
                         $r->patient->patient_name ?? 'N/A',
                         $r->patient->age ?? 'N/A',
                         $r->patient->gender ?? 'N/A',
-                        $r->patient->mobile ?? 'N/A',
+                        $r->patient->mobile_no ?? $r->patient->mobile ?? 'N/A',
                         $r->patient->address ?? 'N/A',
-                        $r->created_at ? $r->created_at->format('Y-m-d H:i') : 'N/A',
+                        $lastVisitDate,
                         $status,
                         $r->temprature ? $r->temprature . ' °F' : '-',
                         $r->infection ?: '-',
@@ -1568,7 +1608,7 @@ class PatientController extends Controller
                 }
             } elseif ($type === 'triad') {
                 fputcsv($handle, [
-                    'Record ID', 'Patient ID', 'Patient Name', 'Age', 'Gender', 'Mobile', 'Address', 'Consultation Date',
+                    'Sr No', 'First Visit Date', 'Patient Name', 'Age', 'Gender', 'Mobile', 'Address', 'Last Visit Date',
                     'Diabetes Status', 'HbA1c (%)', 'BSF (mg/dL)',
                     'Hypertension Status', 'SBP (mmHg)', 'DBP (mmHg)',
                     'Obesity Status', 'BMI (kg/m²)', 'Weight (kg)',
@@ -1576,6 +1616,7 @@ class PatientController extends Controller
                     'Metabolic Triad Status'
                 ]);
 
+                $counter = 1;
                 foreach ($records as $r) {
                     $hba1c = floatval($r->hba1c ?? 0);
                     $bsf = floatval($r->bsf ?? 0);
@@ -1589,15 +1630,25 @@ class PatientController extends Controller
                     $isObese = $bmi >= 25 || str_contains(strtolower($r->obesity ?? ''), 'obese');
 
                     if ($isDiab && $isHtn && $isObese) {
+                        $latestRec = $r->patient?->latestRecord ?? $r->patient?->clinicalRecords?->sortByDesc('record_date')->first() ?? $r;
+                        $lastVisitDate = $latestRec?->record_date 
+                            ? \Carbon\Carbon::parse($latestRec->record_date)->format('d/m/Y') 
+                            : ($latestRec?->created_at ? $latestRec->created_at->format('d/m/Y') : ($r->record_date ? \Carbon\Carbon::parse($r->record_date)->format('d/m/Y') : 'N/A'));
+
+                        $firstRec = $r->patient?->firstRecord ?? $r->patient?->clinicalRecords?->sortBy('record_date')->first() ?? $r;
+                        $firstVisitDate = $firstRec?->record_date 
+                            ? \Carbon\Carbon::parse($firstRec->record_date)->format('d/m/Y') 
+                            : ($firstRec?->created_at ? $firstRec->created_at->format('d/m/Y') : ($r->patient?->record_date ? \Carbon\Carbon::parse($r->patient->record_date)->format('d/m/Y') : 'N/A'));
+
                         fputcsv($handle, [
-                            $r->id,
-                            $r->patient_id,
+                            $counter++,
+                            $firstVisitDate,
                             $r->patient->patient_name ?? 'N/A',
                             $r->patient->age ?? 'N/A',
                             $r->patient->gender ?? 'N/A',
-                            $r->patient->mobile ?? 'N/A',
+                            $r->patient->mobile_no ?? $r->patient->mobile ?? 'N/A',
                             $r->patient->address ?? 'N/A',
-                            $r->created_at ? $r->created_at->format('Y-m-d H:i') : 'N/A',
+                            $lastVisitDate,
                             $r->diabetes ?? 'Diabetes',
                             $r->hba1c ?: '-',
                             $r->bsf ?: '-',
@@ -1619,7 +1670,7 @@ class PatientController extends Controller
             } else {
                 // Master All-Variables Comprehensive Clinical Research Export
                 fputcsv($handle, [
-                    'Record ID', 'Patient ID', 'Patient Name', 'Age', 'Gender', 'Mobile', 'Address', 'Consultation Date',
+                    'Sr No', 'First Visit Date', 'Patient Name', 'Age', 'Gender', 'Mobile', 'Address', 'Last Visit Date',
                     'Diabetes Classification', 'HbA1c (%)', 'Fasting Blood Sugar (BSF)', 'Postprandial Sugar (BSPP)', 'Newly Detected Diab', 'Duration Diab (Yrs)', 'Insulin Start', 'Insulin Stop', 'Insulin Brand', 'Insulin Unit', 'C-Peptide', 'Insulin Antibodies', 'MODY Biomarkers',
                     'Hypertension Classification', 'Known HTN', 'SBP (mmHg)', 'DBP (mmHg)',
                     'Obesity Classification', 'Height (cm)', 'Weight (kg)', 'BMI (kg/m²)', 'BMI Group', 'Waist (cm)', 'Hip (cm)', 'WHR', 'WHtR', 'Diet', 'Activity', 'Social Class', 'Income Class',
@@ -1632,16 +1683,26 @@ class PatientController extends Controller
                     'Ophthalmic Exam', 'Foot Exam', 'Echo Exam'
                 ]);
 
-                foreach ($records as $r) {
+                foreach ($records as $index => $r) {
+                    $latestRec = $r->patient?->latestRecord ?? $r->patient?->clinicalRecords?->sortByDesc('record_date')->first() ?? $r;
+                    $lastVisitDate = $latestRec?->record_date 
+                        ? \Carbon\Carbon::parse($latestRec->record_date)->format('d/m/Y') 
+                        : ($latestRec?->created_at ? $latestRec->created_at->format('d/m/Y') : ($r->record_date ? \Carbon\Carbon::parse($r->record_date)->format('d/m/Y') : 'N/A'));
+
+                    $firstRec = $r->patient?->firstRecord ?? $r->patient?->clinicalRecords?->sortBy('record_date')->first() ?? $r;
+                    $firstVisitDate = $firstRec?->record_date 
+                        ? \Carbon\Carbon::parse($firstRec->record_date)->format('d/m/Y') 
+                        : ($firstRec?->created_at ? $firstRec->created_at->format('d/m/Y') : ($r->patient?->record_date ? \Carbon\Carbon::parse($r->patient->record_date)->format('d/m/Y') : 'N/A'));
+
                     fputcsv($handle, [
-                        $r->id,
-                        $r->patient_id,
+                        $index + 1,
+                        $firstVisitDate,
                         $r->patient->patient_name ?? 'N/A',
                         $r->patient->age ?? 'N/A',
                         $r->patient->gender ?? 'N/A',
-                        $r->patient->mobile ?? 'N/A',
+                        $r->patient->mobile_no ?? $r->patient->mobile ?? 'N/A',
                         $r->patient->address ?? 'N/A',
-                        $r->created_at ? $r->created_at->format('Y-m-d H:i') : 'N/A',
+                        $lastVisitDate,
                         $r->diabetes ?? 'Normal',
                         $r->hba1c ?: '-',
                         $r->bsf ?: '-',
@@ -1721,8 +1782,8 @@ class PatientController extends Controller
     public function exportPatientRecords($id)
     {
         $patient = Patient::with(['clinicalRecords' => function ($q) {
-            $q->orderBy('id', 'asc');
-        }])->findOrFail($id);
+            $q->orderBy('record_date', 'asc')->orderBy('id', 'asc');
+        }, 'latestRecord', 'firstRecord'])->findOrFail($id);
 
         $patientNameClean = \Illuminate\Support\Str::slug($patient->patient_name ?? 'patient', '_');
         $filename = 'patient_' . $patient->id . '_' . $patientNameClean . '_clinical_history_' . date('Y-m-d') . '.csv';
@@ -1743,7 +1804,8 @@ class PatientController extends Controller
             fprintf($handle, chr(0xEF) . chr(0xBB) . chr(0xBF));
 
             fputcsv($handle, [
-                'Patient ID',
+                'Sr No',
+                'First Visit Date',
                 'Patient Name',
                 'Age',
                 'Gender',
@@ -1754,8 +1816,7 @@ class PatientController extends Controller
                 'Occupation',
                 'Education',
                 'Registration Date',
-                'Visit / Record ID',
-                'Consultation Date',
+                'Last Visit Date',
                 'Diabetes Classification',
                 'HbA1c (%)',
                 'Fasting Blood Sugar BSF (mg/dL)',
@@ -1828,14 +1889,25 @@ class PatientController extends Controller
                 'Cardiac Echo / Carotid Exam'
             ]);
 
-            foreach ($records as $r) {
+            $latestRec = $patient->latestRecord ?? $patient->clinicalRecords->sortByDesc('record_date')->first() ?? $records->last();
+            $lastVisitDate = $latestRec?->record_date 
+                ? \Carbon\Carbon::parse($latestRec->record_date)->format('d/m/Y') 
+                : ($latestRec?->created_at ? $latestRec->created_at->format('d/m/Y') : ($patient->record_date ? \Carbon\Carbon::parse($patient->record_date)->format('d/m/Y') : 'N/A'));
+
+            $firstRec = $patient->firstRecord ?? $patient->clinicalRecords->sortBy('record_date')->first() ?? $records->first();
+            $firstVisitDate = $firstRec?->record_date 
+                ? \Carbon\Carbon::parse($firstRec->record_date)->format('d/m/Y') 
+                : ($firstRec?->created_at ? $firstRec->created_at->format('d/m/Y') : ($patient->record_date ? \Carbon\Carbon::parse($patient->record_date)->format('d/m/Y') : 'N/A'));
+
+            foreach ($records as $index => $r) {
                 $sbp = intval($r->sbp ?? 0);
                 $dbp = intval($r->dbp ?? 0);
                 $pp = ($sbp > 0 && $dbp > 0) ? ($sbp - $dbp) : '-';
                 $map = ($sbp > 0 && $dbp > 0) ? round($dbp + (($sbp - $dbp) / 3), 1) : '-';
 
                 fputcsv($handle, [
-                    $patient->id,
+                    $index + 1,
+                    $firstVisitDate,
                     $patient->patient_name ?? 'N/A',
                     $patient->age ?? 'N/A',
                     $patient->gender ?? 'N/A',
@@ -1845,9 +1917,8 @@ class PatientController extends Controller
                     $patient->marital_status ?? 'N/A',
                     $patient->occupation ?? 'N/A',
                     $patient->education ?? 'N/A',
-                    $patient->created_at ? $patient->created_at->format('Y-m-d') : 'N/A',
-                    $r->id,
-                    $r->created_at ? $r->created_at->format('Y-m-d H:i') : 'N/A',
+                    $patient->created_at ? $patient->created_at->format('d/m/Y') : 'N/A',
+                    $lastVisitDate,
                     $r->diabetes ?? 'Normal',
                     $r->hba1c ?: '-',
                     $r->bsf ?: '-',
