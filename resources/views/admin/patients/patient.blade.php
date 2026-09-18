@@ -85,13 +85,13 @@
                 </div>
                 <div class="flex items-center gap-3 mt-2 sm:mt-0">
                     <span class="badge-soft"><i class="far fa-calendar-alt mr-1"></i> New Registration</span>
-                    <label class="bg-[#eaf1f9] hover:bg-[#dfeaf6] px-3.5 py-1.5 rounded-full text-sm font-medium text-[#1f5a7a] border border-[#c7dae9] flex items-center gap-2 cursor-pointer transition shadow-sm"
-                        onclick="try{ this.querySelector('input').showPicker(); }catch(e){}" title="Click to select visit date">
+                    <label id="header_record_date_wrap" class="bg-[#eaf1f9] hover:bg-[#dfeaf6] px-3.5 py-1.5 rounded-full text-sm font-medium text-[#1f5a7a] border border-[#c7dae9] flex items-center gap-2 cursor-pointer transition shadow-sm" title="Click to select visit date">
                         <i class="far fa-calendar-alt text-[#1f6e96]"></i>
                         <span class="text-xs font-bold text-[#1f5a7a]">Visit Date:</span>
-                        <input type="date" name="record_date" id="header_record_date"
+                        <input type="text" name="record_date" id="header_record_date"
                             value="{{ old('record_date', date('Y-m-d')) }}"
-                            class="bg-transparent text-sm font-bold text-[#1f5a7a] outline-none cursor-pointer border-0 p-0 focus:ring-0">
+                            placeholder="DD/MM/YYYY"
+                            class="bg-transparent text-sm font-bold text-[#1f5a7a] outline-none cursor-pointer border-0 p-0 focus:ring-0 w-28">
                     </label>
                 </div>
             </div>
@@ -109,9 +109,15 @@
                     <div class="col-span-1">
                         <label class="block text-xs font-semibold uppercase tracking-wide text-[#2f5a77] mb-1"><i
                                 class="far fa-calendar-alt"></i> Date</label>
-                        <input type="date" id="sec1_record_date"
-                            value="{{ old('record_date', date('Y-m-d')) }}"
-                            class="w-full rounded-xl border border-[#d3dfea] px-4 py-2.5 text-sm bg-[#fafdff] input-focus cursor-pointer">
+                        <div class="relative">
+                            <input type="text" id="sec1_record_date"
+                                value="{{ old('record_date', date('Y-m-d')) }}"
+                                placeholder="DD/MM/YYYY"
+                                class="w-full rounded-xl border border-[#d3dfea] pl-4 pr-10 py-2.5 text-sm bg-[#fafdff] input-focus cursor-pointer">
+                            <div class="absolute inset-y-0 right-0 flex items-center pr-3.5 pointer-events-none text-slate-400">
+                                <i class="far fa-calendar-alt text-slate-400 text-sm"></i>
+                            </div>
+                        </div>
                     </div>
                     <!-- Patient's Name -->
                     <div class="col-span-1">
@@ -254,15 +260,29 @@
                             <input type="text" name="insuline_unit" value="{{ old('insuline_unit') }}" placeholder="e.g. 10 Units, 20 IU"
                                 class="w-full rounded-xl border border-[#d3dfea] px-4 py-2.5 text-sm bg-[#fafdff] input-focus">
                         </div>
-                        <div><label class="block text-xs font-semibold uppercase text-[#2f5a77] mb-1"><i
+                        <div>
+                            <label class="block text-xs font-semibold uppercase text-[#2f5a77] mb-1"><i
                                     class="fas fa-play"></i> START INSULIN DATE</label>
-                            <input type="date" name="insulin_start_date" value="{{ old('insulin_start_date') }}"
-                                class="w-full rounded-xl border border-[#d3dfea] px-4 py-2.5 text-sm bg-[#fafdff] input-focus">
+                            <div class="relative">
+                                <input type="text" name="insulin_start_date" id="insulin_start_date" value="{{ old('insulin_start_date') }}"
+                                    placeholder="DD/MM/YYYY"
+                                    class="w-full rounded-xl border border-[#d3dfea] pl-4 pr-10 py-2.5 text-sm bg-[#fafdff] input-focus cursor-pointer dmy-datepicker">
+                                <div class="absolute inset-y-0 right-0 flex items-center pr-3.5 pointer-events-none text-slate-400">
+                                    <i class="far fa-calendar-alt text-slate-400 text-sm"></i>
+                                </div>
+                            </div>
                         </div>
-                        <div><label class="block text-xs font-semibold uppercase text-[#2f5a77] mb-1"><i
+                        <div>
+                            <label class="block text-xs font-semibold uppercase text-[#2f5a77] mb-1"><i
                                     class="fas fa-stop"></i> STOP INSULIN DATE</label>
-                            <input type="date" name="insulin_stop_date" value="{{ old('insulin_stop_date') }}"
-                                class="w-full rounded-xl border border-[#d3dfea] px-4 py-2.5 text-sm bg-[#fafdff] input-focus">
+                            <div class="relative">
+                                <input type="text" name="insulin_stop_date" id="insulin_stop_date" value="{{ old('insulin_stop_date') }}"
+                                    placeholder="DD/MM/YYYY"
+                                    class="w-full rounded-xl border border-[#d3dfea] pl-4 pr-10 py-2.5 text-sm bg-[#fafdff] input-focus cursor-pointer dmy-datepicker">
+                                <div class="absolute inset-y-0 right-0 flex items-center pr-3.5 pointer-events-none text-slate-400">
+                                    <i class="far fa-calendar-alt text-slate-400 text-sm"></i>
+                                </div>
+                            </div>
                         </div>
                         <div><label class="block text-xs font-semibold uppercase text-[#2f5a77] mb-1"><i
                                     class="fas fa-flask"></i> C PEPTIDE</label>
@@ -594,11 +614,57 @@
                 });
             }
 
-            const hDate = document.getElementById('header_record_date');
-            const sDate = document.getElementById('sec1_record_date');
-            if (hDate && sDate) {
-                hDate.addEventListener('change', () => { sDate.value = hDate.value; });
-                sDate.addEventListener('change', () => { hDate.value = sDate.value; });
+            // Initialize Flatpickr with DD/MM/YYYY display and YYYY-MM-DD submission
+            if (typeof flatpickr !== 'undefined') {
+                const hDate = document.getElementById('header_record_date');
+                const sDate = document.getElementById('sec1_record_date');
+                let fpH = null, fpS = null;
+
+                if (hDate) {
+                    fpH = flatpickr(hDate, {
+                        dateFormat: "Y-m-d",
+                        altInput: true,
+                        altFormat: "d/m/Y",
+                        allowInput: true,
+                        onChange: function(selectedDates, dateStr) {
+                            if (fpS && dateStr) fpS.setDate(dateStr, false);
+                        }
+                    });
+                    const hWrap = document.getElementById('header_record_date_wrap');
+                    if (hWrap) {
+                        hWrap.addEventListener('click', function(e) {
+                            if (!e.target.classList.contains('flatpickr-input')) {
+                                fpH.open();
+                            }
+                        });
+                    }
+                }
+
+                if (sDate) {
+                    fpS = flatpickr(sDate, {
+                        dateFormat: "Y-m-d",
+                        altInput: true,
+                        altFormat: "d/m/Y",
+                        allowInput: true,
+                        onChange: function(selectedDates, dateStr) {
+                            if (fpH && dateStr) fpH.setDate(dateStr, false);
+                        }
+                    });
+                }
+
+                flatpickr(".dmy-datepicker", {
+                    dateFormat: "Y-m-d",
+                    altInput: true,
+                    altFormat: "d/m/Y",
+                    allowInput: true
+                });
+            } else {
+                const hDate = document.getElementById('header_record_date');
+                const sDate = document.getElementById('sec1_record_date');
+                if (hDate && sDate) {
+                    hDate.addEventListener('change', () => { sDate.value = hDate.value; });
+                    sDate.addEventListener('change', () => { hDate.value = sDate.value; });
+                }
             }
         });
     </script>

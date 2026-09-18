@@ -124,13 +124,13 @@
                     </div>
                 </div>
                 <div class="flex items-center gap-3">
-                    <label class="bg-[#eaf1f9] hover:bg-[#dfeaf6] px-3.5 py-1.5 rounded-full text-sm font-medium text-[#1f5a7a] border border-[#c7dae9] flex items-center gap-2 cursor-pointer transition shadow-sm"
-                        onclick="try{ this.querySelector('input').showPicker(); }catch(e){}" title="Click to select visit date">
+                    <label id="header_record_date_wrap" class="bg-[#eaf1f9] hover:bg-[#dfeaf6] px-3.5 py-1.5 rounded-full text-sm font-medium text-[#1f5a7a] border border-[#c7dae9] flex items-center gap-2 cursor-pointer transition shadow-sm" title="Click to select visit date">
                         <i class="far fa-calendar-alt text-[#1f6e96]"></i>
                         <span class="text-xs font-bold text-[#1f5a7a]">Visit Date:</span>
-                        <input type="date" name="record_date" id="header_record_date"
+                        <input type="text" name="record_date" id="header_record_date"
                             value="{{ old('record_date', $record->record_date ? \Carbon\Carbon::parse($record->record_date)->format('Y-m-d') : ($record->created_at ? $record->created_at->format('Y-m-d') : date('Y-m-d'))) }}"
-                            class="bg-transparent text-sm font-bold text-[#1f5a7a] outline-none cursor-pointer border-0 p-0 focus:ring-0">
+                            placeholder="DD/MM/YYYY"
+                            class="bg-transparent text-sm font-bold text-[#1f5a7a] outline-none cursor-pointer border-0 p-0 focus:ring-0 w-28">
                     </label>
                     @if ($record->newly_detected ?? false)
                         <span class="status-badge status-active"><i class="fas fa-bolt mr-1"></i>Newly Detected</span>
@@ -184,9 +184,15 @@
                         <label class="block text-xs font-semibold uppercase tracking-wide text-[#2f5a77] mb-1">
                             <i class="far fa-calendar-alt"></i> Date
                         </label>
-                        <input type="date" id="sec1_record_date"
-                            value="{{ old('record_date', $record->record_date ? \Carbon\Carbon::parse($record->record_date)->format('Y-m-d') : ($record->created_at ? $record->created_at->format('Y-m-d') : date('Y-m-d'))) }}"
-                            class="w-full rounded-xl border border-[#d3dfea] px-4 py-2.5 text-sm bg-white input-focus cursor-pointer">
+                        <div class="relative">
+                            <input type="text" id="sec1_record_date"
+                                value="{{ old('record_date', $record->record_date ? \Carbon\Carbon::parse($record->record_date)->format('Y-m-d') : ($record->created_at ? $record->created_at->format('Y-m-d') : date('Y-m-d'))) }}"
+                                placeholder="DD/MM/YYYY"
+                                class="w-full rounded-xl border border-[#d3dfea] pl-4 pr-10 py-2.5 text-sm bg-white input-focus cursor-pointer">
+                            <div class="absolute inset-y-0 right-0 flex items-center pr-3.5 pointer-events-none text-slate-400">
+                                <i class="far fa-calendar-alt text-slate-400 text-sm"></i>
+                            </div>
+                        </div>
                     </div>
 
                         <!-- Patient's Name -->
@@ -405,20 +411,32 @@
 
                             <div>
                                 <label class="block text-xs font-semibold uppercase text-[#2f5a77] mb-1">
-                                    <i class="fas fa-play"></i> START INSULIN DATE
-                                </label>
-                                <input type="date" name="insulin_start_date"
-                                    value="{{ old('insulin_start_date', $record->start_insulin_date ?? '') }}"
-                                    class="w-full rounded-xl border border-[#d3dfea] px-4 py-2.5 text-sm bg-[#fafdff] input-focus">
+                                     <i class="fas fa-play"></i> START INSULIN DATE
+                                 </label>
+                                 <div class="relative">
+                                     <input type="text" name="insulin_start_date" id="insulin_start_date"
+                                         value="{{ old('insulin_start_date', !empty($record->start_insulin_date) ? \Carbon\Carbon::parse($record->start_insulin_date)->format('Y-m-d') : '') }}"
+                                         placeholder="DD/MM/YYYY"
+                                         class="w-full rounded-xl border border-[#d3dfea] pl-4 pr-10 py-2.5 text-sm bg-[#fafdff] input-focus cursor-pointer dmy-datepicker">
+                                     <div class="absolute inset-y-0 right-0 flex items-center pr-3.5 pointer-events-none text-slate-400">
+                                         <i class="far fa-calendar-alt text-slate-400 text-sm"></i>
+                                     </div>
+                                 </div>
                             </div>
 
                             <div>
                                 <label class="block text-xs font-semibold uppercase text-[#2f5a77] mb-1">
-                                    <i class="fas fa-stop"></i> STOP INSULIN DATE
+                                     <i class="fas fa-stop"></i> STOP INSULIN DATE
                                 </label>
-                                <input type="date" name="insulin_stop_date"
-                                    value="{{ old('insulin_stop_date', $record->stop_insulin_date ?? '') }}"
-                                    class="w-full rounded-xl border border-[#d3dfea] px-4 py-2.5 text-sm bg-[#fafdff] input-focus">
+                                <div class="relative">
+                                     <input type="text" name="insulin_stop_date" id="insulin_stop_date"
+                                         value="{{ old('insulin_stop_date', !empty($record->stop_insulin_date) ? \Carbon\Carbon::parse($record->stop_insulin_date)->format('Y-m-d') : '') }}"
+                                         placeholder="DD/MM/YYYY"
+                                         class="w-full rounded-xl border border-[#d3dfea] pl-4 pr-10 py-2.5 text-sm bg-[#fafdff] input-focus cursor-pointer dmy-datepicker">
+                                     <div class="absolute inset-y-0 right-0 flex items-center pr-3.5 pointer-events-none text-slate-400">
+                                         <i class="far fa-calendar-alt text-slate-400 text-sm"></i>
+                                     </div>
+                                 </div>
                             </div>
 
                             <div>
@@ -1036,18 +1054,66 @@
                 });
             }
 
-            const hDate = document.getElementById('header_record_date');
-            const sDate = document.getElementById('sec1_record_date');
-            if (hDate && sDate) {
-                hDate.addEventListener('change', () => { sDate.value = hDate.value; });
-                sDate.addEventListener('change', () => { hDate.value = sDate.value; });
-                sDate.addEventListener('input', () => { hDate.value = sDate.value; });
+            // Initialize Flatpickr with DD/MM/YYYY display and YYYY-MM-DD submission
+            if (typeof flatpickr !== 'undefined') {
+                const hDate = document.getElementById('header_record_date');
+                const sDate = document.getElementById('sec1_record_date');
+                let fpH = null, fpS = null;
+
+                if (hDate) {
+                    fpH = flatpickr(hDate, {
+                        dateFormat: "Y-m-d",
+                        altInput: true,
+                        altFormat: "d/m/Y",
+                        allowInput: true,
+                        onChange: function(selectedDates, dateStr) {
+                            if (fpS && dateStr) fpS.setDate(dateStr, false);
+                        }
+                    });
+                    const hWrap = document.getElementById('header_record_date_wrap');
+                    if (hWrap) {
+                        hWrap.addEventListener('click', function(e) {
+                            if (!e.target.classList.contains('flatpickr-input')) {
+                                fpH.open();
+                            }
+                        });
+                    }
+                }
+
+                if (sDate) {
+                    fpS = flatpickr(sDate, {
+                        dateFormat: "Y-m-d",
+                        altInput: true,
+                        altFormat: "d/m/Y",
+                        allowInput: true,
+                        onChange: function(selectedDates, dateStr) {
+                            if (fpH && dateStr) fpH.setDate(dateStr, false);
+                        }
+                    });
+                }
+
+                flatpickr(".dmy-datepicker", {
+                    dateFormat: "Y-m-d",
+                    altInput: true,
+                    altFormat: "d/m/Y",
+                    allowInput: true
+                });
+            } else {
+                const hDate = document.getElementById('header_record_date');
+                const sDate = document.getElementById('sec1_record_date');
+                if (hDate && sDate) {
+                    hDate.addEventListener('change', () => { sDate.value = hDate.value; });
+                    sDate.addEventListener('change', () => { hDate.value = sDate.value; });
+                    sDate.addEventListener('input', () => { hDate.value = sDate.value; });
+                }
             }
 
             const form = document.getElementById('editPatientForm');
-            if (form && hDate && sDate) {
+            if (form) {
                 form.addEventListener('submit', () => {
-                    if (sDate.value) hDate.value = sDate.value;
+                    const hDate = document.getElementById('header_record_date');
+                    const sDate = document.getElementById('sec1_record_date');
+                    if (sDate && sDate.value && hDate) hDate.value = sDate.value;
                 });
             }
         });

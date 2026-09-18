@@ -11,10 +11,47 @@
    <script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" />
+    <!-- Flatpickr Datepicker -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
     <style>
         body {
             background: #f0f4f8;
             font-family: 'Inter', system-ui, -apple-system, sans-serif;
+        }
+
+        /* Flatpickr Custom Theme matching Clinic Palette */
+        .flatpickr-calendar {
+            border-radius: 14px !important;
+            box-shadow: 0 15px 30px -5px rgba(15, 23, 42, 0.15), 0 8px 10px -6px rgba(15, 23, 42, 0.1) !important;
+            border: 1px solid #d3dfea !important;
+            font-family: inherit !important;
+            background: #ffffff !important;
+        }
+        .flatpickr-months {
+            border-top-left-radius: 14px;
+            border-top-right-radius: 14px;
+            background: #f8fafc;
+            border-bottom: 1px solid #e2e8f0;
+        }
+        .flatpickr-day.selected, 
+        .flatpickr-day.startRange, 
+        .flatpickr-day.endRange {
+            background: #1f6e96 !important;
+            border-color: #1f6e96 !important;
+            color: #ffffff !important;
+            font-weight: 600;
+        }
+        .flatpickr-day.today {
+            border-color: #1f6e96 !important;
+            color: #1f6e96 !important;
+        }
+        .flatpickr-day.today:hover {
+            background: #eaf1f9 !important;
+            color: #1f6e96 !important;
+        }
+        .flatpickr-day:hover {
+            background: #f0f7fd !important;
         }
 
         .glass-card {

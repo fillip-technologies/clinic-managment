@@ -28,6 +28,16 @@ class PatientController extends Controller
 
     public function store(Request $request)
     {
+        $dateFields = ['record_date', 'insulin_start_date', 'start_insulin_date', 'insulin_stop_date', 'stop_insulin_date'];
+        $dateMerges = [];
+        foreach ($dateFields as $field) {
+            if ($request->has($field) && $request->filled($field)) {
+                $dateMerges[$field] = $this->normalizeDateValue($request->input($field));
+            }
+        }
+        if (!empty($dateMerges)) {
+            $request->merge($dateMerges);
+        }
 
         $validator = Validator::make($request->all(), [
             'record_date' => 'required|date',
@@ -370,6 +380,17 @@ class PatientController extends Controller
         $regNoRules = ['nullable', 'string', 'max:50'];
         if ($request->filled('registration_no') && trim((string)$request->registration_no) !== trim((string)$patient->registration_no)) {
             $regNoRules[] = Rule::unique('patients', 'registration_no')->ignore($patient->id);
+        }
+
+        $dateFields = ['record_date', 'insulin_start_date', 'start_insulin_date', 'insulin_stop_date', 'stop_insulin_date'];
+        $dateMerges = [];
+        foreach ($dateFields as $field) {
+            if ($request->has($field) && $request->filled($field)) {
+                $dateMerges[$field] = $this->normalizeDateValue($request->input($field));
+            }
+        }
+        if (!empty($dateMerges)) {
+            $request->merge($dateMerges);
         }
 
         $validator = Validator::make($request->all(), [
@@ -749,6 +770,17 @@ class PatientController extends Controller
 
     public function createNewRecord(Request $request, $id)
     {
+        $dateFields = ['record_date', 'insulin_start_date', 'start_insulin_date', 'insulin_stop_date', 'stop_insulin_date'];
+        $dateMerges = [];
+        foreach ($dateFields as $field) {
+            if ($request->has($field) && $request->filled($field)) {
+                $dateMerges[$field] = $this->normalizeDateValue($request->input($field));
+            }
+        }
+        if (!empty($dateMerges)) {
+            $request->merge($dateMerges);
+        }
+
         $request->validate([
             'record_date' => 'nullable|date',
             'patient_name' => 'nullable|string|max:255',
@@ -1335,8 +1367,8 @@ class PatientController extends Controller
                         $r->bspp ?: '-',
                         $r->newly_detected ?: '-',
                         $r->duration_of_diabetes ?: '-',
-                        $r->start_insulin_date ?: '-',
-                        $r->stop_insulin_date ?: '-',
+                        $r->start_insulin_date ? \Carbon\Carbon::parse($r->start_insulin_date)->format('d/m/Y') : '-',
+                        $r->stop_insulin_date ? \Carbon\Carbon::parse($r->stop_insulin_date)->format('d/m/Y') : '-',
                         $r->insuline_brand ?: '-',
                         $r->insuline_unit ?: '-',
                         $r->c_peptide ?: '-',
@@ -1580,8 +1612,8 @@ class PatientController extends Controller
                         $r->bspp ?: '-',
                         $r->newly_detected ?: '-',
                         $r->duration_of_diabetes ?: '-',
-                        $r->start_insulin_date ?: '-',
-                        $r->stop_insulin_date ?: '-',
+                        $r->start_insulin_date ? \Carbon\Carbon::parse($r->start_insulin_date)->format('d/m/Y') : '-',
+                        $r->stop_insulin_date ? \Carbon\Carbon::parse($r->stop_insulin_date)->format('d/m/Y') : '-',
                         $r->insuline_brand ?: '-',
                         $r->insuline_unit ?: '-',
                         $r->c_peptide ?: '-',
@@ -1786,8 +1818,8 @@ class PatientController extends Controller
                     $r->bspp ?: '-',
                     $r->newly_detected ?: '-',
                     $r->duration_of_diabetes ?: '-',
-                    $r->start_insulin_date ?: '-',
-                    $r->stop_insulin_date ?: '-',
+                    $r->start_insulin_date ? \Carbon\Carbon::parse($r->start_insulin_date)->format('d/m/Y') : '-',
+                    $r->stop_insulin_date ? \Carbon\Carbon::parse($r->stop_insulin_date)->format('d/m/Y') : '-',
                     $r->insuline_brand ?: '-',
                     $r->insuline_unit ?: '-',
                     $r->c_peptide ?: '-',
@@ -1873,6 +1905,28 @@ class PatientController extends Controller
         }
 
         return Storage::disk('public')->response($record->attachment);
+    }
+
+    private function normalizeDateValue($value)
+    {
+        if (empty($value)) {
+            return null;
+        }
+        $val = trim($value);
+        if (preg_match('/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/', $val, $m)) {
+            return sprintf('%04d-%02d-%02d', $m[3], $m[2], $m[1]);
+        }
+        if (preg_match('/^(\d{1,2})-(\d{1,2})-(\d{4})$/', $val, $m)) {
+            return sprintf('%04d-%02d-%02d', $m[3], $m[2], $m[1]);
+        }
+        if (preg_match('/^(\d{4})-(\d{2})-(\d{2})$/', $val)) {
+            return $val;
+        }
+        try {
+            return \Carbon\Carbon::parse($val)->format('Y-m-d');
+        } catch (\Exception $e) {
+            return $val;
+        }
     }
 }
 
