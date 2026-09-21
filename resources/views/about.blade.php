@@ -65,6 +65,17 @@
     </div>
 </section>
 
+<section class="py-16 px-6 bg-white">
+    <div class="max-w-6xl mx-auto text-center">
+        <span class="inline-block px-4 py-1.5 rounded-full text-xs font-bold uppercase tracking-widest mb-4" style="background: var(--color-light); color: var(--color-primary);">Our Team</span>
+        <h2 class="text-3xl sm:text-4xl font-extrabold mb-10" style="color: var(--color-dark);">Our Clinical Team</h2>
+        <div class="overflow-hidden rounded-2xl shadow-lg border border-emerald-100">
+            <img src="{{ asset('images/front2.jpeg') }}" alt="Our Clinical Team at DrMukherjeeS Clinic"
+                class="w-full h-auto object-cover">
+        </div>
+    </div>
+</section>
+
 <section class="py-20 px-6" style="background: var(--color-light);">
     <div class="max-w-6xl mx-auto grid lg:grid-cols-2 gap-12 items-center">
         <img src="{{ asset('images/doc2.png') }}" class="rounded-lg shadow-xl w-full object-cover" alt="Clinic doctors">
