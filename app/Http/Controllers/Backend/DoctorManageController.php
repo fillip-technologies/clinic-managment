@@ -343,6 +343,13 @@ class DoctorManageController extends Controller
             }
         }
 
+        $wasOnSite = ($appointment->appointment_type === 'on_site' || empty($appointment->appointment_type));
+        $isFullyScheduled = !empty($date) && !empty($slotNumber);
+
+        if ($wasOnSite && $isFullyScheduled) {
+            $appointment->appointment_type = 'admin';
+        }
+
         $appointment->appointment_scheduled_date = $date;
         $appointment->slot_number = $slotNumber;
         $appointment->save();
@@ -359,7 +366,12 @@ class DoctorManageController extends Controller
 
         $formattedDate = \Carbon\Carbon::parse($appointment->appointment_scheduled_date)->format('d M Y');
         $slotMsg = $slotNumber ? " (Slot: {$slotNumber})" : "";
-        $msg = "Appointment for {$appointment->patient_name} scheduled on {$formattedDate}{$slotMsg}.";
+        $msg = "Appointment for {$appointment->patient_name} scheduled on {$formattedDate}{$slotMsg}";
+        if ($wasOnSite && $isFullyScheduled) {
+            $msg .= " and moved to Appointments tab.";
+        } else {
+            $msg .= ".";
+        }
         if ($mailSent) {
             $msg .= " Confirmation email sent to {$appointment->mail}.";
         } elseif (!empty($appointment->mail)) {
