@@ -171,6 +171,7 @@
 
 @php
     $record = $record ?? new \App\Models\PatientClinicalRecord(['patient_id' => $patient->id ?? 0]);
+    $allRecords = $allRecords ?? ($patient && method_exists($patient, 'clinicalRecords') ? $patient->clinicalRecords()->orderBy('created_at', 'desc')->get() : collect());
 @endphp
 
     <div class="max-w-7xl mx-auto space-y-6 pb-12">
@@ -189,8 +190,12 @@
                 </div>
             </div>
 
-            <!-- Action Buttons -->
-            <div class="flex flex-wrap items-center gap-2.5">
+            <div class="flex flex-wrap items-center gap-2">
+                <button type="button" onclick="switchDetailTab('analytics')"
+                    class="px-3.5 py-2 rounded-xl bg-indigo-50 hover:bg-indigo-100 text-indigo-700 text-xs font-semibold flex items-center gap-1.5 border border-indigo-200 shadow-sm transition">
+                    <i class="fas fa-chart-line text-indigo-600"></i> Health Trends & Graphs
+                </button>
+
                 <button type="button" onclick="window.print()"
                     class="px-3.5 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold flex items-center gap-1.5 transition">
                     <i class="fas fa-print"></i> Print Profile
@@ -347,9 +352,10 @@
                             {{ $record->record_date ? \Carbon\Carbon::parse($record->record_date)->format('d M Y') : ($record->created_at ? $record->created_at->format('d M Y') : 'Today') }}
                         </p>
                     </div>
-                    <span class="text-[11px] text-slate-400">
-                        {{ $allRecords->count() }} total visit records on file
-                    </span>
+                    <button type="button" onclick="switchDetailTab('analytics')" class="text-[11px] text-indigo-300 hover:text-white transition flex items-center gap-1 cursor-pointer">
+                        <i class="fas fa-chart-line text-[10px]"></i>
+                        <span>{{ $allRecords->count() }} visit records • View Trends &rarr;</span>
+                    </button>
                 </div>
             </div>
         </div>
@@ -365,6 +371,9 @@
                 class="px-5 py-3 text-sm font-bold flex items-center gap-2 border-b-2 border-transparent text-slate-500 hover:text-slate-700 hover:border-slate-300 transition">
                 <i class="fas fa-chart-line text-indigo-500"></i>
                 <span>Health Trends & Graphs</span>
+                <span class="ml-1 px-2 py-0.5 text-[10px] font-bold rounded-full bg-indigo-50 text-indigo-600 border border-indigo-200">
+                    {{ $allRecords->count() }} {{ \Illuminate\Support\Str::plural('Visit', $allRecords->count()) }}
+                </span>
             </button>
         </div>
 
@@ -935,6 +944,9 @@
                         @endforelse
                     </tbody>
                 </table>
+            </div>
+            <!-- End of .overflow-x-auto -->
+
             <!-- Print Footer -->
             <div class="print-only mt-8 pt-4 border-t-2 border-slate-700 text-xs text-slate-700">
                 <div class="flex justify-between items-center">
@@ -953,29 +965,22 @@
                 </div>
             </div>
         </div>
-        <!-- End of #content-profile -->
+        <!-- End of All Records Card -->
+
     </div>
+    <!-- End of #content-profile -->
 
     <!-- Patient Health Trends & Graphs Content -->
     <div id="content-analytics" class="space-y-6 hidden">
 
             @php
-                // Chronological records for charts
-                $sortedRecords = $allRecords->sortBy('id')->values();
+                // Chronological records for charts (strictly ordered by record_date)
+                $sortedRecords = $allRecords->sortBy(function($r) {
+                    return $r->record_date ? \Carbon\Carbon::parse($r->record_date)->timestamp : ($r->created_at ? $r->created_at->timestamp : $r->id);
+                })->values();
                 $totalVisits = $sortedRecords->count();
                 $baselineRecord = $sortedRecords->first();
                 $latestRecord = $sortedRecords->last();
-
-                // Quick latest values
-                $currSbp = intval($latestRecord->sbp ?? $record->sbp ?? 0);
-                $currDbp = intval($latestRecord->dbp ?? $record->dbp ?? 0);
-                $currHba1c = floatval($latestRecord->hba1c ?? $record->hba1c ?? 0);
-                $currBsf = floatval($latestRecord->bsf ?? $record->bsf ?? 0);
-                $currBspp = floatval($latestRecord->bspp ?? $record->bspp ?? 0);
-                $currBmi = floatval($latestRecord->bmi ?? $record->bmi ?? 0);
-                $currWeight = floatval($latestRecord->weight_kg ?? $record->weight_kg ?? 0);
-                $currCreatinine = floatval($latestRecord->creatinine ?? $record->creatinine ?? 0);
-                $currEgfr = floatval($latestRecord->egfr ?? $record->egfr ?? 0);
 
                 // Helper to compute SVG graph coordinates
                 if (!function_exists('calcSvgChart')) {
@@ -991,10 +996,12 @@
                                     $numVal = floatval($m[1]);
                                 }
                                 if ($numVal !== null) {
-                                    $dateStr = $r->created_at ? $r->created_at->format('d M') : ($r->record_date ? \Carbon\Carbon::parse($r->record_date)->format('d M') : 'V#' . $r->id);
+                                    $vDate = $r->record_date ? \Carbon\Carbon::parse($r->record_date) : $r->created_at;
+                                    $dateStr = $vDate ? $vDate->format('d M') : 'V#' . $r->id;
+                                    $fullDate = $vDate ? $vDate->format('d M Y') : 'Visit #' . $r->id;
                                     $data[] = [
                                         'label' => $dateStr,
-                                        'full_date' => $r->created_at ? $r->created_at->format('d M Y') : 'Visit #' . $r->id,
+                                        'full_date' => $fullDate,
                                         'value' => $numVal,
                                         'id' => $r->id
                                     ];
@@ -1055,7 +1062,193 @@
                     }
                 }
 
+                // Dual Series Helper for Blood Pressure (SBP & DBP)
+                if (!function_exists('calcSvgBpChart')) {
+                    function calcSvgBpChart($records) {
+                        $data = [];
+                        $allValues = [];
+                        foreach ($records as $r) {
+                            $sbp = null;
+                            $dbp = null;
+                            if (!is_null($r->sbp) && $r->sbp !== '') {
+                                if (is_numeric($r->sbp)) $sbp = floatval($r->sbp);
+                                elseif (preg_match('/^(\d+(?:\.\d+)?)/', trim((string)$r->sbp), $m)) $sbp = floatval($m[1]);
+                            }
+                            if (!is_null($r->dbp) && $r->dbp !== '') {
+                                if (is_numeric($r->dbp)) $dbp = floatval($r->dbp);
+                                elseif (preg_match('/^(\d+(?:\.\d+)?)/', trim((string)$r->dbp), $m)) $dbp = floatval($m[1]);
+                            }
+                            if ($sbp !== null || $dbp !== null) {
+                                if ($sbp !== null) $allValues[] = $sbp;
+                                if ($dbp !== null) $allValues[] = $dbp;
+                                $vDate = $r->record_date ? \Carbon\Carbon::parse($r->record_date) : $r->created_at;
+                                $data[] = [
+                                    'label' => $vDate ? $vDate->format('d M') : 'V#' . $r->id,
+                                    'full_date' => $vDate ? $vDate->format('d M Y') : 'Visit #' . $r->id,
+                                    'sbp' => $sbp,
+                                    'dbp' => $dbp,
+                                    'id' => $r->id
+                                ];
+                            }
+                        }
+                        if (empty($data) || empty($allValues)) return null;
+
+                        $minVal = min($allValues);
+                        $maxVal = max($allValues);
+                        $minY = min($minVal * 0.85, 40);
+                        $maxY = max($maxVal * 1.15, 180);
+                        if ($maxY == $minY) { $maxY += 10; $minY = max(0, $minY - 10); }
+
+                        $width = 500;
+                        $height = 160;
+                        $padX = 45;
+                        $padY = 28;
+                        $chartW = $width - (2 * $padX);
+                        $chartH = $height - (2 * $padY);
+
+                        $count = count($data);
+                        $sbpPoints = [];
+                        $dbpPoints = [];
+                        $svgSbpPoints = [];
+                        $svgDbpPoints = [];
+
+                        foreach ($data as $i => $item) {
+                            $x = $count > 1 ? $padX + ($i * ($chartW / ($count - 1))) : ($width / 2);
+                            if ($item['sbp'] !== null) {
+                                $normS = ($item['sbp'] - $minY) / ($maxY - $minY);
+                                $yS = ($height - $padY) - ($normS * $chartH);
+                                $sbpPoints[] = [
+                                    'x' => round($x, 1),
+                                    'y' => round($yS, 1),
+                                    'label' => $item['label'],
+                                    'full_date' => $item['full_date'],
+                                    'value' => $item['sbp'],
+                                    'id' => $item['id']
+                                ];
+                                $svgSbpPoints[] = round($x, 1) . ',' . round($yS, 1);
+                            }
+                            if ($item['dbp'] !== null) {
+                                $normD = ($item['dbp'] - $minY) / ($maxY - $minY);
+                                $yD = ($height - $padY) - ($normD * $chartH);
+                                $dbpPoints[] = [
+                                    'x' => round($x, 1),
+                                    'y' => round($yD, 1),
+                                    'label' => $item['label'],
+                                    'full_date' => $item['full_date'],
+                                    'value' => $item['dbp'],
+                                    'id' => $item['id']
+                                ];
+                                $svgDbpPoints[] = round($x, 1) . ',' . round($yD, 1);
+                            }
+                        }
+
+                        return [
+                            'sbpPoints' => $sbpPoints,
+                            'dbpPoints' => $dbpPoints,
+                            'sbpPolyline' => implode(' ', $svgSbpPoints),
+                            'dbpPolyline' => implode(' ', $svgDbpPoints),
+                            'minY' => round($minY, 1),
+                            'maxY' => round($maxY, 1),
+                            'count' => $count
+                        ];
+                    }
+                }
+
+                // Dual Series Helper for Blood Sugar (Fasting BSF & Postprandial BSPP)
+                if (!function_exists('calcSvgSugarChart')) {
+                    function calcSvgSugarChart($records) {
+                        $data = [];
+                        $allValues = [];
+                        foreach ($records as $r) {
+                            $bsf = null;
+                            $bspp = null;
+                            if (!is_null($r->bsf) && $r->bsf !== '') {
+                                if (is_numeric($r->bsf)) $bsf = floatval($r->bsf);
+                                elseif (preg_match('/^(\d+(?:\.\d+)?)/', trim((string)$r->bsf), $m)) $bsf = floatval($m[1]);
+                            }
+                            if (!is_null($r->bspp) && $r->bspp !== '') {
+                                if (is_numeric($r->bspp)) $bspp = floatval($r->bspp);
+                                elseif (preg_match('/^(\d+(?:\.\d+)?)/', trim((string)$r->bspp), $m)) $bspp = floatval($m[1]);
+                            }
+                            if ($bsf !== null || $bspp !== null) {
+                                if ($bsf !== null) $allValues[] = $bsf;
+                                if ($bspp !== null) $allValues[] = $bspp;
+                                $vDate = $r->record_date ? \Carbon\Carbon::parse($r->record_date) : $r->created_at;
+                                $data[] = [
+                                    'label' => $vDate ? $vDate->format('d M') : 'V#' . $r->id,
+                                    'full_date' => $vDate ? $vDate->format('d M Y') : 'Visit #' . $r->id,
+                                    'bsf' => $bsf,
+                                    'bspp' => $bspp,
+                                    'id' => $r->id
+                                ];
+                            }
+                        }
+                        if (empty($data) || empty($allValues)) return null;
+
+                        $minVal = min($allValues);
+                        $maxVal = max($allValues);
+                        $minY = min($minVal * 0.85, 60);
+                        $maxY = max($maxVal * 1.15, 200);
+                        if ($maxY == $minY) { $maxY += 10; $minY = max(0, $minY - 10); }
+
+                        $width = 500;
+                        $height = 160;
+                        $padX = 45;
+                        $padY = 28;
+                        $chartW = $width - (2 * $padX);
+                        $chartH = $height - (2 * $padY);
+
+                        $count = count($data);
+                        $bsfPoints = [];
+                        $bsppPoints = [];
+                        $svgBsfPoints = [];
+                        $svgBsppPoints = [];
+
+                        foreach ($data as $i => $item) {
+                            $x = $count > 1 ? $padX + ($i * ($chartW / ($count - 1))) : ($width / 2);
+                            if ($item['bsf'] !== null) {
+                                $normF = ($item['bsf'] - $minY) / ($maxY - $minY);
+                                $yF = ($height - $padY) - ($normF * $chartH);
+                                $bsfPoints[] = [
+                                    'x' => round($x, 1),
+                                    'y' => round($yF, 1),
+                                    'label' => $item['label'],
+                                    'full_date' => $item['full_date'],
+                                    'value' => $item['bsf'],
+                                    'id' => $item['id']
+                                ];
+                                $svgBsfPoints[] = round($x, 1) . ',' . round($yF, 1);
+                            }
+                            if ($item['bspp'] !== null) {
+                                $normP = ($item['bspp'] - $minY) / ($maxY - $minY);
+                                $yP = ($height - $padY) - ($normP * $chartH);
+                                $bsppPoints[] = [
+                                    'x' => round($x, 1),
+                                    'y' => round($yP, 1),
+                                    'label' => $item['label'],
+                                    'full_date' => $item['full_date'],
+                                    'value' => $item['bspp'],
+                                    'id' => $item['id']
+                                ];
+                                $svgBsppPoints[] = round($x, 1) . ',' . round($yP, 1);
+                            }
+                        }
+
+                        return [
+                            'bsfPoints' => $bsfPoints,
+                            'bsppPoints' => $bsppPoints,
+                            'bsfPolyline' => implode(' ', $svgBsfPoints),
+                            'bsppPolyline' => implode(' ', $svgBsppPoints),
+                            'minY' => round($minY, 1),
+                            'maxY' => round($maxY, 1),
+                            'count' => $count
+                        ];
+                    }
+                }
+
                 // Compute SVG chart data for all metrics
+                $svgBp = calcSvgBpChart($sortedRecords);
+                $svgSugar = calcSvgSugarChart($sortedRecords);
                 $svgSbp = calcSvgChart($sortedRecords, 'sbp', 60, 180);
                 $svgDbp = calcSvgChart($sortedRecords, 'dbp', 40, 110);
                 $svgHba1c = calcSvgChart($sortedRecords, 'hba1c', 4, 12);
@@ -1077,90 +1270,10 @@
                 $svgTemp = calcSvgChart($sortedRecords, 'temprature', 96, 104);
             @endphp
 
-            <!-- Overview Header Banner -->
-            <div class="bg-gradient-to-r from-slate-900 via-indigo-950 to-slate-900 rounded-3xl p-6 sm:p-7 text-white shadow-xl">
-                <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-6 pb-6 border-b border-white/10">
-                    <div>
-                        <div class="flex items-center gap-2 mb-2">
-                            <span class="px-3 py-1 rounded-full text-xs font-bold bg-indigo-500/30 text-indigo-200 border border-indigo-400/30 flex items-center gap-1.5">
-                                <i class="fas fa-chart-line text-indigo-300"></i> Patient Longitudinal Analytics
-                            </span>
-                            <span class="text-xs text-slate-400">
-                                {{ $totalVisits }} {{ \Illuminate\Support\Str::plural('Consultation', $totalVisits) }} Recorded
-                            </span>
-                        </div>
-                        <h2 class="text-2xl sm:text-3xl font-black text-white tracking-tight">
-                            Patient Health Trends & Trajectory Graphs
-                        </h2>
-                        <p class="text-xs text-slate-300 mt-1 max-w-2xl">
-                            Visual tracking of vitals, blood pressure, glycemic control, kidney function, lipid profile, and liver enzymes across all clinical consultations.
-                        </p>
-                    </div>
-
-                    <div class="flex items-center gap-3">
-                        <div class="bg-white/10 backdrop-blur-md px-4 py-3 rounded-2xl border border-white/10 text-center">
-                            <span class="text-[10px] uppercase font-bold text-slate-300 block">Baseline Date</span>
-                            <span class="text-xs font-bold text-white">
-                                {{ $baselineRecord && $baselineRecord->created_at ? $baselineRecord->created_at->format('d M Y') : 'N/A' }}
-                            </span>
-                        </div>
-                        <div class="bg-white/10 backdrop-blur-md px-4 py-3 rounded-2xl border border-white/10 text-center">
-                            <span class="text-[10px] uppercase font-bold text-slate-300 block">Latest Follow-up</span>
-                            <span class="text-xs font-bold text-white">
-                                {{ $latestRecord && $latestRecord->created_at ? $latestRecord->created_at->format('d M Y') : 'N/A' }}
-                            </span>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- 4 Quick Key Metric Cards -->
-                <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mt-6">
-                    <div class="bg-white/5 rounded-2xl p-4 border border-white/10">
-                        <span class="text-[10px] font-bold uppercase text-slate-400 block tracking-wider">Blood Pressure</span>
-                        <div class="text-xl sm:text-2xl font-black text-white my-1">
-                            {{ $currSbp && $currDbp ? $currSbp . '/' . $currDbp : ($currSbp ? $currSbp : 'N/A') }} <span class="text-[11px] font-normal text-slate-400">mmHg</span>
-                        </div>
-                        <span class="text-[11px] {{ $currSbp >= 140 ? 'text-red-400 font-bold' : ($currSbp >= 130 ? 'text-amber-400 font-bold' : 'text-emerald-400 font-bold') }}">
-                            {{ $currSbp >= 140 ? 'Hypertensive' : ($currSbp >= 130 ? 'Pre-Hypertension' : 'Normal Limit') }}
-                        </span>
-                    </div>
-
-                    <div class="bg-white/5 rounded-2xl p-4 border border-white/10">
-                        <span class="text-[10px] font-bold uppercase text-slate-400 block tracking-wider">Glycemic (HbA1c)</span>
-                        <div class="text-xl sm:text-2xl font-black text-white my-1">
-                            {{ $currHba1c ? $currHba1c . '%' : 'N/A' }}
-                        </div>
-                        <span class="text-[11px] {{ $currHba1c >= 6.5 ? 'text-red-400 font-bold' : ($currHba1c >= 5.7 ? 'text-amber-400 font-bold' : 'text-emerald-400 font-bold') }}">
-                            {{ $currHba1c >= 6.5 ? 'Diabetic Range' : ($currHba1c >= 5.7 ? 'Pre-Diabetic' : 'Normal Limit') }}
-                        </span>
-                    </div>
-
-                    <div class="bg-white/5 rounded-2xl p-4 border border-white/10">
-                        <span class="text-[10px] font-bold uppercase text-slate-400 block tracking-wider">BMI & Weight</span>
-                        <div class="text-xl sm:text-2xl font-black text-white my-1">
-                            {{ $currBmi ?: 'N/A' }} <span class="text-[11px] font-normal text-slate-400">{{ $currWeight ? '(' . $currWeight . ' kg)' : '' }}</span>
-                        </div>
-                        <span class="text-[11px] {{ $currBmi >= 25 ? 'text-red-400 font-bold' : ($currBmi >= 23 ? 'text-amber-400 font-bold' : 'text-emerald-400 font-bold') }}">
-                            {{ $currBmi >= 25 ? 'Obese' : ($currBmi >= 23 ? 'Overweight' : 'Normal Weight') }}
-                        </span>
-                    </div>
-
-                    <div class="bg-white/5 rounded-2xl p-4 border border-white/10">
-                        <span class="text-[10px] font-bold uppercase text-slate-400 block tracking-wider">Renal (Creatinine)</span>
-                        <div class="text-xl sm:text-2xl font-black text-white my-1">
-                            {{ $currCreatinine ? $currCreatinine : 'N/A' }} <span class="text-[11px] font-normal text-slate-400">{{ $currCreatinine ? 'mg/dL' : '' }}</span>
-                        </div>
-                        <span class="text-[11px] text-slate-300 font-bold">
-                            eGFR: {{ $currEgfr ? $currEgfr . ' mL/min' : 'N/A' }}
-                        </span>
-                    </div>
-                </div>
-            </div>
-
             <!-- Graph Category Filter Tabs -->
             <div class="flex flex-wrap items-center gap-2 bg-white p-2.5 rounded-2xl border border-slate-200 shadow-sm no-print">
                 <button type="button" onclick="filterGraphSection('all')" class="graph-filter-btn px-4 py-2 rounded-xl text-xs font-bold bg-indigo-600 text-white shadow-sm transition" data-category="all">
-                    All Graphs (8)
+                    All Graphs (9)
                 </button>
                 <button type="button" onclick="filterGraphSection('vitals')" class="graph-filter-btn px-3.5 py-2 rounded-xl text-xs font-bold bg-slate-100 text-slate-600 hover:bg-slate-200 transition" data-category="vitals">
                     🩺 Blood Pressure & Vitals
@@ -1185,10 +1298,10 @@
                 </button>
             </div>
 
-            <!-- 8 Clinical Graphs Grid (Native SVG + Vector Visualization) -->
+            <!-- Clinical Graphs Grid (Native SVG + Vector Visualization) -->
             <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
 
-                <!-- 1. Blood Pressure Trajectory Graph -->
+                <!-- 1. Blood Pressure Trajectory Graph (SBP & DBP) -->
                 <div class="graph-card bg-white p-5 rounded-2xl border border-slate-200 shadow-sm" data-category="vitals">
                     <div class="flex items-center justify-between mb-4 pb-3 border-b border-slate-100">
                         <div class="flex items-center gap-2.5">
@@ -1210,40 +1323,55 @@
                         </div>
                     </div>
 
-                    @if($svgSbp && !empty($svgSbp['points']))
+                    @if($svgBp && (!empty($svgBp['sbpPoints']) || !empty($svgBp['dbpPoints'])))
                         <div class="relative w-full overflow-hidden bg-slate-50/50 rounded-xl p-3 border border-slate-100">
                             <svg viewBox="0 0 500 160" class="w-full h-44 drop-shadow-sm select-none" preserveAspectRatio="none">
                                 <!-- Grid Lines -->
                                 <line x1="45" y1="28" x2="455" y2="28" stroke="#e2e8f0" stroke-width="1" stroke-dasharray="3,3" />
-                                <text x="40" y="32" text-anchor="end" font-size="9" fill="#94a3b8" font-family="monospace">{{ $svgSbp['maxY'] }}</text>
+                                <text x="40" y="32" text-anchor="end" font-size="9" fill="#94a3b8" font-family="monospace">{{ $svgBp['maxY'] }}</text>
 
                                 <line x1="45" y1="80" x2="455" y2="80" stroke="#f1f5f9" stroke-width="1" stroke-dasharray="3,3" />
-                                <text x="40" y="84" text-anchor="end" font-size="9" fill="#94a3b8" font-family="monospace">{{ round(($svgSbp['minY'] + $svgSbp['maxY'])/2) }}</text>
+                                <text x="40" y="84" text-anchor="end" font-size="9" fill="#94a3b8" font-family="monospace">{{ round(($svgBp['minY'] + $svgBp['maxY'])/2) }}</text>
 
                                 <line x1="45" y1="132" x2="455" y2="132" stroke="#e2e8f0" stroke-width="1" />
-                                <text x="40" y="136" text-anchor="end" font-size="9" fill="#94a3b8" font-family="monospace">{{ $svgSbp['minY'] }}</text>
+                                <text x="40" y="136" text-anchor="end" font-size="9" fill="#94a3b8" font-family="monospace">{{ $svgBp['minY'] }}</text>
 
-                                <!-- SBP Target Line (120 mmHg) -->
+                                <!-- Target Lines: SBP ≤ 120, DBP ≤ 80 -->
                                 @php
-                                    $normT = min(1, max(0, (120 - $svgSbp['minY']) / ($svgSbp['maxY'] - $svgSbp['minY'])));
-                                    $targetY = 132 - ($normT * 104);
+                                    $normSbpT = min(1, max(0, (120 - $svgBp['minY']) / ($svgBp['maxY'] - $svgBp['minY'])));
+                                    $targetSbpY = 132 - ($normSbpT * 104);
+                                    $normDbpT = min(1, max(0, (80 - $svgBp['minY']) / ($svgBp['maxY'] - $svgBp['minY'])));
+                                    $targetDbpY = 132 - ($normDbpT * 104);
                                 @endphp
-                                <line x1="45" y1="{{ $targetY }}" x2="455" y2="{{ $targetY }}" stroke="#10b981" stroke-width="1.5" stroke-dasharray="4,4" opacity="0.8" />
-                                <text x="455" y="{{ $targetY - 4 }}" text-anchor="end" font-size="8" fill="#059669" font-weight="bold">Target: ≤ 120/80 mmHg</text>
+                                <line x1="45" y1="{{ $targetSbpY }}" x2="455" y2="{{ $targetSbpY }}" stroke="#ef4444" stroke-width="1" stroke-dasharray="3,3" opacity="0.5" />
+                                <line x1="45" y1="{{ $targetDbpY }}" x2="455" y2="{{ $targetDbpY }}" stroke="#3b82f6" stroke-width="1" stroke-dasharray="3,3" opacity="0.5" />
+                                <text x="455" y="{{ $targetSbpY - 3 }}" text-anchor="end" font-size="8" fill="#ef4444" font-weight="bold">Target SBP: ≤120</text>
+                                <text x="455" y="{{ $targetDbpY + 8 }}" text-anchor="end" font-size="8" fill="#3b82f6" font-weight="bold">Target DBP: ≤80</text>
 
-                                <!-- SBP Area & Polyline -->
-                                @if($svgSbp['count'] > 1)
-                                    <polygon points="{{ $svgSbp['polygon'] }}" fill="rgba(239, 68, 68, 0.12)" />
-                                    <polyline points="{{ $svgSbp['polyline'] }}" fill="none" stroke="#ef4444" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" />
+                                <!-- Polylines -->
+                                @if($svgBp['count'] > 1)
+                                    @if(!empty($svgBp['sbpPolyline']))
+                                        <polyline points="{{ $svgBp['sbpPolyline'] }}" fill="none" stroke="#ef4444" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" />
+                                    @endif
+                                    @if(!empty($svgBp['dbpPolyline']))
+                                        <polyline points="{{ $svgBp['dbpPolyline'] }}" fill="none" stroke="#3b82f6" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" />
+                                    @endif
                                 @endif
 
-                                <!-- SBP Points -->
-                                @foreach($svgSbp['points'] as $p)
-                                    <line x1="{{ $p['x'] }}" y1="{{ $p['y'] }}" x2="{{ $p['x'] }}" y2="132" stroke="#cbd5e1" stroke-width="1" stroke-dasharray="2,2" opacity="0.6" />
-                                    <circle cx="{{ $p['x'] }}" cy="{{ $p['y'] }}" r="5" fill="#ffffff" stroke="#ef4444" stroke-width="3" />
-                                    <rect x="{{ $p['x'] - 16 }}" y="{{ $p['y'] - 20 }}" width="32" height="14" rx="4" fill="#ef4444" />
-                                    <text x="{{ $p['x'] }}" y="{{ $p['y'] - 10 }}" text-anchor="middle" font-size="9" font-weight="bold" fill="#ffffff">{{ $p['value'] }}</text>
+                                <!-- SBP Points & Vertical Drop Lines -->
+                                @foreach($svgBp['sbpPoints'] as $p)
+                                    <line x1="{{ $p['x'] }}" y1="{{ $p['y'] }}" x2="{{ $p['x'] }}" y2="132" stroke="#cbd5e1" stroke-width="1" stroke-dasharray="2,2" opacity="0.5" />
+                                    <circle cx="{{ $p['x'] }}" cy="{{ $p['y'] }}" r="4.5" fill="#ffffff" stroke="#ef4444" stroke-width="2.5" />
+                                    <rect x="{{ $p['x'] - 14 }}" y="{{ $p['y'] - 18 }}" width="28" height="13" rx="3" fill="#ef4444" />
+                                    <text x="{{ $p['x'] }}" y="{{ $p['y'] - 8 }}" text-anchor="middle" font-size="8" font-weight="bold" fill="#ffffff">{{ $p['value'] }}</text>
                                     <text x="{{ $p['x'] }}" y="148" text-anchor="middle" font-size="9" fill="#64748b" font-weight="bold">{{ $p['label'] }}</text>
+                                @endforeach
+
+                                <!-- DBP Points -->
+                                @foreach($svgBp['dbpPoints'] as $p)
+                                    <circle cx="{{ $p['x'] }}" cy="{{ $p['y'] }}" r="4.5" fill="#ffffff" stroke="#3b82f6" stroke-width="2.5" />
+                                    <rect x="{{ $p['x'] - 14 }}" y="{{ $p['y'] + 6 }}" width="28" height="13" rx="3" fill="#3b82f6" />
+                                    <text x="{{ $p['x'] }}" y="{{ $p['y'] + 16 }}" text-anchor="middle" font-size="8" font-weight="bold" fill="#ffffff">{{ $p['value'] }}</text>
                                 @endforeach
                             </svg>
                         </div>
@@ -1254,7 +1382,88 @@
                     @endif
                 </div>
 
-                <!-- 2. Glycemic Control & Diabetes Graph -->
+                <!-- 2. Blood Sugar Trajectory Graph (BSF & BSPP) -->
+                <div class="graph-card bg-white p-5 rounded-2xl border border-slate-200 shadow-sm" data-category="diabetes">
+                    <div class="flex items-center justify-between mb-4 pb-3 border-b border-slate-100">
+                        <div class="flex items-center gap-2.5">
+                            <div class="w-9 h-9 rounded-xl bg-amber-100 text-amber-600 flex items-center justify-center font-bold">
+                                <i class="fas fa-droplet"></i>
+                            </div>
+                            <div>
+                                <h4 class="text-sm font-bold text-slate-800">Blood Sugar Trajectory</h4>
+                                <span class="text-xs text-slate-500">Fasting (BSF) & Postprandial (BSPP) in mg/dL</span>
+                            </div>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <span class="flex items-center gap-1 text-[11px] font-bold text-amber-600">
+                                <span class="w-2.5 h-2.5 rounded-full bg-amber-500"></span> BSF
+                            </span>
+                            <span class="flex items-center gap-1 text-[11px] font-bold text-purple-600">
+                                <span class="w-2.5 h-2.5 rounded-full bg-purple-500"></span> BSPP
+                            </span>
+                        </div>
+                    </div>
+
+                    @if($svgSugar && (!empty($svgSugar['bsfPoints']) || !empty($svgSugar['bsppPoints'])))
+                        <div class="relative w-full overflow-hidden bg-slate-50/50 rounded-xl p-3 border border-slate-100">
+                            <svg viewBox="0 0 500 160" class="w-full h-44 drop-shadow-sm select-none" preserveAspectRatio="none">
+                                <!-- Grid Lines -->
+                                <line x1="45" y1="28" x2="455" y2="28" stroke="#e2e8f0" stroke-width="1" stroke-dasharray="3,3" />
+                                <text x="40" y="32" text-anchor="end" font-size="9" fill="#94a3b8" font-family="monospace">{{ $svgSugar['maxY'] }}</text>
+
+                                <line x1="45" y1="80" x2="455" y2="80" stroke="#f1f5f9" stroke-width="1" stroke-dasharray="3,3" />
+                                <text x="40" y="84" text-anchor="end" font-size="9" fill="#94a3b8" font-family="monospace">{{ round(($svgSugar['minY'] + $svgSugar['maxY'])/2) }}</text>
+
+                                <line x1="45" y1="132" x2="455" y2="132" stroke="#e2e8f0" stroke-width="1" />
+                                <text x="40" y="136" text-anchor="end" font-size="9" fill="#94a3b8" font-family="monospace">{{ $svgSugar['minY'] }}</text>
+
+                                <!-- Target Lines: BSF ≤ 100, BSPP ≤ 140 -->
+                                @php
+                                    $normBsfT = min(1, max(0, (100 - $svgSugar['minY']) / ($svgSugar['maxY'] - $svgSugar['minY'])));
+                                    $targetBsfY = 132 - ($normBsfT * 104);
+                                    $normBsppT = min(1, max(0, (140 - $svgSugar['minY']) / ($svgSugar['maxY'] - $svgSugar['minY'])));
+                                    $targetBsppY = 132 - ($normBsppT * 104);
+                                @endphp
+                                <line x1="45" y1="{{ $targetBsfY }}" x2="455" y2="{{ $targetBsfY }}" stroke="#f59e0b" stroke-width="1" stroke-dasharray="3,3" opacity="0.5" />
+                                <line x1="45" y1="{{ $targetBsppY }}" x2="455" y2="{{ $targetBsppY }}" stroke="#a855f7" stroke-width="1" stroke-dasharray="3,3" opacity="0.5" />
+                                <text x="455" y="{{ $targetBsfY - 3 }}" text-anchor="end" font-size="8" fill="#d97706" font-weight="bold">Target BSF: ≤100</text>
+                                <text x="455" y="{{ $targetBsppY + 8 }}" text-anchor="end" font-size="8" fill="#9333ea" font-weight="bold">Target BSPP: ≤140</text>
+
+                                <!-- Polylines -->
+                                @if($svgSugar['count'] > 1)
+                                    @if(!empty($svgSugar['bsfPolyline']))
+                                        <polyline points="{{ $svgSugar['bsfPolyline'] }}" fill="none" stroke="#f59e0b" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" />
+                                    @endif
+                                    @if(!empty($svgSugar['bsppPolyline']))
+                                        <polyline points="{{ $svgSugar['bsppPolyline'] }}" fill="none" stroke="#a855f7" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" />
+                                    @endif
+                                @endif
+
+                                <!-- BSF Points & Drop Lines -->
+                                @foreach($svgSugar['bsfPoints'] as $p)
+                                    <line x1="{{ $p['x'] }}" y1="{{ $p['y'] }}" x2="{{ $p['x'] }}" y2="132" stroke="#cbd5e1" stroke-width="1" stroke-dasharray="2,2" opacity="0.5" />
+                                    <circle cx="{{ $p['x'] }}" cy="{{ $p['y'] }}" r="4.5" fill="#ffffff" stroke="#f59e0b" stroke-width="2.5" />
+                                    <rect x="{{ $p['x'] - 14 }}" y="{{ $p['y'] - 18 }}" width="28" height="13" rx="3" fill="#f59e0b" />
+                                    <text x="{{ $p['x'] }}" y="{{ $p['y'] - 8 }}" text-anchor="middle" font-size="8" font-weight="bold" fill="#ffffff">{{ $p['value'] }}</text>
+                                    <text x="{{ $p['x'] }}" y="148" text-anchor="middle" font-size="9" fill="#64748b" font-weight="bold">{{ $p['label'] }}</text>
+                                @endforeach
+
+                                <!-- BSPP Points -->
+                                @foreach($svgSugar['bsppPoints'] as $p)
+                                    <circle cx="{{ $p['x'] }}" cy="{{ $p['y'] }}" r="4.5" fill="#ffffff" stroke="#a855f7" stroke-width="2.5" />
+                                    <rect x="{{ $p['x'] - 14 }}" y="{{ $p['y'] + 6 }}" width="28" height="13" rx="3" fill="#a855f7" />
+                                    <text x="{{ $p['x'] }}" y="{{ $p['y'] + 16 }}" text-anchor="middle" font-size="8" font-weight="bold" fill="#ffffff">{{ $p['value'] }}</text>
+                                @endforeach
+                            </svg>
+                        </div>
+                    @else
+                        <div class="h-44 flex items-center justify-center text-xs text-slate-400 bg-slate-50 rounded-xl border border-dashed border-slate-200">
+                            No blood sugar (BSF/BSPP) records logged yet
+                        </div>
+                    @endif
+                </div>
+
+                <!-- 3. Glycemic Control & Diabetes Graph -->
                 <div class="graph-card bg-white p-5 rounded-2xl border border-slate-200 shadow-sm" data-category="diabetes">
                     <div class="flex items-center justify-between mb-4 pb-3 border-b border-slate-100">
                         <div class="flex items-center gap-2.5">
@@ -1651,7 +1860,7 @@
                             @foreach($sortedRecords as $vRec)
                                 <tr class="hover:bg-slate-50 {{ $vRec->id == $record->id ? 'bg-indigo-50/40 font-semibold' : '' }}">
                                     <td class="px-4 py-3 text-slate-800 font-bold">
-                                        {{ $vRec->created_at ? $vRec->created_at->format('d M Y') : 'Visit #' . $vRec->id }}
+                                        {{ $vRec->record_date ? \Carbon\Carbon::parse($vRec->record_date)->format('d M Y') : ($vRec->created_at ? $vRec->created_at->format('d M Y') : 'Visit #' . $vRec->id) }}
                                         @if($vRec->id == $record->id)
                                             <span class="ml-1 text-[9px] bg-indigo-600 text-white px-1.5 py-0.5 rounded font-bold">Viewing</span>
                                         @endif
@@ -1695,12 +1904,28 @@
 
                 if (btnProfile) btnProfile.className = "px-5 py-3 text-sm font-bold flex items-center gap-2 border-b-2 border-transparent text-slate-500 hover:text-slate-700 hover:border-slate-300 transition";
                 if (btnAnalytics) btnAnalytics.className = "px-5 py-3 text-sm font-bold flex items-center gap-2 border-b-2 border-indigo-600 text-indigo-600 transition";
+
+                if (window.location.hash !== '#analytics') {
+                    if (history.replaceState) {
+                        history.replaceState(null, null, '#analytics');
+                    } else {
+                        window.location.hash = '#analytics';
+                    }
+                }
             } else {
                 if (analyticsContent) analyticsContent.classList.add('hidden');
                 if (profileContent) profileContent.classList.remove('hidden');
 
                 if (btnAnalytics) btnAnalytics.className = "px-5 py-3 text-sm font-bold flex items-center gap-2 border-b-2 border-transparent text-slate-500 hover:text-slate-700 hover:border-slate-300 transition";
                 if (btnProfile) btnProfile.className = "px-5 py-3 text-sm font-bold flex items-center gap-2 border-b-2 border-indigo-600 text-indigo-600 transition";
+
+                if (window.location.hash === '#analytics' || window.location.hash === '#graphs') {
+                    if (history.replaceState) {
+                        history.replaceState(null, null, '#profile');
+                    } else {
+                        window.location.hash = '#profile';
+                    }
+                }
             }
         }
 
@@ -1722,11 +1947,19 @@
             });
         }
 
-        // Auto-switch to analytics tab if URL contains ?tab=analytics or #graphs
+        // Auto-switch to analytics tab if URL contains ?tab=analytics or #graphs or #analytics
         document.addEventListener('DOMContentLoaded', function() {
             const urlParams = new URLSearchParams(window.location.search);
             if (urlParams.get('tab') === 'analytics' || window.location.hash === '#graphs' || window.location.hash === '#analytics') {
                 switchDetailTab('analytics');
+            }
+        });
+
+        window.addEventListener('hashchange', function() {
+            if (window.location.hash === '#analytics' || window.location.hash === '#graphs') {
+                switchDetailTab('analytics');
+            } else if (window.location.hash === '#profile') {
+                switchDetailTab('profile');
             }
         });
     </script>
