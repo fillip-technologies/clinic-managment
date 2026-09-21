@@ -177,6 +177,66 @@
                 transform: scale(1) translateY(0);
             }
         }
+
+        /* Sticky floating Done column */
+        .sticky-right {
+            position: sticky !important;
+            right: 0 !important;
+            background-color: #ffffff;
+            z-index: 10;
+            box-shadow: -4px 0 8px -2px rgba(0, 0, 0, 0.05);
+        }
+        thead th.sticky-right {
+            background-color: #f8fafc !important;
+            z-index: 15;
+        }
+        tr:hover td.sticky-right {
+            background-color: #f5f7ff !important;
+        }
+
+        /* Interactive Done Checkbox & Visible Tick Mark */
+        .done-chk-label {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            user-select: none;
+            padding: 2px;
+        }
+        .done-chk-box {
+            width: 26px;
+            height: 26px;
+            border-radius: 7px;
+            border: 2px solid #cbd5e1;
+            background-color: #ffffff;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.15s ease-in-out;
+            cursor: pointer;
+            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+        }
+        .done-chk-label:hover .done-chk-box {
+            border-color: #10b981;
+            background-color: #f0fdf4;
+            transform: scale(1.05);
+        }
+        .appointment-done-toggle:checked + .done-chk-box {
+            background-color: #059669;
+            border-color: #059669;
+            box-shadow: 0 2px 5px rgba(5, 150, 105, 0.35);
+        }
+        .done-chk-box .done-tick-svg {
+            display: none;
+            width: 17px;
+            height: 17px;
+            color: #ffffff;
+            stroke-width: 3.2;
+            pointer-events: none;
+        }
+        .appointment-done-toggle:checked + .done-chk-box .done-tick-svg {
+            display: block;
+        }
     </style>
 
     <div class="w-full max-w-7xl bg-white/90 backdrop-blur-sm shadow-xl shadow-slate-200/60 m-auto rounded-2xl border border-slate-200/60 p-5 md:p-7 transition-all">
@@ -326,28 +386,38 @@
 
         <!-- Table -->
         <div class="rounded-xl border border-slate-200/80 bg-white/60 shadow-sm p-4">
-            <table id="appointmentTable" class="w-full text-sm text-left text-slate-700 {{ !empty($isOnlyAdmin) ? 'min-w-[1450px]' : 'min-w-[1650px]' }} stripe hover">
+            <table id="appointmentTable" class="w-full text-sm text-left text-slate-700 {{ !empty($isOnlyAdmin) ? 'min-w-[1550px]' : 'min-w-[1780px]' }} stripe hover">
                 <thead class="bg-slate-50/80 text-xs uppercase tracking-wider text-slate-500 border-b border-slate-200/70">
                     <tr>
-                        <th scope="col" class="no-sort px-5 py-3.5 font-semibold min-w-[70px] whitespace-nowrap">Sr no.</th>
-                        <th scope="col" class="col-date px-5 py-3.5 font-semibold min-w-[160px] whitespace-nowrap">Booked On</th>
-                        <th scope="col" class="col-scheduled-date px-5 py-3.5 font-semibold min-w-[150px] whitespace-nowrap">Scheduled Date</th>
-                        <th scope="col" class="no-sort px-5 py-3.5 font-semibold min-w-[240px] text-center whitespace-nowrap no-export">Action</th>
-                        <th scope="col" class="px-5 py-3.5 font-semibold min-w-[180px] whitespace-nowrap">Patient Name</th>
-                        <th scope="col" class="px-5 py-3.5 font-semibold min-w-[90px] whitespace-nowrap">Age</th>
-                        <th scope="col" class="px-5 py-3.5 font-semibold min-w-[160px] whitespace-nowrap">Father/Husband Name</th>
-                        <th scope="col" class="px-5 py-3.5 font-semibold min-w-[140px] whitespace-nowrap">Phone</th>
-                        <th scope="col" class="px-5 py-3.5 font-semibold min-w-[180px] whitespace-nowrap">Email</th>
-                        <th scope="col" class="px-5 py-3.5 font-semibold min-w-[180px]">Address</th>
-                        <th scope="col" class="px-5 py-3.5 font-semibold min-w-[130px] whitespace-nowrap">Visit Type</th>
+                        <th scope="col" class="no-sort px-4 py-3.5 font-semibold min-w-[65px] whitespace-nowrap">Sr no.</th>
+                        <th scope="col" class="col-date px-4 py-3.5 font-semibold min-w-[155px] whitespace-nowrap">Booked On</th>
+                        <th scope="col" class="col-scheduled-date px-4 py-3.5 font-semibold min-w-[145px] whitespace-nowrap">Scheduled Date</th>
+                        <th scope="col" class="col-slot px-4 py-3.5 font-semibold min-w-[110px] text-center whitespace-nowrap">Slot No.</th>
+                        <th scope="col" class="no-sort px-4 py-3.5 font-semibold min-w-[240px] text-center whitespace-nowrap no-export">Action</th>
+                        <th scope="col" class="px-4 py-3.5 font-semibold min-w-[175px] whitespace-nowrap">Patient Name</th>
+                        <th scope="col" class="px-4 py-3.5 font-semibold min-w-[80px] whitespace-nowrap">Age</th>
+                        <th scope="col" class="px-4 py-3.5 font-semibold min-w-[160px] whitespace-nowrap">Father/Husband Name</th>
+                        <th scope="col" class="px-4 py-3.5 font-semibold min-w-[135px] whitespace-nowrap">Phone</th>
+                        <th scope="col" class="px-4 py-3.5 font-semibold min-w-[175px] whitespace-nowrap">Email</th>
+                        <th scope="col" class="px-4 py-3.5 font-semibold min-w-[175px]">Address</th>
+                        <th scope="col" class="px-4 py-3.5 font-semibold min-w-[125px] whitespace-nowrap">Visit Type</th>
                         @if(empty($isOnlyAdmin))
-                        <th scope="col" class="px-5 py-3.5 font-semibold min-w-[220px]">Note / Message</th>
+                        <th scope="col" class="px-4 py-3.5 font-semibold min-w-[210px]">Note / Message</th>
                         @endif
+                        <th scope="col" class="no-sort sticky-right px-4 py-3.5 font-semibold min-w-[85px] text-center whitespace-nowrap no-export">Done</th>
                     </tr>
                 </thead>
                 <tbody id="tableBody" class="divide-y divide-slate-100">
                     @foreach($appointments as $index => $appointment)
+                    @php
+                        $slotOrder = 999999;
+                        if (!empty($appointment->slot_number) && preg_match('/^(\d+)\/(\d+)$/', $appointment->slot_number, $sm)) {
+                            $slotOrder = ((int)$sm[1] - 1) * 15 + (int)$sm[2];
+                        }
+                    @endphp
                     <tr class="table-row-transition hover:bg-indigo-50/40 group" 
+                        id="appointment-row-{{ $appointment->id }}"
+                        data-id="{{ $appointment->id }}"
                         data-name="{{ $appointment->patient_name ?? '' }}" 
                         data-age="{{ $appointment->age ?? '' }}"
                         data-father="{{ $appointment->father_name ?? '' }}"
@@ -358,17 +428,19 @@
                         data-source="{{ $appointment->appointment_type ?? '' }}"
                         data-message="{{ $appointment->message ?? '' }}"
                         data-booked-date="{{ $appointment->created_at ? $appointment->created_at->format('Y-m-d') : '' }}"
-                        data-scheduled-date="{{ $appointment->appointment_scheduled_date ? \Carbon\Carbon::parse($appointment->appointment_scheduled_date)->format('Y-m-d') : '' }}">
-                        <td class="px-5 py-3.5 text-slate-400 font-mono text-xs whitespace-nowrap">
+                        data-scheduled-date="{{ $appointment->appointment_scheduled_date ? \Carbon\Carbon::parse($appointment->appointment_scheduled_date)->format('Y-m-d') : '' }}"
+                        data-slot="{{ $appointment->slot_number ?? '' }}"
+                        data-done="{{ $appointment->appointment_done ? '1' : '0' }}">
+                        <td class="px-4 py-3.5 text-slate-400 font-mono text-xs whitespace-nowrap">
                             {{ $loop->iteration }}
                         </td>
-                        <td class="px-5 py-3.5 text-slate-500 text-xs font-mono whitespace-nowrap min-w-[160px]" data-order="{{ $appointment->created_at ? $appointment->created_at->timestamp : 0 }}">
+                        <td class="px-4 py-3.5 text-slate-500 text-xs font-mono whitespace-nowrap min-w-[155px]" data-order="{{ $appointment->created_at ? $appointment->created_at->timestamp : 0 }}">
                             <div class="flex items-center gap-1.5">
                                 <i class="fas fa-clock text-slate-400 text-[11px]"></i>
                                 <span>{{ $appointment->created_at ? $appointment->created_at->format('d M Y, h:i A') : '-' }}</span>
                             </div>
                         </td>
-                        <td class="px-5 py-3.5 min-w-[150px] whitespace-nowrap" data-order="{{ $appointment->appointment_scheduled_date ? \Carbon\Carbon::parse($appointment->appointment_scheduled_date)->timestamp : 0 }}">
+                        <td class="px-4 py-3.5 min-w-[145px] whitespace-nowrap" data-order="{{ $appointment->appointment_scheduled_date ? \Carbon\Carbon::parse($appointment->appointment_scheduled_date)->timestamp : 0 }}">
                             @if($appointment->appointment_scheduled_date)
                                 <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200 shadow-sm">
                                     <i class="fas fa-calendar-check text-emerald-500 text-[11px]"></i>
@@ -381,11 +453,21 @@
                                 </span>
                             @endif
                         </td>
-                        <td class="px-5 py-3.5 text-center whitespace-nowrap min-w-[240px]">
+                        <td class="px-4 py-3.5 min-w-[110px] text-center whitespace-nowrap font-mono" data-order="{{ $slotOrder }}" id="slot-cell-{{ $appointment->id }}">
+                            @if($appointment->slot_number)
+                                <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-bold bg-indigo-50 text-indigo-700 border border-indigo-200 shadow-xs">
+                                    <i class="fas fa-ticket-alt text-[10px] text-indigo-500"></i>
+                                    <span>Slot {{ $appointment->slot_number }}</span>
+                                </span>
+                            @else
+                                <span class="text-slate-300 font-mono text-xs">-</span>
+                            @endif
+                        </td>
+                        <td class="px-4 py-3.5 text-center whitespace-nowrap min-w-[240px]">
                             <div class="flex items-center justify-center gap-1.5">
                                 <button type="button"
-                                    onclick="openScheduleModal({{ $appointment->id }}, '{{ addslashes($appointment->patient_name ?? '') }}', '{{ $appointment->appointment_scheduled_date ? \Carbon\Carbon::parse($appointment->appointment_scheduled_date)->format('Y-m-d') : '' }}', '{{ addslashes($appointment->mail ?? '') }}', '{{ addslashes($appointment->created_at ? $appointment->created_at->format('d M Y, h:i A') : '') }}')"
-                                    title="{{ $appointment->appointment_scheduled_date ? 'Reschedule Appointment Date' : 'Schedule Appointment Date' }}"
+                                    onclick="openScheduleModal({{ $appointment->id }}, '{{ addslashes($appointment->patient_name ?? '') }}', '{{ $appointment->appointment_scheduled_date ? \Carbon\Carbon::parse($appointment->appointment_scheduled_date)->format('Y-m-d') : '' }}', '{{ addslashes($appointment->mail ?? '') }}', '{{ addslashes($appointment->created_at ? $appointment->created_at->format('d M Y, h:i A') : '') }}', '{{ addslashes($appointment->slot_number ?? '') }}')"
+                                    title="{{ $appointment->appointment_scheduled_date ? 'Reschedule Appointment Date & Slot' : 'Schedule Appointment Date & Slot' }}"
                                     class="inline-flex items-center justify-center gap-1.5 px-2.5 py-1.5 rounded-xl {{ $appointment->appointment_scheduled_date ? 'bg-emerald-50 hover:bg-emerald-100 text-emerald-700 border border-emerald-200' : 'bg-amber-50 hover:bg-amber-100 text-amber-700 border border-amber-200' }} font-semibold text-xs transition shadow-sm hover:shadow">
                                     <i class="fas {{ $appointment->appointment_scheduled_date ? 'fa-calendar-check text-emerald-600' : 'fa-calendar-alt text-amber-600' }} text-xs"></i>
                                     <span>{{ $appointment->appointment_scheduled_date ? 'Reschedule' : 'Schedule' }}</span>
@@ -409,24 +491,24 @@
                                 </form>
                             </div>
                         </td>
-                        <td class="px-5 py-3.5 font-semibold text-slate-800 whitespace-nowrap min-w-[180px]">
+                        <td class="px-4 py-3.5 font-semibold text-slate-800 whitespace-nowrap min-w-[175px]">
                             {{ $appointment->patient_name ?? 'N/A' }}
                         </td>
-                        <td class="px-5 py-3.5 text-slate-700 font-medium text-xs whitespace-nowrap min-w-[90px]">
+                        <td class="px-4 py-3.5 text-slate-700 font-medium text-xs whitespace-nowrap min-w-[80px]">
                             @if($appointment->age)
                                 <span class="px-2 py-0.5 rounded-md bg-slate-100 text-slate-700 font-semibold">{{ $appointment->age }} yrs</span>
                             @else
                                 <span class="text-slate-400">-</span>
                             @endif
                         </td>
-                        <td class="px-5 py-3.5 text-slate-700 text-xs min-w-[160px] whitespace-nowrap">
+                        <td class="px-4 py-3.5 text-slate-700 text-xs min-w-[160px] whitespace-nowrap">
                             {{ $appointment->father_name ?: '-' }}
                         </td>
-                        <td class="px-5 py-3.5 text-slate-600 font-mono text-xs whitespace-nowrap min-w-[140px]">
+                        <td class="px-4 py-3.5 text-slate-600 font-mono text-xs whitespace-nowrap min-w-[135px]">
                             <i class="fas fa-phone-alt text-slate-400 mr-1 text-[11px]"></i>
                             {{ $appointment->phone ?? 'N/A' }}
                         </td>
-                        <td class="px-5 py-3.5 text-slate-600 text-xs min-w-[180px] whitespace-nowrap">
+                        <td class="px-4 py-3.5 text-slate-600 text-xs min-w-[175px] whitespace-nowrap">
                             @if($appointment->mail)
                                 <a href="mailto:{{ $appointment->mail }}" class="text-indigo-600 hover:text-indigo-800 hover:underline inline-flex items-center gap-1.5" title="{{ $appointment->mail }}">
                                     <i class="fas fa-envelope text-slate-400 text-[11px]"></i>
@@ -436,10 +518,10 @@
                                 <span class="text-slate-400">-</span>
                             @endif
                         </td>
-                        <td class="px-5 py-3.5 text-slate-600 text-xs min-w-[180px] max-w-xs break-words">
+                        <td class="px-4 py-3.5 text-slate-600 text-xs min-w-[175px] max-w-xs break-words">
                             {{ $appointment->address ?: '-' }}
                         </td>
-                        <td class="px-5 py-3.5 min-w-[130px] whitespace-nowrap">
+                        <td class="px-4 py-3.5 min-w-[125px] whitespace-nowrap">
                             @php
                                 $rawType = trim($appointment->patient_type ?? '');
                                 $typeKey = strtolower($rawType);
@@ -464,7 +546,7 @@
                             </span>
                         </td>
                         @if(empty($isOnlyAdmin))
-                        <td class="px-5 py-3.5 text-slate-600 text-xs min-w-[220px] max-w-sm">
+                        <td class="px-4 py-3.5 text-slate-600 text-xs min-w-[210px] max-w-sm">
                             @if(empty($appointment->message))
                                 <span class="text-slate-400 italic">-</span>
                             @elseif(mb_strlen($appointment->message) <= 50)
@@ -491,6 +573,20 @@
                             @endif
                         </td>
                         @endif
+                        <td class="sticky-right px-4 py-3.5 text-center whitespace-nowrap no-export">
+                            <label class="done-chk-label" title="{{ $appointment->appointment_done ? 'Appointment Done (Click to mark Pending)' : 'Mark Appointment as Done' }}">
+                                <input type="checkbox"
+                                    class="sr-only appointment-done-toggle"
+                                    data-id="{{ $appointment->id }}"
+                                    onchange="toggleAppointmentDone(this, {{ $appointment->id }})"
+                                    {{ $appointment->appointment_done ? 'checked' : '' }}>
+                                <div class="done-chk-box">
+                                    <svg class="done-tick-svg" fill="none" stroke="currentColor" stroke-width="3.2" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"></path>
+                                    </svg>
+                                </div>
+                            </label>
+                        </td>
                     </tr>
                     @endforeach
                 </tbody>
@@ -620,6 +716,30 @@
                     @enderror
                 </div>
 
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
+                    <!-- Scheduled Date (Optional) -->
+                    <div>
+                        <label for="create_scheduled_date" class="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1.5">
+                            <i class="fas fa-calendar-day text-emerald-600 mr-1"></i> Scheduled Date
+                        </label>
+                        <input type="date" id="create_scheduled_date" name="appointment_scheduled_date" min="{{ date('Y-m-d') }}"
+                            onchange="handleCreateDateChange(this.value)"
+                            class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-sm text-slate-800 focus:ring-2 focus:ring-indigo-400 focus:border-indigo-400 outline-none transition bg-slate-50/50">
+                        <p class="text-[11px] text-slate-400 mt-1">Optional initial clinic date.</p>
+                    </div>
+
+                    <!-- Slot Number (Optional) -->
+                    <div>
+                        <label for="create_slot_number" class="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1.5">
+                            <i class="fas fa-ticket-alt text-indigo-600 mr-1"></i> Slot Number
+                        </label>
+                        <input type="text" id="create_slot_number" name="slot_number" placeholder="e.g. 1/1, 1/15, 2/1"
+                            pattern="^[1-9]\d*\/([1-9]|1[0-5])$"
+                            class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-sm text-slate-800 placeholder:text-slate-400 focus:ring-2 focus:ring-indigo-400 focus:border-indigo-400 outline-none transition bg-slate-50/50 uppercase font-mono">
+                        <p class="text-[11px] text-slate-400 mt-1" id="create_slot_hint">Format: 1/1 to 1/15, then 2/1</p>
+                    </div>
+                </div>
+
                 <!-- Modal Actions -->
                 <div class="flex items-center justify-end gap-3 pt-3 border-t border-slate-100">
                     <button type="button" onclick="closeAppointmentModal()"
@@ -647,7 +767,7 @@
                     </div>
                     <div>
                         <h3 class="text-lg font-bold text-slate-800">Schedule Appointment</h3>
-                        <p class="text-xs text-slate-500">Confirm date & send email notification</p>
+                        <p class="text-xs text-slate-500">Confirm date & slot with email notification</p>
                     </div>
                 </div>
                 <button type="button" onclick="closeScheduleModal()" class="w-8 h-8 rounded-lg text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition flex items-center justify-center">
@@ -680,8 +800,47 @@
                         <i class="fas fa-calendar-day text-emerald-600 mr-1"></i> Scheduled Date <span class="text-red-500">*</span>
                     </label>
                     <input type="date" id="modalScheduledDateInput" name="appointment_scheduled_date" required min="{{ date('Y-m-d') }}"
+                        onchange="handleScheduleDateChange(this.value)"
                         class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-sm text-slate-800 focus:ring-2 focus:ring-emerald-400 focus:border-emerald-400 outline-none transition bg-white">
                     <p class="text-[11px] text-slate-500 mt-1">Select the confirmed date on which patient should visit the clinic.</p>
+                </div>
+
+                <!-- Slot Number Input & Available Slots Selection -->
+                <div class="space-y-2 pt-2 border-t border-slate-100">
+                    <div class="flex items-center justify-between">
+                        <label for="modalSlotNumberInput" class="block text-xs font-semibold text-slate-700 uppercase tracking-wider">
+                            <i class="fas fa-ticket-alt text-indigo-600 mr-1"></i> Slot Number
+                            <span class="text-slate-400 text-[10px] font-normal lowercase">(optional)</span>
+                        </label>
+                        <button type="button" id="nextSlotBadge" class="hidden text-[11px] px-2.5 py-0.5 rounded-full bg-indigo-50 text-indigo-700 font-semibold border border-indigo-200 hover:bg-indigo-100 transition flex items-center gap-1" onclick="useSuggestedSlot()">
+                            <i class="fas fa-magic text-[10px] text-indigo-500"></i>
+                            <span>Next: <strong id="nextSlotText">-</strong></span>
+                        </button>
+                    </div>
+
+                    <div class="relative">
+                        <input type="text" id="modalSlotNumberInput" name="slot_number" placeholder="e.g. 1/1, 1/15, 2/1"
+                            pattern="^[1-9]\d*\/([1-9]|1[0-5])$"
+                            oninput="validateSlotLive(this.value)"
+                            class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-sm font-mono text-slate-800 placeholder:text-slate-400 focus:ring-2 focus:ring-indigo-400 focus:border-indigo-400 outline-none transition bg-white uppercase">
+                    </div>
+                    <p id="slotConflictWarning" class="hidden text-xs text-rose-600 font-medium flex items-center gap-1">
+                        <i class="fas fa-exclamation-circle"></i> <span id="slotConflictText">This slot is already booked for this date!</span>
+                    </p>
+
+                    <!-- Quick Slot Selector Pills (15 slots of the batch) -->
+                    <div id="quickSlotSection" class="hidden space-y-1.5 pt-1">
+                        <div class="flex items-center justify-between text-[11px] text-slate-500 font-medium">
+                            <span>Quick Select (<span id="quickSlotBatchLabel" class="font-bold text-slate-700">Batch 1</span>):</span>
+                            <div class="flex items-center gap-2 text-[10px]">
+                                <span class="flex items-center gap-1"><span class="w-2 h-2 rounded-full bg-emerald-500 inline-block"></span> Available</span>
+                                <span class="flex items-center gap-1"><span class="w-2 h-2 rounded-full bg-slate-300 inline-block"></span> Taken</span>
+                            </div>
+                        </div>
+                        <div id="quickSlotGrid" class="grid grid-cols-5 gap-1.5 max-h-32 overflow-y-auto p-2 bg-slate-50 rounded-xl border border-slate-200">
+                            <!-- Populated dynamically via AJAX -->
+                        </div>
+                    </div>
                 </div>
 
                 <!-- Modal Actions -->
@@ -690,8 +849,8 @@
                         class="px-4 py-2.5 rounded-xl border border-slate-300 text-slate-600 hover:bg-slate-100 text-sm font-medium transition">
                         Cancel
                     </button>
-                    <button type="submit"
-                        class="px-5 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-semibold shadow-md shadow-emerald-100 hover:shadow-lg transition flex items-center gap-2">
+                    <button type="submit" id="scheduleSubmitBtn"
+                        class="px-5 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-semibold shadow-md shadow-emerald-100 hover:shadow-lg transition flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed">
                         <i class="fas fa-paper-plane"></i>
                         <span>Confirm & Schedule</span>
                     </button>
@@ -817,6 +976,12 @@
         function closeAppointmentModal() {
             const modal = document.getElementById('appointmentModal');
             modal.classList.remove('active');
+            const schedDate = document.getElementById('create_scheduled_date');
+            if (schedDate) schedDate.value = '';
+            const slotNum = document.getElementById('create_slot_number');
+            if (slotNum) slotNum.value = '';
+            const hint = document.getElementById('create_slot_hint');
+            if (hint) hint.textContent = 'Format: 1/1 to 1/15, then 2/1';
         }
 
         function openDateExportModal() {
@@ -909,15 +1074,24 @@
             // Save previous table ordering
             const previousOrder = appointmentDataTable.order();
 
-            // Sort ascending by date for Export by Date
+            // Sort ascending by date, and on the same date by slot number for Date-Wise Export
             let dateColIndex = $('#appointmentTable thead th.col-date').index();
             if (dateColIndex === -1) dateColIndex = 1;
             let scheduledColIndex = $('#appointmentTable thead th.col-scheduled-date').index();
+            let slotColIndex = $('#appointmentTable thead th.col-slot').index();
 
             if (dateField === 'scheduled_date' && scheduledColIndex !== -1) {
-                appointmentDataTable.order([[scheduledColIndex, 'asc'], [dateColIndex, 'asc']]);
+                if (slotColIndex !== -1) {
+                    appointmentDataTable.order([[scheduledColIndex, 'asc'], [slotColIndex, 'asc'], [dateColIndex, 'asc']]);
+                } else {
+                    appointmentDataTable.order([[scheduledColIndex, 'asc'], [dateColIndex, 'asc']]);
+                }
             } else {
-                appointmentDataTable.order([[dateColIndex, 'asc']]);
+                if (slotColIndex !== -1) {
+                    appointmentDataTable.order([[dateColIndex, 'asc'], [slotColIndex, 'asc']]);
+                } else {
+                    appointmentDataTable.order([[dateColIndex, 'asc']]);
+                }
             }
 
             $.fn.dataTable.ext.search.push(filterFunc);
@@ -934,7 +1108,15 @@
             appointmentDataTable.order(previousOrder).draw();
         }
 
-        function openScheduleModal(id, name, scheduledDate, email, bookedAt) {
+        let currentSchedulingAppointmentId = null;
+        let currentSchedulingSuggestedSlot = '';
+        let currentSchedulingTakenSlots = [];
+
+        function openScheduleModal(id, name, scheduledDate, email, bookedAt, currentSlot = '') {
+            currentSchedulingAppointmentId = id;
+            currentSchedulingSuggestedSlot = '';
+            currentSchedulingTakenSlots = [];
+
             const modal = document.getElementById('scheduleModal');
             const form = document.getElementById('scheduleAppointmentForm');
             
@@ -951,16 +1133,289 @@
             
             const dateInput = document.getElementById('modalScheduledDateInput');
             dateInput.value = scheduledDate || '';
+
+            const slotInput = document.getElementById('modalSlotNumberInput');
+            slotInput.value = currentSlot || '';
+
+            resetSlotModalUI();
+
+            if (scheduledDate) {
+                fetchAvailableSlots(scheduledDate, currentSlot);
+            }
             
             modal.classList.add('active');
             setTimeout(() => {
-                dateInput.focus();
+                if (scheduledDate) {
+                    slotInput.focus();
+                } else {
+                    dateInput.focus();
+                }
             }, 100);
         }
 
         function closeScheduleModal() {
             const modal = document.getElementById('scheduleModal');
             modal.classList.remove('active');
+            currentSchedulingAppointmentId = null;
+            resetSlotModalUI();
+        }
+
+        function resetSlotModalUI() {
+            const badge = document.getElementById('nextSlotBadge');
+            if (badge) badge.classList.add('hidden');
+            const warning = document.getElementById('slotConflictWarning');
+            if (warning) warning.classList.add('hidden');
+            const quickSec = document.getElementById('quickSlotSection');
+            if (quickSec) quickSec.classList.add('hidden');
+            const submitBtn = document.getElementById('scheduleSubmitBtn');
+            if (submitBtn) submitBtn.disabled = false;
+            const slotInput = document.getElementById('modalSlotNumberInput');
+            if (slotInput) {
+                slotInput.classList.remove('border-rose-500', 'border-emerald-500');
+                slotInput.classList.add('border-slate-300');
+            }
+        }
+
+        function handleScheduleDateChange(dateVal) {
+            if (!dateVal) {
+                resetSlotModalUI();
+                return;
+            }
+            fetchAvailableSlots(dateVal, '');
+        }
+
+        function fetchAvailableSlots(dateVal, preserveSlot = '') {
+            if (!dateVal) return;
+
+            const url = `{{ route('appointment.getAvailableSlots') }}?date=${encodeURIComponent(dateVal)}&appointment_id=${currentSchedulingAppointmentId || ''}`;
+            
+            fetch(url)
+                .then(res => res.json())
+                .then(data => {
+                    currentSchedulingSuggestedSlot = data.next_slot || '';
+                    currentSchedulingTakenSlots = data.taken_slots || [];
+
+                    // Update next slot badge
+                    const badge = document.getElementById('nextSlotBadge');
+                    const text = document.getElementById('nextSlotText');
+                    if (badge && text && currentSchedulingSuggestedSlot) {
+                        text.textContent = currentSchedulingSuggestedSlot;
+                        badge.classList.remove('hidden');
+                    }
+
+                    // Auto-fill slot input if empty or not explicitly preserved
+                    const slotInput = document.getElementById('modalSlotNumberInput');
+                    if (slotInput) {
+                        if (preserveSlot) {
+                            slotInput.value = preserveSlot;
+                        } else if (!slotInput.value) {
+                            slotInput.value = currentSchedulingSuggestedSlot;
+                        }
+                    }
+
+                    // Render quick slot chips
+                    renderQuickSlotGrid(data.batch || 1, data.batch_slots || [], slotInput ? slotInput.value : '');
+
+                    // Validate live
+                    if (slotInput) {
+                        validateSlotLive(slotInput.value);
+                    }
+                })
+                .catch(err => {
+                    console.error('Failed to load slots:', err);
+                });
+        }
+
+        function renderQuickSlotGrid(batchNum, slots, currentVal) {
+            const container = document.getElementById('quickSlotGrid');
+            const batchLabel = document.getElementById('quickSlotBatchLabel');
+            const quickSec = document.getElementById('quickSlotSection');
+
+            if (batchLabel) batchLabel.textContent = `Batch ${batchNum}`;
+            if (!container) return;
+
+            container.innerHTML = '';
+
+            slots.forEach(item => {
+                const btn = document.createElement('button');
+                btn.type = 'button';
+                btn.textContent = item.slot;
+
+                if (item.is_taken) {
+                    btn.className = 'px-1.5 py-1 text-xs font-mono font-medium rounded-lg bg-slate-200 text-slate-400 cursor-not-allowed line-through text-center border border-slate-200 select-none';
+                    btn.disabled = true;
+                    btn.title = `Slot ${item.slot} is already booked`;
+                } else if (item.slot === currentVal) {
+                    btn.className = 'px-1.5 py-1 text-xs font-mono font-bold rounded-lg bg-indigo-600 text-white shadow-xs text-center border border-indigo-600 transition';
+                    btn.onclick = () => selectSlotChip(item.slot);
+                } else {
+                    btn.className = 'px-1.5 py-1 text-xs font-mono font-medium rounded-lg bg-white hover:bg-indigo-50 text-slate-700 hover:text-indigo-600 text-center border border-slate-200 hover:border-indigo-300 transition';
+                    btn.onclick = () => selectSlotChip(item.slot);
+                }
+
+                container.appendChild(btn);
+            });
+
+            if (quickSec) quickSec.classList.remove('hidden');
+        }
+
+        function selectSlotChip(slot) {
+            const slotInput = document.getElementById('modalSlotNumberInput');
+            if (slotInput) {
+                slotInput.value = slot;
+                validateSlotLive(slot);
+            }
+        }
+
+        function useSuggestedSlot() {
+            if (currentSchedulingSuggestedSlot) {
+                selectSlotChip(currentSchedulingSuggestedSlot);
+            }
+        }
+
+        function validateSlotLive(val) {
+            const trimmed = (val || '').trim();
+            const warning = document.getElementById('slotConflictWarning');
+            const warningText = document.getElementById('slotConflictText');
+            const submitBtn = document.getElementById('scheduleSubmitBtn');
+            const slotInput = document.getElementById('modalSlotNumberInput');
+
+            if (!trimmed) {
+                if (warning) warning.classList.add('hidden');
+                if (submitBtn) submitBtn.disabled = false;
+                if (slotInput) {
+                    slotInput.classList.remove('border-rose-500', 'border-emerald-500');
+                    slotInput.classList.add('border-slate-300');
+                }
+                updateGridActiveHighlight('');
+                return;
+            }
+
+            const slotRegex = /^[1-9]\d*\/([1-9]|1[0-5])$/;
+            if (!slotRegex.test(trimmed)) {
+                if (warning) {
+                    warningText.textContent = 'Invalid format. Use X/1 to X/15 (e.g. 1/1, 1/15, 2/1).';
+                    warning.classList.remove('hidden');
+                }
+                if (submitBtn) submitBtn.disabled = true;
+                if (slotInput) {
+                    slotInput.classList.add('border-rose-500');
+                    slotInput.classList.remove('border-slate-300', 'border-emerald-500');
+                }
+                return;
+            }
+
+            if (currentSchedulingTakenSlots.includes(trimmed)) {
+                if (warning) {
+                    warningText.textContent = `Slot ${trimmed} is already booked on this date!`;
+                    warning.classList.remove('hidden');
+                }
+                if (submitBtn) submitBtn.disabled = true;
+                if (slotInput) {
+                    slotInput.classList.add('border-rose-500');
+                    slotInput.classList.remove('border-slate-300', 'border-emerald-500');
+                }
+            } else {
+                if (warning) warning.classList.add('hidden');
+                if (submitBtn) submitBtn.disabled = false;
+                if (slotInput) {
+                    slotInput.classList.remove('border-rose-500');
+                    slotInput.classList.add('border-emerald-500');
+                }
+            }
+
+            updateGridActiveHighlight(trimmed);
+        }
+
+        function updateGridActiveHighlight(selectedSlot) {
+            const container = document.getElementById('quickSlotGrid');
+            if (!container) return;
+            const buttons = container.querySelectorAll('button:not([disabled])');
+            buttons.forEach(btn => {
+                if (btn.textContent.trim() === selectedSlot) {
+                    btn.className = 'px-1.5 py-1 text-xs font-mono font-bold rounded-lg bg-indigo-600 text-white shadow-xs text-center border border-indigo-600 transition';
+                } else {
+                    btn.className = 'px-1.5 py-1 text-xs font-mono font-medium rounded-lg bg-white hover:bg-indigo-50 text-slate-700 hover:text-indigo-600 text-center border border-slate-200 hover:border-indigo-300 transition';
+                }
+            });
+        }
+
+        function handleCreateDateChange(dateVal) {
+            const slotInput = document.getElementById('create_slot_number');
+            const hint = document.getElementById('create_slot_hint');
+            if (!dateVal) {
+                if (hint) hint.textContent = 'Format: 1/1 to 1/15, then 2/1';
+                return;
+            }
+            fetch(`{{ route('appointment.getAvailableSlots') }}?date=${encodeURIComponent(dateVal)}`)
+                .then(res => res.json())
+                .then(data => {
+                    if (data.next_slot) {
+                        if (slotInput && !slotInput.value) {
+                            slotInput.value = data.next_slot;
+                        }
+                        if (hint) {
+                            hint.innerHTML = `<span class="text-indigo-600 font-semibold">Suggested: Slot ${data.next_slot}</span> (Batch ${data.batch || 1})`;
+                        }
+                    }
+                })
+                .catch(e => console.error(e));
+        }
+
+        function toggleAppointmentDone(checkbox, appointmentId) {
+            const isChecked = checkbox.checked;
+            const row = document.getElementById(`appointment-row-${appointmentId}`) || checkbox.closest('tr');
+            
+            checkbox.disabled = true;
+
+            fetch(`/admin/appointment/${appointmentId}/toggle-done`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                    'Accept': 'application/json'
+                },
+                body: JSON.stringify({})
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                return response.json();
+            })
+            .then(data => {
+                checkbox.disabled = false;
+                if (data.success) {
+                    checkbox.checked = data.appointment_done;
+                    if (row) {
+                        row.setAttribute('data-done', data.appointment_done ? '1' : '0');
+                    }
+                    const label = checkbox.closest('label');
+                    if (label) {
+                        label.title = data.appointment_done ? 'Appointment Done (Click to mark Pending)' : 'Mark Appointment as Done';
+                    }
+                    if (typeof toastr !== 'undefined') {
+                        if (data.appointment_done) {
+                            toastr.success(data.message || 'Appointment marked as Done');
+                        } else {
+                            toastr.info(data.message || 'Appointment marked as Pending');
+                        }
+                    }
+                } else {
+                    checkbox.checked = !isChecked;
+                    if (typeof toastr !== 'undefined') {
+                        toastr.error(data.message || 'Failed to update status');
+                    }
+                }
+            })
+            .catch(error => {
+                checkbox.disabled = false;
+                checkbox.checked = !isChecked;
+                console.error('Error toggling appointment done status:', error);
+                if (typeof toastr !== 'undefined') {
+                    toastr.error('An error occurred while updating status.');
+                }
+            });
         }
 
         // Close when clicking outside modal box
@@ -1040,13 +1495,22 @@
             let dateColIndex = $('#appointmentTable thead th.col-date').index();
             if (dateColIndex === -1) dateColIndex = 1;
             let scheduledColIndex = $('#appointmentTable thead th.col-scheduled-date').index();
+            let slotColIndex = $('#appointmentTable thead th.col-slot').index();
 
             if (activeCalendarDate) {
-                // When a date is selected, sort in ASCENDING order of datetime as requested
+                // When a date is selected, sort in ASCENDING order of date and slot number
                 if (activeCalendarField === 'scheduled' && scheduledColIndex !== -1) {
-                    appointmentDataTable.order([[scheduledColIndex, 'asc'], [dateColIndex, 'asc']]);
+                    if (slotColIndex !== -1) {
+                        appointmentDataTable.order([[scheduledColIndex, 'asc'], [slotColIndex, 'asc'], [dateColIndex, 'asc']]);
+                    } else {
+                        appointmentDataTable.order([[scheduledColIndex, 'asc'], [dateColIndex, 'asc']]);
+                    }
                 } else {
-                    appointmentDataTable.order([[dateColIndex, 'asc']]);
+                    if (slotColIndex !== -1) {
+                        appointmentDataTable.order([[dateColIndex, 'asc'], [slotColIndex, 'asc']]);
+                    } else {
+                        appointmentDataTable.order([[dateColIndex, 'asc']]);
+                    }
                 }
             } else {
                 // When cleared, restore default descending order
@@ -1090,11 +1554,20 @@
                     let dateColIndex = $('#appointmentTable thead th.col-date').index();
                     if (dateColIndex === -1) dateColIndex = 1;
                     let scheduledColIndex = $('#appointmentTable thead th.col-scheduled-date').index();
+                    let slotColIndex = $('#appointmentTable thead th.col-slot').index();
 
                     if (activeCalendarField === 'scheduled' && scheduledColIndex !== -1) {
-                        appointmentDataTable.order([[scheduledColIndex, 'asc'], [dateColIndex, 'asc']]);
+                        if (slotColIndex !== -1) {
+                            appointmentDataTable.order([[scheduledColIndex, 'asc'], [slotColIndex, 'asc'], [dateColIndex, 'asc']]);
+                        } else {
+                            appointmentDataTable.order([[scheduledColIndex, 'asc'], [dateColIndex, 'asc']]);
+                        }
                     } else {
-                        appointmentDataTable.order([[dateColIndex, 'asc']]);
+                        if (slotColIndex !== -1) {
+                            appointmentDataTable.order([[dateColIndex, 'asc'], [slotColIndex, 'asc']]);
+                        } else {
+                            appointmentDataTable.order([[dateColIndex, 'asc']]);
+                        }
                     }
                 }
                 appointmentDataTable.draw();

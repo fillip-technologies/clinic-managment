@@ -118,7 +118,7 @@ class DoctorManageController extends Controller
     }
 
 
-        public function appoinmentstore(Request $request)
+    public function appoinmentstore(Request $request)
     {
         $request->validate([
             'patient_name'     => 'required|string|max:255',
@@ -130,6 +130,8 @@ class DoctorManageController extends Controller
             'address'          => 'nullable|string',
             'message'          => 'nullable|string',
             'appointment_type' => 'nullable|string|in:on_site,admin',
+            'appointment_scheduled_date' => 'nullable|date',
+            'slot_number'      => ['nullable', 'string', 'regex:/^[1-9]\d*\/([1-9]|1[0-5])$/'],
         ]);
 
         $appointmentType = $request->appointment_type;
@@ -146,12 +148,29 @@ class DoctorManageController extends Controller
             $patientType = $rawPatientType;
         }
 
+        $scheduledDate = $request->filled('appointment_scheduled_date') ? $request->appointment_scheduled_date : null;
+        $slotNumber = $request->filled('slot_number') ? trim($request->slot_number) : null;
+
+        if ($scheduledDate && $slotNumber) {
+            $exists = Appoinment::whereDate('appointment_scheduled_date', $scheduledDate)
+                ->where('slot_number', $slotNumber)
+                ->exists();
+            if ($exists) {
+                return redirect()->back()
+                    ->withInput()
+                    ->withErrors(['slot_number' => "Slot {$slotNumber} is already booked on " . \Carbon\Carbon::parse($scheduledDate)->format('d M Y') . "."])
+                    ->with('error', "Slot {$slotNumber} is already booked on this date.");
+            }
+        }
+
         $appointment = Appoinment::create([
             'patient_name'     => $request->patient_name,
             'father_name'      => $request->father_name,
             'age'              => $request->age,
             'patient_type'     => $patientType,
             'appointment_type' => $appointmentType,
+            'appointment_scheduled_date' => $scheduledDate,
+            'slot_number'      => $slotNumber,
             'phone'            => $request->phone,
             'mail'             => $request->mail,
             'address'          => $request->address,
@@ -206,12 +225,19 @@ class DoctorManageController extends Controller
             $query->whereDate($dateField, '<=', $request->end_date);
         }
 
-        // Only sort ascending by date when performing Export by Date; general export retains latest (desc)
+        // Date-wise export: always order first by date, and on the same date by slot number naturally (1/1, 1/2... 1/15, 2/1)
         if ($isExportByDate) {
             if ($dateField === 'appointment_scheduled_date') {
-                $query->orderBy('appointment_scheduled_date', 'asc')->orderBy('created_at', 'asc');
+                $query->orderBy('appointment_scheduled_date', 'asc')
+                    ->orderByRaw("CASE WHEN slot_number IS NULL OR slot_number = '' THEN 1 ELSE 0 END ASC")
+                    ->orderByRaw("CAST(SUBSTRING_INDEX(slot_number, '/', 1) AS UNSIGNED) ASC")
+                    ->orderByRaw("CAST(SUBSTRING_INDEX(slot_number, '/', -1) AS UNSIGNED) ASC")
+                    ->orderBy('created_at', 'asc');
             } else {
-                $query->orderBy('created_at', 'asc');
+                $query->orderBy('created_at', 'asc')
+                    ->orderByRaw("CASE WHEN slot_number IS NULL OR slot_number = '' THEN 1 ELSE 0 END ASC")
+                    ->orderByRaw("CAST(SUBSTRING_INDEX(slot_number, '/', 1) AS UNSIGNED) ASC")
+                    ->orderByRaw("CAST(SUBSTRING_INDEX(slot_number, '/', -1) AS UNSIGNED) ASC");
             }
         } else {
             $query->latest();
@@ -249,6 +275,9 @@ class DoctorManageController extends Controller
             $headers = [
                 'Sr No.',
                 'Booked On',
+                'Scheduled Date',
+                'Slot No.',
+                'Status',
                 'Patient Name',
                 'Age',
                 'Father\'s Name',
@@ -260,7 +289,6 @@ class DoctorManageController extends Controller
             if (!$isAdmin) {
                 $headers[] = 'Note / Message';
             }
-            $headers[] = 'Scheduled Date';
 
             fputcsv($handle, $headers);
 
@@ -268,6 +296,9 @@ class DoctorManageController extends Controller
                 $row = [
                     $index + 1,
                     $app->created_at ? $app->created_at->format('d M Y, h:i A') : '-',
+                    $app->appointment_scheduled_date ? \Carbon\Carbon::parse($app->appointment_scheduled_date)->format('d M Y') : 'Not Scheduled',
+                    $app->slot_number ? 'Slot ' . $app->slot_number : '-',
+                    $app->appointment_done ? 'Done' : 'Pending',
                     $app->patient_name ?? 'N/A',
                     $app->age ? $app->age . ' yrs' : '-',
                     $app->father_name ?? '-',
@@ -279,7 +310,6 @@ class DoctorManageController extends Controller
                 if (!$isAdmin) {
                     $row[] = $app->message ?? '-';
                 }
-                $row[] = $app->appointment_scheduled_date ? \Carbon\Carbon::parse($app->appointment_scheduled_date)->format('d M Y') : 'Not Scheduled';
 
                 fputcsv($handle, $row);
             }
@@ -292,10 +322,29 @@ class DoctorManageController extends Controller
     {
         $request->validate([
             'appointment_scheduled_date' => 'required|date',
+            'slot_number' => ['nullable', 'string', 'regex:/^[1-9]\d*\/([1-9]|1[0-5])$/'],
         ]);
 
         $appointment = Appoinment::findOrFail($id);
-        $appointment->appointment_scheduled_date = $request->appointment_scheduled_date;
+        $date = $request->appointment_scheduled_date;
+        $slotNumber = $request->filled('slot_number') ? trim($request->slot_number) : null;
+
+        if ($slotNumber) {
+            $exists = Appoinment::whereDate('appointment_scheduled_date', $date)
+                ->where('slot_number', $slotNumber)
+                ->where('id', '!=', $id)
+                ->exists();
+
+            if ($exists) {
+                return redirect()->back()
+                    ->withInput()
+                    ->withErrors(['slot_number' => "Slot {$slotNumber} is already booked for " . \Carbon\Carbon::parse($date)->format('d M Y') . ". Please select another slot."])
+                    ->with('error', "Slot {$slotNumber} is already booked on this date.");
+            }
+        }
+
+        $appointment->appointment_scheduled_date = $date;
+        $appointment->slot_number = $slotNumber;
         $appointment->save();
 
         $mailSent = false;
@@ -309,7 +358,8 @@ class DoctorManageController extends Controller
         }
 
         $formattedDate = \Carbon\Carbon::parse($appointment->appointment_scheduled_date)->format('d M Y');
-        $msg = "Appointment for {$appointment->patient_name} scheduled on {$formattedDate}.";
+        $slotMsg = $slotNumber ? " (Slot: {$slotNumber})" : "";
+        $msg = "Appointment for {$appointment->patient_name} scheduled on {$formattedDate}{$slotMsg}.";
         if ($mailSent) {
             $msg .= " Confirmation email sent to {$appointment->mail}.";
         } elseif (!empty($appointment->mail)) {
@@ -317,6 +367,68 @@ class DoctorManageController extends Controller
         }
 
         return redirect()->back()->with('success', $msg);
+    }
+
+    public function getAvailableSlots(Request $request)
+    {
+        $request->validate([
+            'date' => 'required|date',
+            'appointment_id' => 'nullable|integer',
+        ]);
+
+        $date = $request->date;
+        $excludeId = $request->appointment_id;
+
+        $nextSlot = Appoinment::calculateNextSlot($date, $excludeId);
+        $takenSlots = Appoinment::getTakenSlots($date, $excludeId);
+
+        $batch = 1;
+        if (preg_match('/^(\d+)\//', $nextSlot, $m)) {
+            $batch = intval($m[1]);
+        }
+
+        $batchSlots = [];
+        for ($i = 1; $i <= 15; $i++) {
+            $slotStr = "{$batch}/{$i}";
+            $batchSlots[] = [
+                'slot' => $slotStr,
+                'is_taken' => in_array($slotStr, $takenSlots),
+                'is_suggested' => ($slotStr === $nextSlot),
+            ];
+        }
+
+        return response()->json([
+            'success' => true,
+            'date' => $date,
+            'formatted_date' => \Carbon\Carbon::parse($date)->format('d M Y'),
+            'next_slot' => $nextSlot,
+            'taken_slots' => $takenSlots,
+            'batch' => $batch,
+            'batch_slots' => $batchSlots,
+        ]);
+    }
+
+    public function toggleDone(Request $request, $id)
+    {
+        $appointment = Appoinment::findOrFail($id);
+
+        if ($request->has('done')) {
+            $appointment->appointment_done = $request->boolean('done');
+        } else {
+            $appointment->appointment_done = !$appointment->appointment_done;
+        }
+
+        $appointment->save();
+
+        return response()->json([
+            'success' => true,
+            'id' => $appointment->id,
+            'appointment_done' => (bool)$appointment->appointment_done,
+            'status_label' => $appointment->appointment_done ? 'Done' : 'Pending',
+            'message' => $appointment->appointment_done 
+                ? "Appointment for {$appointment->patient_name} marked as Done." 
+                : "Appointment for {$appointment->patient_name} marked as Pending."
+        ]);
     }
 
     public function deleteAppointment($id)

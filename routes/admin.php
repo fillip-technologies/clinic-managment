@@ -24,6 +24,8 @@ Route::prefix('admin')->middleware(['super_admin'])->group(function () {
         Route::get('/on-site-appointment', 'onSiteAppointments')->name('appointment.onsite');
         Route::get('/appointment/export', 'exportAppointments')->name('appointment.export');
         Route::post('/appointment/schedule/{id}', 'scheduleAppointment')->name('appointment.schedule');
+        Route::post('/appointment/{id}/toggle-done', 'toggleDone')->name('appointment.toggleDone');
+        Route::get('/appointment/get-available-slots', 'getAvailableSlots')->name('appointment.getAvailableSlots');
         Route::delete('/appointment/delete/{id}', 'deleteAppointment')->name('appointment.delete');
         Route::post('/update/doctor/{id}', 'UpdateDoctor')->name('doctor.update');
         Route::post('/Add/doctor', 'AddDoctor')->name('AddDoctor');

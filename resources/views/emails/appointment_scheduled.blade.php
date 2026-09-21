@@ -92,6 +92,18 @@
                         </td>
                     </tr>
 
+                    @if(!empty($appointment->slot_number))
+                    <!-- Slot Number -->
+                    <tr>
+                        <td style="padding:11px 0;font-size:14px;color:#475569;width:35%;border-bottom:1px solid #e2ece8;">
+                            <strong>Slot Number:</strong>
+                        </td>
+                        <td style="padding:11px 0;font-size:16px;font-weight:800;color:#2563eb;border-bottom:1px solid #e2ece8;">
+                            Slot {{ $appointment->slot_number }}
+                        </td>
+                    </tr>
+                    @endif
+
                     <!-- Patient Name -->
                     <tr>
                         <td style="padding:11px 0;font-size:14px;color:#475569;border-bottom:1px solid #e2ece8;">
