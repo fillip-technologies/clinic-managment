@@ -108,7 +108,7 @@
             <div class="space-y-4">
                 @foreach ([
                     'Demography, history and clinical examination',
-                    'Anthropometric details: height, weight, BMI, waist, hip and build',
+                    'Anthropometric details: height, weight, BMI, waist, hip and built',
                     'Family history, comorbidities, allergies, personal habits and sleep',
                     'Investigations and medication / drug evaluation',
                     'Lifestyle management with diet, walking, exercise, sleep and meditation plan',

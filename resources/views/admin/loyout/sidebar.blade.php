@@ -16,36 +16,38 @@
     class="fixed inset-y-0 left-0 z-50 w-72 bg-slate-800 text-slate-200 flex-shrink-0 flex flex-col shadow-2xl overflow-hidden transform transition-transform duration-300 ease-in-out lg:static lg:translate-x-0">
     @php
         $dashboardRoute = null;
-        $name = null;
+        $roleName = null;
         if (Auth::guard('super_admin')->check()) {
             $dashboardRoute = route('admin.dashboard');
-            $name = 'Admin';
+            $roleName = 'Admin';
         } elseif (Auth::guard('doctor')->check()) {
             $dashboardRoute = route('doctor.dashboard');
-            $name = 'Doctor';
+            $roleName = 'Doctor';
         } elseif (Auth::guard('staff')->check()) {
             $dashboardRoute = route('list.patient');
-            $name = 'Staff';
+            $roleName = 'Staff';
         }
+        $name = $roleName;
     @endphp
     <!-- Logo & Mobile Close -->
     <div class="p-5 sm:p-6 flex items-center justify-between border-b border-slate-700/60">
-        <div class="flex items-center space-x-3">
-            <div class="w-10 h-10 rounded-xl bg-indigo-500 flex items-center justify-center shadow-lg shadow-indigo-500/30">
+        <a href="{{ $dashboardRoute ?? '#' }}" class="flex items-center space-x-3 min-w-0 group">
+            <div class="w-10 h-10 rounded-xl bg-indigo-500 flex items-center justify-center shadow-lg shadow-indigo-500/30 shrink-0 group-hover:scale-105 transition">
                 <i class="fas fa-user-doctor text-white text-xl"></i>
             </div>
 
-            <span class="text-2xl font-bold text-white">
-                {{ $name }}<span class="text-indigo-400">Panel</span>
-            </span>
-
-            <span class="text-[10px] px-2 py-1 rounded-full bg-indigo-500/30 text-indigo-200 font-bold">
-                v2.0
-            </span>
-        </div>
+            <div class="flex flex-col min-w-0">
+                <span class="text-[15px] sm:text-base font-bold text-white tracking-tight leading-snug truncate group-hover:text-indigo-200 transition">
+                    DrMukherjeeS <span class="text-indigo-400">Office</span>
+                </span>
+                <span class="text-[11px] text-slate-400 font-medium capitalize">
+                    {{ $roleName ?? 'Admin' }}
+                </span>
+            </div>
+        </a>
 
         <!-- Mobile Close Button -->
-        <button type="button" @click="sidebarOpen = false" class="lg:hidden p-2 rounded-xl text-slate-400 hover:text-white hover:bg-slate-700/60 transition">
+        <button type="button" @click="sidebarOpen = false" class="lg:hidden p-2 rounded-xl text-slate-400 hover:text-white hover:bg-slate-700/60 transition shrink-0 ml-2">
             <i class="fas fa-times text-lg"></i>
         </button>
     </div>
