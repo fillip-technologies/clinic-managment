@@ -38,6 +38,17 @@
         border: 1px solid #e9eff5;
     }
 
+    .stat-card {
+        cursor: pointer;
+        transition: transform 0.15s ease, box-shadow 0.15s ease, border-color 0.15s ease, background-color 0.15s ease;
+    }
+    .stat-card:hover {
+        transform: translateY(-2px);
+    }
+    .stat-card:active {
+        transform: translateY(0);
+    }
+
     /* Subtle readable font sizing */
     #patientTable {
         font-size: 0.8125rem; /* ~13px */
@@ -309,38 +320,85 @@
 
     <!-- Table Container -->
     <div class="table-container">
-        <!-- Stats Row -->
-        <div class="grid grid-cols-2 {{ $showAtRisk ? 'sm:grid-cols-5' : 'sm:grid-cols-4' }} gap-3 mb-5 pb-4 border-b border-[#e9eff5]">
-            <div class="bg-[#f8fcff] rounded-xl p-3 text-center border border-slate-100">
+        <!-- Stats Row (Clickable Cohort Filters) -->
+        <div class="grid grid-cols-2 {{ $showAtRisk ? 'sm:grid-cols-5' : 'sm:grid-cols-4' }} gap-3 mb-4 pb-4 border-b border-[#e9eff5]">
+            <!-- Total Patients -->
+            <div data-stat-card="all" onclick="filterByStat('all')"
+                class="stat-card select-none rounded-xl p-3 text-center border transition-all duration-200 bg-[#f8fcff] border-slate-200 hover:border-slate-300 hover:shadow-sm"
+                title="Click to show all patients">
                 <span class="text-xs text-[#5a7e9a] uppercase font-semibold">Total Patients</span>
                 <p class="text-xl font-bold text-[#0b2a3f]" id="totalRecords">{{ $records->count() }}</p>
+                <div class="stat-card-indicator mt-1">
+                    <span class="text-[10px] text-slate-400 font-medium">All records</span>
+                </div>
             </div>
-            <div class="bg-[#f8fcff] rounded-xl p-3 text-center border border-slate-100">
+
+            <!-- Newly Detected -->
+            <div data-stat-card="newly_detected" onclick="filterByStat('newly_detected')"
+                class="stat-card select-none rounded-xl p-3 text-center border transition-all duration-200 bg-[#f8fcff] border-slate-200 hover:border-blue-300 hover:shadow-sm"
+                title="Click to filter by Newly Detected patients">
                 <span class="text-xs text-[#5a7e9a] uppercase font-semibold">Newly Detected</span>
                 <p class="text-xl font-bold text-[#1f6e96]" id="newlyDetected">
                     {{ $records->filter(fn($p) => ($p->latestRecord?->newly_detected ?? $p->newly_detected) == 'Yes' || ($p->latestRecord?->newly_detected ?? $p->newly_detected) == 1)->count() }}
                 </p>
+                <div class="stat-card-indicator mt-1">
+                    <span class="text-[10px] text-slate-400 font-medium">Click to filter</span>
+                </div>
             </div>
-            <div class="bg-[#f8fcff] rounded-xl p-3 text-center border border-slate-100">
+
+            <!-- On Insulin -->
+            <div data-stat-card="on_insulin" onclick="filterByStat('on_insulin')"
+                class="stat-card select-none rounded-xl p-3 text-center border transition-all duration-200 bg-[#f8fcff] border-slate-200 hover:border-purple-300 hover:shadow-sm"
+                title="Click to filter by patients On Insulin">
                 <span class="text-xs text-[#5a7e9a] uppercase font-semibold">On Insulin</span>
                 <p class="text-xl font-bold text-[#8b5cf6]" id="onInsulin">
                     {{ $records->filter(fn($p) => ($p->latestRecord?->start_insulin_date ?? $p->start_insulin_date) && !($p->latestRecord?->stop_insulin_date ?? $p->stop_insulin_date))->count() }}
                 </p>
+                <div class="stat-card-indicator mt-1">
+                    <span class="text-[10px] text-slate-400 font-medium">Click to filter</span>
+                </div>
             </div>
-            <div class="bg-[#f8fcff] rounded-xl p-3 text-center border border-slate-100">
+
+            <!-- Hypertension -->
+            <div data-stat-card="hypertension" onclick="filterByStat('hypertension')"
+                class="stat-card select-none rounded-xl p-3 text-center border transition-all duration-200 bg-[#f8fcff] border-slate-200 hover:border-red-300 hover:shadow-sm"
+                title="Click to filter by Hypertension patients">
                 <span class="text-xs text-[#5a7e9a] uppercase font-semibold">Hypertension</span>
                 <p class="text-xl font-bold text-[#ef4444]" id="hypertension">
                     {{ $records->filter(fn($p) => ($p->latestRecord?->htn ?? $p->htn) == 'Yes' || ($p->latestRecord?->hypertension ?? $p->hypertension) == 'Hypertension' || floatval($p->latestRecord?->sbp ?? $p->sbp) >= 140 || floatval($p->latestRecord?->dbp ?? $p->dbp) >= 90)->count() }}
                 </p>
+                <div class="stat-card-indicator mt-1">
+                    <span class="text-[10px] text-slate-400 font-medium">Click to filter</span>
+                </div>
             </div>
+
+            <!-- At Risk -->
             @if ($showAtRisk)
-                <div class="bg-[#f8fcff] rounded-xl p-3 text-center border border-slate-100">
+                <div data-stat-card="at_risk" onclick="filterByStat('at_risk')"
+                    class="stat-card select-none rounded-xl p-3 text-center border transition-all duration-200 bg-[#f8fcff] border-slate-200 hover:border-amber-300 hover:shadow-sm"
+                    title="Click to filter by At Risk patients">
                     <span class="text-xs text-[#5a7e9a] uppercase font-semibold">At Risk</span>
                     <p class="text-xl font-bold text-[#f59e0b]" id="atRisk">
                         {{ $records->filter(fn($p) => floatval($p->latestRecord?->bmi ?? $p->bmi) > 25 || floatval($p->latestRecord?->hba1c ?? $p->hba1c) > 6.5 || floatval($p->latestRecord?->sbp ?? $p->sbp) > 140 || floatval($p->latestRecord?->dbp ?? $p->dbp) > 90)->count() }}
                     </p>
+                    <div class="stat-card-indicator mt-1">
+                        <span class="text-[10px] text-slate-400 font-medium">Click to filter</span>
+                    </div>
                 </div>
             @endif
+        </div>
+
+        <!-- Active Filter Alert / Clear Filter Bar -->
+        <div id="statFilterNotice" class="hidden mb-4 p-2.5 px-4 rounded-xl bg-slate-50 border border-slate-200 text-xs text-slate-700 flex items-center justify-between transition-all">
+            <div class="flex items-center gap-2">
+                <span class="w-2 h-2 rounded-full bg-blue-500 animate-pulse"></span>
+                <span>Active Cohort Filter: <strong id="statFilterLabel" class="font-bold text-slate-900">Newly Detected</strong></span>
+                <span class="text-slate-400">|</span>
+                <span class="text-slate-500">Only showing matching patients in the table below</span>
+            </div>
+            <button type="button" onclick="filterByStat('all')" class="inline-flex items-center gap-1 font-semibold text-slate-700 hover:text-red-700 bg-white border border-slate-200 hover:border-red-200 px-3 py-1 rounded-lg shadow-xs transition">
+                <i class="fas fa-times text-[10px]"></i> Clear Filter (Show All)
+            </button>
         </div>
 
         <!-- DataTable (table wrapped by DataTables dom so controls stay fixed) -->
@@ -483,8 +541,42 @@
                                 : ($patient->record_date
                                     ? \Carbon\Carbon::parse($patient->record_date)->format('Y-m-d')
                                     : '0000-00-00'));
+
+                        // Cohort classification flags matching the stats cards
+                        $isNewlyDetected = (
+                            ($clinical?->newly_detected ?? $patient->newly_detected) == 'Yes' || 
+                            ($clinical?->newly_detected ?? $patient->newly_detected) == 1
+                        );
+
+                        $startInsulin = $clinical?->start_insulin_date ?? $patient->start_insulin_date;
+                        $stopInsulin = $clinical?->stop_insulin_date ?? $patient->stop_insulin_date;
+                        $isOnInsulin = (!empty($startInsulin) && empty($stopInsulin));
+
+                        $htnVal = $clinical?->htn ?? $patient->htn;
+                        $hypertensionVal = $clinical?->hypertension ?? $patient->hypertension;
+                        $sbpVal = floatval($clinical?->sbp ?? $patient->sbp ?? 0);
+                        $dbpVal = floatval($clinical?->dbp ?? $patient->dbp ?? 0);
+                        $isHypertension = (
+                            $htnVal == 'Yes' || 
+                            $hypertensionVal == 'Hypertension' || 
+                            $sbpVal >= 140 || 
+                            $dbpVal >= 90
+                        );
+
+                        $bmiVal = floatval($clinical?->bmi ?? $patient->bmi ?? 0);
+                        $hba1cVal = floatval($clinical?->hba1c ?? $patient->hba1c ?? 0);
+                        $isAtRisk = (
+                            $bmiVal > 25 || 
+                            $hba1cVal > 6.5 || 
+                            $sbpVal > 140 || 
+                            $dbpVal > 90
+                        );
                     @endphp
-                    <tr>
+                    <tr class="patient-row {{ $isNewlyDetected ? 'is-newly-detected' : '' }} {{ $isOnInsulin ? 'is-on-insulin' : '' }} {{ $isHypertension ? 'is-hypertension' : '' }} {{ $isAtRisk ? 'is-at-risk' : '' }}"
+                        data-is-newly-detected="{{ $isNewlyDetected ? '1' : '0' }}"
+                        data-is-on-insulin="{{ $isOnInsulin ? '1' : '0' }}"
+                        data-is-hypertension="{{ $isHypertension ? '1' : '0' }}"
+                        data-is-at-risk="{{ $isAtRisk ? '1' : '0' }}">
                         <td class="dtr-control">{{ $loop->iteration }}</td>
                         <td data-order="{{ $firstVisitSortKey }}">
                             <span class="font-medium text-slate-700 whitespace-nowrap">{{ $firstVisitDate }}</span>
@@ -672,6 +764,117 @@
 <!-- DataTable Initialization & Scripts -->
 <script>
     let patientDataTable;
+    let currentStatFilter = 'all';
+
+    // Register DataTables custom search filter for Cohort Cards
+    $.fn.dataTable.ext.search.push(function(settings, data, dataIndex) {
+        if (settings.nTable.id !== 'patientTable') {
+            return true;
+        }
+        if (!currentStatFilter || currentStatFilter === 'all') {
+            return true;
+        }
+        const rowNode = settings.aoData[dataIndex]?.nTr;
+        if (!rowNode) return true;
+        const $tr = $(rowNode);
+
+        if (currentStatFilter === 'newly_detected') {
+            return $tr.hasClass('is-newly-detected');
+        }
+        if (currentStatFilter === 'on_insulin') {
+            return $tr.hasClass('is-on-insulin');
+        }
+        if (currentStatFilter === 'hypertension') {
+            return $tr.hasClass('is-hypertension');
+        }
+        if (currentStatFilter === 'at_risk') {
+            return $tr.hasClass('is-at-risk');
+        }
+        return true;
+    });
+
+    function filterByStat(statKey) {
+        if (currentStatFilter === statKey) {
+            // Clicking the active filter again toggles it off -> resets to all
+            currentStatFilter = 'all';
+        } else {
+            currentStatFilter = statKey;
+        }
+
+        updateStatCardUI(currentStatFilter);
+        if (patientDataTable) {
+            patientDataTable.draw();
+        }
+    }
+
+    function updateStatCardUI(statKey) {
+        // Reset all cards to neutral state
+        $('.stat-card').each(function() {
+            $(this).removeClass(
+                'ring-2 ring-offset-1 ring-[#0b2a3f] ring-[#1f6e96] ring-[#8b5cf6] ring-[#ef4444] ring-[#f59e0b] ' +
+                'bg-slate-100 bg-blue-50/80 bg-purple-50/80 bg-red-50/80 bg-amber-50/80 ' +
+                'border-blue-300 border-purple-300 border-red-300 border-amber-300 border-slate-300 shadow-sm'
+            ).addClass('bg-[#f8fcff] border-slate-200');
+
+            const key = $(this).attr('data-stat-card');
+            const $ind = $(this).find('.stat-card-indicator');
+            if (key === 'all') {
+                $ind.html('<span class="text-[10px] text-slate-400 font-medium">All records</span>');
+            } else {
+                $ind.html('<span class="text-[10px] text-slate-400 font-medium">Click to filter</span>');
+            }
+        });
+
+        const $notice = $('#statFilterNotice');
+        const $label = $('#statFilterLabel');
+
+        if (statKey === 'all') {
+            $notice.addClass('hidden');
+            return;
+        }
+
+        const $activeCard = $(`[data-stat-card="${statKey}"]`);
+        let ringClass = '';
+        let bgClass = '';
+        let borderClass = '';
+        let badgeColor = '';
+        let labelText = '';
+
+        if (statKey === 'newly_detected') {
+            ringClass = 'ring-[#1f6e96]';
+            bgClass = 'bg-blue-50/80';
+            borderClass = 'border-blue-300';
+            badgeColor = 'bg-blue-100 text-blue-700';
+            labelText = 'Newly Detected';
+        } else if (statKey === 'on_insulin') {
+            ringClass = 'ring-[#8b5cf6]';
+            bgClass = 'bg-purple-50/80';
+            borderClass = 'border-purple-300';
+            badgeColor = 'bg-purple-100 text-purple-700';
+            labelText = 'On Insulin';
+        } else if (statKey === 'hypertension') {
+            ringClass = 'ring-[#ef4444]';
+            bgClass = 'bg-red-50/80';
+            borderClass = 'border-red-300';
+            badgeColor = 'bg-red-100 text-red-700';
+            labelText = 'Hypertension';
+        } else if (statKey === 'at_risk') {
+            ringClass = 'ring-[#f59e0b]';
+            bgClass = 'bg-amber-50/80';
+            borderClass = 'border-amber-300';
+            badgeColor = 'bg-amber-100 text-amber-700';
+            labelText = 'At Risk';
+        }
+
+        $activeCard.removeClass('bg-[#f8fcff] border-slate-200')
+            .addClass(`ring-2 ring-offset-1 ${ringClass} ${bgClass} ${borderClass} shadow-sm`);
+        $activeCard.find('.stat-card-indicator')
+            .html(`<span class="inline-flex items-center gap-1 text-[10px] font-bold ${badgeColor} px-2 py-0.5 rounded-full"><i class="fas fa-check text-[8px]"></i> Active</span>`);
+
+        const countText = $activeCard.find('p').text().trim();
+        $label.text(`${labelText} (${countText} patients)`);
+        $notice.removeClass('hidden');
+    }
 
     $(document).ready(function() {
         patientDataTable = $('#patientTable').DataTable({
