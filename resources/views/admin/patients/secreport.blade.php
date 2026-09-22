@@ -387,6 +387,7 @@
                         <select name="bmi_group"
                             class="w-full rounded-xl border border-[#d3dfea] px-3 py-2 text-sm input-focus">
                             <option value="">Select</option>
+                            <option value="Underweight" {{ old('bmi_group') == 'Underweight' ? 'selected' : '' }}>Underweight</option>
                             <option value="Normal" {{ old('bmi_group') == 'Normal' ? 'selected' : '' }}>Normal</option>
                             <option value="Overweight" {{ old('bmi_group') == 'Overweight' ? 'selected' : '' }}>Overweight
                             </option>
@@ -791,6 +792,43 @@
                     const sDate = document.getElementById('sec1_record_date');
                     if (sDate && sDate.value && hDate) hDate.value = sDate.value;
                 });
+            }
+
+            // Auto calculate BMI and auto-select BMI Group
+            const heightInput = document.querySelector('input[name="height"]');
+            const weightInput = document.querySelector('input[name="weight"]');
+            const bmiInput = document.querySelector('input[name="bmi"]');
+            const bmiGroupSelect = document.querySelector('select[name="bmi_group"]');
+
+            function calculateBMI() {
+                const height = parseFloat(heightInput.value);
+                const weight = parseFloat(weightInput.value);
+
+                if (height && weight && height > 0) {
+                    const heightM = height / 100;
+                    const bmi = weight / (heightM * heightM);
+                    if (bmiInput) bmiInput.value = bmi.toFixed(1);
+
+                    let group = 'Normal';
+                    if (bmi < 18.5) group = 'Underweight';
+                    else if (bmi < 23) group = 'Normal';
+                    else if (bmi < 25) group = 'Overweight';
+                    else group = 'Obese';
+
+                    if (bmiGroupSelect) {
+                        for (let option of bmiGroupSelect.options) {
+                            if (option.value === group) {
+                                option.selected = true;
+                                break;
+                            }
+                        }
+                    }
+                }
+            }
+
+            if (heightInput && weightInput) {
+                heightInput.addEventListener('input', calculateBMI);
+                weightInput.addEventListener('input', calculateBMI);
             }
         });
     </script>

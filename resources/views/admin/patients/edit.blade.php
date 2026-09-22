@@ -531,6 +531,9 @@
                             <select name="bmi_group"
                                 class="w-full rounded-xl border border-[#d3dfea] px-3 py-2 text-sm input-focus">
                                 <option value="">Select</option>
+                                <option value="Underweight"
+                                    {{ old('bmi_group', $record->bmi_group ?? '') == 'Underweight' ? 'selected' : '' }}>Underweight
+                                </option>
                                 <option value="Normal"
                                     {{ old('bmi_group', $record->bmi_group ?? '') == 'Normal' ? 'selected' : '' }}>Normal
                                 </option>
@@ -1027,9 +1030,7 @@
                     if (bmi < 18.5) group = 'Underweight';
                     else if (bmi < 23) group = 'Normal';
                     else if (bmi < 25) group = 'Overweight';
-                    else if (bmi < 30) group = 'Obese Class I';
-                    else if (bmi < 35) group = 'Obese Class II';
-                    else group = 'Obese Class III';
+                    else group = 'Obese';
 
                     // Find and select matching option
                     for (let option of bmiGroupSelect.options) {

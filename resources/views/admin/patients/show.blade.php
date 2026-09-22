@@ -386,13 +386,14 @@
                     $bmiBg = 'bg-emerald-50 text-emerald-700 border-emerald-200';
                     if ($bmiVal >= 25) $bmiBg = 'bg-red-50 text-red-700 border-red-200';
                     elseif ($bmiVal >= 23) $bmiBg = 'bg-amber-50 text-amber-700 border-amber-200';
+                    elseif ($bmiVal > 0 && $bmiVal < 18.5) $bmiBg = 'bg-blue-50 text-blue-700 border-blue-200';
                 @endphp
             <div class="p-4 rounded-2xl border {{ $bmiBg }} flex flex-col justify-between">
                 <span class="text-[10px] font-bold uppercase tracking-wider">BMI (kg/m²)</span>
                 <div class="my-1">
                     <span class="text-xl sm:text-2xl font-black">{{ $record->bmi ?: 'N/A' }}</span>
                 </div>
-                <span class="text-xs font-semibold">{{ $record->bmi_group ?: ($bmiVal >= 25 ? 'Obese' : ($bmiVal >= 23 ? 'Overweight' : 'Normal')) }}</span>
+                <span class="text-xs font-semibold">{{ $record->bmi_group ?: ($bmiVal >= 25 ? 'Obese' : ($bmiVal >= 23 ? 'Overweight' : ($bmiVal > 0 && $bmiVal < 18.5 ? 'Underweight' : 'Normal'))) }}</span>
             </div>
 
             <!-- Blood Pressure -->
