@@ -42,6 +42,8 @@ class DoctorManageController extends Controller
             'doctor_strime'=>'required|string',
             'phone'=>'required',
             'role'=>'required|in:doctor,super_admin,staff',
+            'permissions'=>'nullable|array',
+            'permissions.*'=>'in:'.implode(',', array_keys(config('permissions'))),
         ]);
 
         $planTextPasssword = trim($request->password);
@@ -57,6 +59,7 @@ class DoctorManageController extends Controller
             'doctor_strime'=>$request->doctor_strime,
             'phone'=>$request->phone,
             'role'=>$request->role,
+            'permissions'=>$request->role === 'staff' ? array_values($request->input('permissions', [])) : null,
         ]);
           $createdata = DoctorRegEvent::dispatch($data,$planTextPasssword);
 
@@ -79,6 +82,8 @@ class DoctorManageController extends Controller
             'doctor_strime' => 'required|string',
             'phone' => 'required',
             'role' => 'required|in:doctor,super_admin,staff',
+            'permissions' => 'nullable|array',
+            'permissions.*' => 'in:'.implode(',', array_keys(config('permissions'))),
             'password' => 'nullable|min:8|max:32',
         ]);
 
@@ -93,6 +98,7 @@ class DoctorManageController extends Controller
         $doctor->doctor_strime = $request->doctor_strime;
         $doctor->phone = $request->phone;
         $doctor->role = $request->role;
+        $doctor->permissions = $request->role === 'staff' ? array_values($request->input('permissions', [])) : null;
         if ($request->filled('password')) {
             $doctor->password = Hash::make(trim($request->password));
         }

@@ -156,6 +156,27 @@ border-red-600
                 </div>
             </div>
 
+
+            <!-- Tab access (staff only) -->
+            <div x-data="{ isStaff: false }"
+                x-init="const r = document.getElementById('role'); isStaff = r.value === 'staff'; r.addEventListener('change', () => isStaff = r.value === 'staff')"
+                x-show="isStaff" x-cloak>
+                <label class="block text-xs font-semibold text-slate-600 uppercase tracking-wider mb-2">
+                    <i class="fas fa-lock mr-2 text-indigo-400"></i>Tabs this staff member can access
+                </label>
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                    @foreach (config('permissions') as $key => $tab)
+                        <label class="flex items-center gap-3 px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm cursor-pointer">
+                            <input type="checkbox" name="permissions[]" value="{{ $key }}"
+                                class="rounded text-indigo-600"
+                                @checked(in_array($key, old('permissions', []), true))>
+                            <i class="fas {{ $tab['icon'] }} text-slate-400 w-4 text-center"></i>
+                            {{ $tab['label'] }}
+                        </label>
+                    @endforeach
+                </div>
+            </div>
+
             <!-- Row: Email + Password -->
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>

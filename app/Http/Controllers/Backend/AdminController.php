@@ -53,7 +53,7 @@ class AdminController extends Controller
         } else if ($data->role == "staff") {
             if (Auth::guard('staff')->attempt(['email' => $request->email, 'password' => $request->password])) {
                 $request->session()->regenerate();
-                return redirect()->route('list.patient');
+                return redirect()->route($data->firstPermittedRoute());
             } else {
                 return back()->with('error', 'Invalid Credantials');
             }

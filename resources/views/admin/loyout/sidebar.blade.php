@@ -24,7 +24,7 @@
             $dashboardRoute = route('doctor.dashboard');
             $roleName = 'Doctor';
         } elseif (Auth::guard('staff')->check()) {
-            $dashboardRoute = route('list.patient');
+            $dashboardRoute = route(Auth::guard('staff')->user()->firstPermittedRoute());
             $roleName = 'Staff';
         }
         $name = $roleName;
@@ -66,7 +66,9 @@
             $isSettings = request()->routeIs('admin.settings*') || request()->routeIs('doctor.settings*') || request()->is('admin/settings*') || request()->is('doctor/settings*');
         @endphp
 
-        @if (Auth::guard('super_admin')->check())
+        @if (Auth::guard('super_admin')->check() || Auth::guard('staff')->check())
+            @php $adminUser = \App\Models\User::currentAdmin(); @endphp
+            @if ($adminUser->role === 'super_admin')
             <!-- Dashboard -->
             <a href="{{ route('admin.dashboard') }}"
                 class="sidebar-item flex items-center gap-4 px-4 py-3 rounded-xl transition-all duration-200
@@ -84,6 +86,9 @@
                 <span class="font-medium">Doctors & Staff</span>
             </a>
 
+            @endif
+
+            @if ($adminUser->hasPermission('rooms'))
             <!-- Rooms -->
             <a href="{{ route('room.list') }}"
                 class="sidebar-item flex items-center gap-4 px-4 py-3 rounded-xl transition-all duration-200
@@ -92,6 +97,9 @@
                 <span class="font-medium">Rooms</span>
             </a>
 
+            @endif
+
+            @if ($adminUser->hasPermission('patients'))
             <!-- Patients -->
             <a href="{{ route('list.patient') }}"
                 class="sidebar-item flex items-center gap-4 px-4 py-3 rounded-xl transition-all duration-200
@@ -100,6 +108,9 @@
                 <span class="font-medium">Patients</span>
             </a>
 
+            @endif
+
+            @if ($adminUser->hasPermission('appointments'))
             <!-- Appointments -->
             <a href="{{ route('listappoinment') }}"
                 class="sidebar-item flex items-center gap-4 px-4 py-3 rounded-xl transition-all duration-200
@@ -108,6 +119,9 @@
                 <span class="font-medium">Appointments</span>
             </a>
 
+            @endif
+
+            @if ($adminUser->hasPermission('onsite_appointments'))
             <!-- On-Site Appointments -->
             <a href="{{ route('on_site_appointment') }}"
                 class="sidebar-item flex items-center gap-4 px-4 py-3 rounded-xl transition-all duration-200
@@ -116,6 +130,9 @@
                 <span class="font-medium">On-Site Appointments</span>
             </a>
 
+            @endif
+
+            @if ($adminUser->hasPermission('analytics'))
             <!-- Analytics -->
             <a href="{{ route('analytics.disease') }}"
                 class="sidebar-item flex items-center gap-4 px-4 py-3 rounded-xl transition-all duration-200
@@ -125,6 +142,9 @@
             </a>
 
 
+            @endif
+
+            @if ($adminUser->hasPermission('reports'))
             <!-- Reports -->
             <div x-data="{ open: {{ $isReports ? 'true' : 'false' }} }">
                 <!-- Parent Menu -->
@@ -170,6 +190,8 @@
                 </div>
             </div>
 
+            @endif
+
             <!-- Settings -->
             <a href="{{ route('admin.settings') }}"
                 class="sidebar-item flex items-center gap-4 px-4 py-3 rounded-xl transition-all duration-200
@@ -196,22 +218,6 @@
                 <span class="font-medium"> + Report Upload</span>
             </a>
             <a href="{{ route('doctor.settings') }}"
-                class="sidebar-item flex items-center gap-4 px-4 py-3 rounded-xl transition-all duration-200
-                {{ $isSettings ? 'bg-indigo-600 text-white font-semibold shadow-lg shadow-indigo-600/30 active' : 'text-slate-300 hover:bg-slate-700/60 hover:text-white' }}">
-                <i class="fas fa-cog w-5 text-center {{ $isSettings ? 'text-white' : 'text-slate-400' }}"></i>
-                <span class="font-medium">Settings</span>
-            </a>
-        @elseif(Auth::guard('staff')->check())
-            <!-- Patients (ONLY TAB for Staff) -->
-            <a href="{{ route('list.patient') }}"
-                class="sidebar-item flex items-center gap-4 px-4 py-3 rounded-xl transition-all duration-200
-                {{ $isPatients ? 'bg-indigo-600 text-white font-semibold shadow-lg shadow-indigo-600/30 active' : 'text-slate-300 hover:bg-slate-700/60 hover:text-white' }}">
-                <i class="fas fa-hospital-user w-5 text-center {{ $isPatients ? 'text-white' : 'text-slate-400' }}"></i>
-                <span class="font-medium">Patients</span>
-            </a>
-
-            <!-- Settings -->
-            <a href="{{ route('admin.settings') }}"
                 class="sidebar-item flex items-center gap-4 px-4 py-3 rounded-xl transition-all duration-200
                 {{ $isSettings ? 'bg-indigo-600 text-white font-semibold shadow-lg shadow-indigo-600/30 active' : 'text-slate-300 hover:bg-slate-700/60 hover:text-white' }}">
                 <i class="fas fa-cog w-5 text-center {{ $isSettings ? 'text-white' : 'text-slate-400' }}"></i>

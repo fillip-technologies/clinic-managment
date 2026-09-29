@@ -21,6 +21,7 @@ return Application::configure(basePath: dirname(__DIR__))
             'super_admin'    => App\Http\Middleware\AdminAuthMiddleware::class,
             'doctor'         => App\Http\Middleware\DoctorAuthMiddleware::class,
             'staff'          => App\Http\Middleware\StaffAuthMiddleware::class,
+            'permission'     => App\Http\Middleware\CheckPermission::class,
             'admin_or_staff' => App\Http\Middleware\AdminOrStaffMiddleware::class,
         ]);
     })

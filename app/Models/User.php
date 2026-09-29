@@ -6,6 +6,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Illuminate\Support\Facades\Auth;
 
 class User extends Authenticatable
 {
@@ -24,6 +25,7 @@ class User extends Authenticatable
         'state',
         'country',
         'role',
+        'permissions',
         'pin_code',
         'doctor_strime',
         'email',
@@ -50,6 +52,40 @@ class User extends Authenticatable
         return [
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
+            'permissions' => 'array',
         ];
+    }
+
+    /**
+     * The logged-in admin-side user (super_admin, doctor or staff), if any.
+     */
+    public static function currentAdmin(): ?self
+    {
+        return Auth::guard('super_admin')->user()
+            ?? Auth::guard('doctor')->user()
+            ?? Auth::guard('staff')->user();
+    }
+
+    public function hasPermission(string $key): bool
+    {
+        if ($this->role === 'super_admin') {
+            return true;
+        }
+
+        return in_array($key, $this->permissions ?? [], true);
+    }
+
+    /**
+     * Route name of the first tab this user may open (used after login).
+     */
+    public function firstPermittedRoute(): string
+    {
+        foreach (config('permissions') as $key => $tab) {
+            if ($this->hasPermission($key)) {
+                return $tab['route'];
+            }
+        }
+
+        return 'admin.settings';
     }
 }
