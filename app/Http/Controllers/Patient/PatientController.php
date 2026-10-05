@@ -323,7 +323,7 @@ class PatientController extends Controller
     {
         $patient = Patient::with(['latestRecord', 'clinicalRecords'])->find($id);
         if ($patient) {
-            $allRecords = $patient->clinicalRecords()->orderBy('created_at', 'desc')->orderBy('id', 'desc')->get();
+            $allRecords = $patient->clinicalRecords()->orderByRaw('COALESCE(record_date, created_at) DESC')->orderBy('id', 'desc')->get();
             if ($request->filled('record_id')) {
                 $record = $allRecords->firstWhere('id', $request->record_id);
             }
@@ -338,7 +338,7 @@ class PatientController extends Controller
             $record = PatientClinicalRecord::with(['patient'])->findOrFail($id);
             $patient = $record->patient ?? Patient::findOrFail($record->patient_id);
             $allRecords = PatientClinicalRecord::where('patient_id', $record->patient_id)
-                ->orderBy('created_at', 'desc')
+                ->orderByRaw('COALESCE(record_date, created_at) DESC')
                 ->orderBy('id', 'desc')
                 ->get();
         }
@@ -351,7 +351,7 @@ class PatientController extends Controller
     {
         $patient = Patient::with(['clinicalRecords'])->find($id);
         if ($patient) {
-            $allRecords = $patient->clinicalRecords()->orderBy('created_at', 'desc')->orderBy('id', 'desc')->get();
+            $allRecords = $patient->clinicalRecords()->orderByRaw('COALESCE(record_date, created_at) DESC')->orderBy('id', 'desc')->get();
             if ($request->filled('record_id')) {
                 $record = $allRecords->firstWhere('id', $request->record_id);
             }
@@ -365,7 +365,7 @@ class PatientController extends Controller
         } else {
             $record = PatientClinicalRecord::with(['patient'])->findOrFail($id);
             $patient = $record->patient ?? Patient::findOrFail($record->patient_id);
-            $allRecords = $patient->clinicalRecords()->orderBy('created_at', 'desc')->orderBy('id', 'desc')->get();
+            $allRecords = $patient->clinicalRecords()->orderByRaw('COALESCE(record_date, created_at) DESC')->orderBy('id', 'desc')->get();
         }
 
         return view('admin.patients.edit', compact('record', 'patient', 'allRecords'));

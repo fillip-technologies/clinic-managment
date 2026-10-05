@@ -618,6 +618,30 @@
                 @csrf
                 <input type="hidden" name="appointment_type" value="admin">
 
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <!-- Slot Number (Optional) -->
+                    <div>
+                        <label for="create_slot_number" class="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1.5">
+                            <i class="fas fa-ticket-alt text-indigo-600 mr-1"></i> Slot Number
+                        </label>
+                        <input type="text" id="create_slot_number" name="slot_number" placeholder="e.g. 1/1, 1/15, 2/1"
+                            pattern="^[1-9]\d*\/([1-9]|1[0-5])$"
+                            class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-sm text-slate-800 placeholder:text-slate-400 focus:ring-2 focus:ring-indigo-400 focus:border-indigo-400 outline-none transition bg-slate-50/50 uppercase font-mono">
+                        <p class="text-[11px] text-slate-400 mt-1" id="create_slot_hint">Format: 1/1 to 1/15, then 2/1</p>
+                    </div>
+
+                    <!-- Scheduled Date (Optional) -->
+                    <div>
+                        <label for="create_scheduled_date" class="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1.5">
+                            <i class="fas fa-calendar-day text-emerald-600 mr-1"></i> Scheduled Date
+                        </label>
+                        <input type="date" id="create_scheduled_date" name="appointment_scheduled_date" min="{{ date('Y-m-d') }}"
+                            onchange="handleCreateDateChange(this.value)"
+                            class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-sm text-slate-800 focus:ring-2 focus:ring-indigo-400 focus:border-indigo-400 outline-none transition bg-slate-50/50">
+                        <p class="text-[11px] text-slate-400 mt-1">Optional initial clinic date.</p>
+                    </div>
+                </div>
+
                 <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
                     <!-- Patient Name -->
                     <div class="sm:col-span-2">
@@ -714,30 +738,6 @@
                     @error('patient_type')
                         <p class="text-xs text-red-500 mt-1">{{ $message }}</p>
                     @enderror
-                </div>
-
-                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
-                    <!-- Scheduled Date (Optional) -->
-                    <div>
-                        <label for="create_scheduled_date" class="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1.5">
-                            <i class="fas fa-calendar-day text-emerald-600 mr-1"></i> Scheduled Date
-                        </label>
-                        <input type="date" id="create_scheduled_date" name="appointment_scheduled_date" min="{{ date('Y-m-d') }}"
-                            onchange="handleCreateDateChange(this.value)"
-                            class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-sm text-slate-800 focus:ring-2 focus:ring-indigo-400 focus:border-indigo-400 outline-none transition bg-slate-50/50">
-                        <p class="text-[11px] text-slate-400 mt-1">Optional initial clinic date.</p>
-                    </div>
-
-                    <!-- Slot Number (Optional) -->
-                    <div>
-                        <label for="create_slot_number" class="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1.5">
-                            <i class="fas fa-ticket-alt text-indigo-600 mr-1"></i> Slot Number
-                        </label>
-                        <input type="text" id="create_slot_number" name="slot_number" placeholder="e.g. 1/1, 1/15, 2/1"
-                            pattern="^[1-9]\d*\/([1-9]|1[0-5])$"
-                            class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-sm text-slate-800 placeholder:text-slate-400 focus:ring-2 focus:ring-indigo-400 focus:border-indigo-400 outline-none transition bg-slate-50/50 uppercase font-mono">
-                        <p class="text-[11px] text-slate-400 mt-1" id="create_slot_hint">Format: 1/1 to 1/15, then 2/1</p>
-                    </div>
                 </div>
 
                 <!-- Modal Actions -->
