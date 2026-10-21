@@ -39,6 +39,7 @@ Route::prefix('admin')->middleware(['admin_or_staff'])->group(function () {
         Route::post('/createNewRecord/{id}', 'createNewRecord')->name('createNewRecord');
         Route::get('/patient/details/{id}', 'show')->name('patient.show');
         Route::get('/patient/export/{id}', 'exportPatientRecords')->name('patient.export');
+        Route::get('/patient/export-excel/{id}', 'exportPatientExcel')->name('patient.export.excel');
         Route::get('/single/patient/{id}', 'edit')->name('patient.edit');
         Route::delete('/delete/patient/{id}', 'destroy')->name('patient.delete');
         Route::get('/patient/attachment/{id}', 'viewAttachment')->name('patient.attachment');
@@ -85,5 +86,6 @@ Route::prefix('admin')->middleware(['admin_or_staff'])->group(function () {
     Route::middleware('permission:analytics')->controller(PatientController::class)->group(function () {
         Route::get('/analytics/disease', 'diseaseAnalytics')->name('analytics.disease');
         Route::get('/analytics/disease/export', 'exportDiseaseAnalytics')->name('analytics.disease.export');
+        Route::post('/analytics/duration/export', 'exportDurationChart')->name('analytics.duration.export');
     });
 });

@@ -1119,6 +1119,43 @@ class PatientController extends Controller
     }
 
 
+    /**
+     * Convert free-text durations ("1 year", "5 months", "2 yrs 3 mo", "7") to months.
+     * A bare number is treated as years. Returns null when nothing can be parsed.
+     */
+    private function parseDurationToMonths($text): ?float
+    {
+        $text = strtolower(trim((string) $text));
+        if ($text === '') {
+            return null;
+        }
+        if (preg_match('/^(new|newly)/', $text)) {
+            return 0.0;
+        }
+        if (is_numeric($text)) {
+            return round((float) $text * 12, 1);
+        }
+
+        $units = [
+            '/(\d+(?:\.\d+)?)\s*(?:years?|yrs?|y)\b/' => 12,
+            '/(\d+(?:\.\d+)?)\s*(?:months?|mos?|m)\b/' => 1,
+            '/(\d+(?:\.\d+)?)\s*(?:weeks?|wks?|w)\b/' => 7 / 30.4375,
+            '/(\d+(?:\.\d+)?)\s*(?:days?|d)\b/' => 1 / 30.4375,
+        ];
+        $total = 0.0;
+        $found = false;
+        foreach ($units as $pattern => $factor) {
+            if (preg_match_all($pattern, $text, $m)) {
+                foreach ($m[1] as $n) {
+                    $total += (float) $n * $factor;
+                    $found = true;
+                }
+            }
+        }
+
+        return $found ? round($total, 1) : null;
+    }
+
     public function diseaseAnalytics(Request $request)
     {
         $startDate = $request->get('start_date');
@@ -1411,7 +1448,32 @@ class PatientController extends Controller
 
         $obese = $obesity;
 
+        // Duration of diabetes, one entry per patient (latest record that has a parseable duration)
+        $durationPatients = [];
+        foreach ($allRecords->groupBy('patient_id') as $patientId => $recs) {
+            foreach ($recs as $rec) {
+                $months = $this->parseDurationToMonths($rec->duration_of_diabetes);
+                if ($months === null) {
+                    continue;
+                }
+                $durationPatients[] = [
+                    'patient_id' => (int) $patientId,
+                    'record_id' => $rec->id,
+                    'name' => $rec->patient->patient_name ?? ('Patient #' . $patientId),
+                    'months' => $months,
+                    'gender' => $rec->patient->gender ?: 'Unknown',
+                    'age' => is_numeric($rec->patient->age ?? null) ? (int) $rec->patient->age : null,
+                    'hba1c' => is_numeric($rec->hba1c) ? (float) $rec->hba1c : null,
+                    'bmi' => is_numeric($rec->bmi) ? (float) $rec->bmi : null,
+                    'sbp' => is_numeric($rec->sbp) ? (float) $rec->sbp : null,
+                    'insulin' => !empty($rec->insuline_brand) || !empty($rec->insuline_unit),
+                ];
+                break;
+            }
+        }
+
         return view('admin.analytics.analytics', compact(
+            'durationPatients',
             'startDate',
             'endDate',
             'totalPatients',
@@ -1446,6 +1508,126 @@ class PatientController extends Controller
             'dailyTrend',
             'yearlyTrend'
         ));
+    }
+
+    /**
+     * Export the duration-of-diabetes chart currently on screen: the chart's own data
+     * plus full patient and clinical-record details for every patient plotted.
+     */
+    public function exportDurationChart(Request $request)
+    {
+        $payload = json_decode((string) $request->input('payload'), true);
+        if (!is_array($payload) || empty($payload['rows'])) {
+            return back()->with('error', 'Nothing to export for this chart.');
+        }
+
+        $groupByRecord = [];
+        foreach ($payload['rows'] as $row) {
+            $groupByRecord[(int) ($row['record_id'] ?? 0)] = (string) ($row['group'] ?? '');
+        }
+        $records = PatientClinicalRecord::with('patient')
+            ->whereIn('id', array_keys($groupByRecord))
+            ->get()
+            ->sortBy(fn ($r) => array_search($r->id, array_keys($groupByRecord)))
+            ->values();
+
+        $heading = fn ($key) => ucwords(str_replace('_', ' ', $key));
+        $cell = function ($value) {
+            if ($value instanceof \DateTimeInterface) {
+                return $value->format('Y-m-d H:i:s');
+            }
+            return is_scalar($value) || $value === null ? (string) $value : json_encode($value);
+        };
+        $bold = ['font' => ['bold' => true]];
+
+        $spreadsheet = new \PhpOffice\PhpSpreadsheet\Spreadsheet();
+
+        // Sheet 1: the chart's own numbers
+        $chart = $spreadsheet->getActiveSheet();
+        $chart->setTitle('Chart Data');
+        $chart->setCellValue('A1', 'Duration of Diabetes by Patient');
+        $chart->getStyle('A1')->applyFromArray($bold);
+        $settings = [
+            'View' => $payload['viewLabel'] ?? '',
+            'Unit' => $payload['unit'] ?? '',
+            'Bands' => $payload['bandsLabel'] ?? '',
+            'Chart type' => $payload['chartType'] ?? '',
+            'Date range' => trim(($payload['startDate'] ?? '') . ' to ' . ($payload['endDate'] ?? ''), ' to') ?: 'All dates',
+            'Patients plotted' => count($payload['rows']),
+        ];
+        $r = 2;
+        foreach ($settings as $k => $v) {
+            $chart->setCellValue([1, $r], $k);
+            $chart->setCellValue([2, $r], $v);
+            $chart->getStyle([1, $r])->applyFromArray($bold);
+            $r++;
+        }
+        $r++;
+        $datasets = $payload['datasets'] ?? [];
+        $labels = $payload['labels'] ?? [];
+        if ($datasets && $labels) {
+            $chart->setCellValue([1, $r], 'Group');
+            foreach ($datasets as $i => $ds) {
+                $chart->setCellValue([$i + 2, $r], $ds['label'] ?? '');
+            }
+            $chart->getStyle([1, $r, count($datasets) + 1, $r])->applyFromArray($bold);
+            foreach ($labels as $li => $label) {
+                $r++;
+                $chart->setCellValue([1, $r], $label);
+                foreach ($datasets as $i => $ds) {
+                    $chart->setCellValue([$i + 2, $r], $ds['data'][$li] ?? null);
+                }
+            }
+        }
+        foreach (range(1, 6) as $c) {
+            $chart->getColumnDimensionByColumn($c)->setAutoSize(true);
+        }
+
+        // Sheet 2: one row per plotted patient, with all patient + clinical record columns
+        $sheet = $spreadsheet->createSheet();
+        $sheet->setTitle('Patients');
+        $clash = ['id', 'record_date', 'created_at', 'updated_at', 'deleted_at'];
+        $headers = ['Graph Group', 'Duration (months)'];
+        $patientKeys = $records->first()?->patient ? array_keys($records->first()->patient->attributesToArray()) : [];
+        $recordKeys = array_values(array_diff(array_keys($records->first()->attributesToArray()), ['patient_id']));
+        foreach ($patientKeys as $k) {
+            $headers[] = $heading($k);
+        }
+        foreach ($recordKeys as $k) {
+            $headers[] = (in_array($k, $clash) ? 'Record ' : '') . $heading($k);
+        }
+        foreach ($headers as $i => $h) {
+            $sheet->setCellValue([$i + 1, 1], $h);
+        }
+        $sheet->getStyle([1, 1, count($headers), 1])->applyFromArray($bold);
+
+        $row = 1;
+        foreach ($records as $rec) {
+            $row++;
+            $values = [$groupByRecord[$rec->id] ?? '', $this->parseDurationToMonths($rec->duration_of_diabetes)];
+            $pData = $rec->patient ? $rec->patient->attributesToArray() : [];
+            foreach ($patientKeys as $k) {
+                $values[] = $cell($pData[$k] ?? null);
+            }
+            $rData = $rec->attributesToArray();
+            foreach ($recordKeys as $k) {
+                $values[] = $cell($rData[$k] ?? null);
+            }
+            foreach ($values as $i => $v) {
+                $sheet->setCellValueExplicit([$i + 1, $row], (string) $v, \PhpOffice\PhpSpreadsheet\Cell\DataType::TYPE_STRING);
+            }
+        }
+        $sheet->freezePane('A2');
+        foreach (range(1, count($headers)) as $c) {
+            $sheet->getColumnDimensionByColumn($c)->setAutoSize(true);
+        }
+        $spreadsheet->setActiveSheetIndex(0);
+
+        $filename = 'duration_of_diabetes_' . \Illuminate\Support\Str::slug($payload['viewLabel'] ?? 'chart', '_') . '_' . date('Y-m-d_His') . '.xlsx';
+
+        return response()->streamDownload(function () use ($spreadsheet) {
+            (new \PhpOffice\PhpSpreadsheet\Writer\Xlsx($spreadsheet))->save('php://output');
+        }, $filename, ['Content-Type' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet']);
     }
 
     public function exportDiseaseAnalytics(Request $request)
@@ -1937,6 +2119,63 @@ class PatientController extends Controller
 
             fclose($handle);
         }, 200, $headers);
+    }
+
+    public function exportPatientExcel($id)
+    {
+        $patient = Patient::findOrFail($id);
+        $records = $patient->clinicalRecords()->orderBy('record_date', 'asc')->orderBy('id', 'asc')->get();
+
+        $heading = fn ($key) => ucwords(str_replace('_', ' ', $key));
+        $cell = function ($value) {
+            if ($value instanceof \DateTimeInterface) {
+                return $value->format('Y-m-d H:i:s');
+            }
+            return is_scalar($value) || $value === null ? $value : json_encode($value);
+        };
+
+        $spreadsheet = new \PhpOffice\PhpSpreadsheet\Spreadsheet();
+        $sheet = $spreadsheet->getActiveSheet();
+        $sheet->setTitle('Patient Details');
+
+        // Patient table: one header row, one data row
+        $patientData = $patient->attributesToArray();
+        $col = 1;
+        foreach ($patientData as $key => $value) {
+            $sheet->setCellValue([$col, 1], $heading($key));
+            $sheet->setCellValueExplicit([$col, 2], (string) $cell($value), \PhpOffice\PhpSpreadsheet\Cell\DataType::TYPE_STRING);
+            $col++;
+        }
+        $sheet->getStyle([1, 1, max($col - 1, 1), 1])->getFont()->setBold(true);
+
+        // Clinical records table: one row per entry, below the patient table
+        $row = 4;
+        if ($records->isEmpty()) {
+            $sheet->setCellValue([1, $row], 'No clinical records found');
+        } else {
+            $keys = array_keys($records->first()->attributesToArray());
+            foreach ($keys as $i => $key) {
+                $sheet->setCellValue([$i + 1, $row], $heading($key));
+            }
+            $sheet->getStyle([1, $row, count($keys), $row])->getFont()->setBold(true);
+            foreach ($records as $record) {
+                $row++;
+                $data = $record->attributesToArray();
+                foreach ($keys as $i => $key) {
+                    $sheet->setCellValueExplicit([$i + 1, $row], (string) $cell($data[$key] ?? null), \PhpOffice\PhpSpreadsheet\Cell\DataType::TYPE_STRING);
+                }
+            }
+        }
+
+        foreach (range(1, $sheet->getHighestColumn() ? \PhpOffice\PhpSpreadsheet\Cell\Coordinate::columnIndexFromString($sheet->getHighestColumn()) : 1) as $c) {
+            $sheet->getColumnDimensionByColumn($c)->setAutoSize(true);
+        }
+
+        $filename = 'patient_' . $patient->id . '_' . \Illuminate\Support\Str::slug($patient->patient_name ?? 'patient', '_') . '_' . date('Y-m-d') . '.xlsx';
+
+        return response()->streamDownload(function () use ($spreadsheet) {
+            (new \PhpOffice\PhpSpreadsheet\Writer\Xlsx($spreadsheet))->save('php://output');
+        }, $filename, ['Content-Type' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet']);
     }
 
     public function exportPatientRecords($id)
