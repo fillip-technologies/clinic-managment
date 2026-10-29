@@ -800,6 +800,70 @@
 
         </div>
 
+        <!-- Duration of Diabetes (one value per patient) -->
+        <div class="bg-white rounded-3xl p-6 border border-slate-200 shadow-sm">
+            <div class="flex flex-col sm:flex-row sm:items-start justify-between gap-3 mb-4">
+                <div>
+                    <h4 class="text-sm font-bold text-slate-800 flex items-center gap-2">
+                        <i class="fas fa-hourglass-half text-indigo-500"></i> Duration of Diabetes by Patient
+                    </h4>
+                    <span class="text-xs text-slate-500">Latest recorded duration per patient</span>
+                </div>
+                <button type="button" onclick="exportDurationChart()"
+                    class="self-start px-3.5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold flex items-center gap-2 shadow-sm transition whitespace-nowrap">
+                    <i class="fas fa-file-excel"></i> Export this graph
+                </button>
+            </div>
+
+            <div class="grid grid-cols-2 lg:grid-cols-4 gap-3 p-3 mb-4 rounded-2xl bg-slate-50 border border-slate-100">
+                <label class="col-span-2 lg:col-span-1 block">
+                    <span class="block text-[10px] font-bold uppercase tracking-wide text-slate-500 mb-1">View</span>
+                    <select id="durView" onchange="renderDurationChart()" class="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-xs font-semibold text-slate-700 focus:outline-none focus:ring-2 focus:ring-indigo-200 focus:border-indigo-400">
+                        <option value="band">Patients per duration band</option>
+                        <option value="gender">Duration band by gender</option>
+                        <option value="age">Avg duration by age group</option>
+                        <option value="hba1c">Avg HbA1c by duration band</option>
+                        <option value="insulin">Insulin use by duration band</option>
+                        <option value="patient">Each patient (ranked)</option>
+                        <option value="scatter">Duration vs HbA1c (scatter)</option>
+                    </select>
+                </label>
+                <label class="col-span-2 lg:col-span-1 block">
+                    <span class="block text-[10px] font-bold uppercase tracking-wide text-slate-500 mb-1">Duration bands</span>
+                    <select id="durBands" onchange="renderDurationChart()" class="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-xs font-semibold text-slate-700 focus:outline-none focus:ring-2 focus:ring-indigo-200 focus:border-indigo-400">
+                        <option value="clinical">Clinical (&lt;1, 1-5, 5-10, 10-15, 15+ yrs)</option>
+                        <option value="fine">Fine (&lt;6 mo to 10+ yrs)</option>
+                        <option value="decade">Every 5 years</option>
+                    </select>
+                </label>
+                <label class="block">
+                    <span class="block text-[10px] font-bold uppercase tracking-wide text-slate-500 mb-1">Unit</span>
+                    <select id="durUnit" onchange="renderDurationChart()" class="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-xs font-semibold text-slate-700 focus:outline-none focus:ring-2 focus:ring-indigo-200 focus:border-indigo-400">
+                        <option value="years">Years</option>
+                        <option value="months">Months</option>
+                    </select>
+                </label>
+                <label class="block">
+                    <span class="block text-[10px] font-bold uppercase tracking-wide text-slate-500 mb-1">Chart type</span>
+                    <select id="durType" onchange="renderDurationChart()" class="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-xs font-semibold text-slate-700 focus:outline-none focus:ring-2 focus:ring-indigo-200 focus:border-indigo-400">
+                        <option value="bar">Bar</option>
+                        <option value="line">Line</option>
+                        <option value="doughnut">Doughnut</option>
+                    </select>
+                </label>
+            </div>
+
+            <div id="durSummary" class="flex flex-wrap gap-2 mb-3 text-[11px] font-bold"></div>
+            <form id="durExportForm" method="POST" action="{{ route('analytics.duration.export') }}" class="hidden">
+                @csrf
+                <input type="hidden" name="payload" id="durExportPayload">
+            </form>
+            <div class="h-80 relative">
+                <canvas id="durationChart"></canvas>
+                <p id="durEmpty" class="hidden absolute inset-0 flex items-center justify-center text-sm text-slate-400">No patients with a recorded duration of diabetes in this period.</p>
+            </div>
+        </div>
+
         <!-- Patient Cohort Explorer & Research DataTable -->
         <div class="bg-white rounded-3xl border border-slate-200 shadow-sm p-6">
             <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6 pb-4 border-b border-slate-100">
@@ -1334,5 +1398,128 @@
             const initialMode = determineViewFromDates(startDateVal, endDateVal);
             switchTrendView(initialMode);
         });
+
+        // Duration of Diabetes chart (one entry per patient)
+        const durData = @json($durationPatients);
+        let durChart = null;
+        let durCurrent = null;
+        const durPalette = ['#6366f1', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#0ea5e9', '#ec4899', '#64748b'];
+
+        function durBandDefs(mode) {
+            const Y = 12;
+            if (mode === 'fine') return [['< 6 mo', 0, 6], ['6-12 mo', 6, 12], ['1-2 yrs', Y, 2 * Y], ['2-5 yrs', 2 * Y, 5 * Y], ['5-10 yrs', 5 * Y, 10 * Y], ['10+ yrs', 10 * Y, Infinity]];
+            if (mode === 'decade') return [['0-5 yrs', 0, 5 * Y], ['5-10 yrs', 5 * Y, 10 * Y], ['10-15 yrs', 10 * Y, 15 * Y], ['15-20 yrs', 15 * Y, 20 * Y], ['20+ yrs', 20 * Y, Infinity]];
+            return [['< 1 yr', 0, Y], ['1-5 yrs', Y, 5 * Y], ['5-10 yrs', 5 * Y, 10 * Y], ['10-15 yrs', 10 * Y, 15 * Y], ['15+ yrs', 15 * Y, Infinity]];
+        }
+        const durAvg = a => a.length ? a.reduce((x, y) => x + y, 0) / a.length : 0;
+        const durRound = n => Math.round(n * 10) / 10;
+
+        function renderDurationChart() {
+            const canvas = document.getElementById('durationChart');
+            if (!canvas) return;
+            const view = document.getElementById('durView').value;
+            const unit = document.getElementById('durUnit').value;
+            const type = document.getElementById('durType').value;
+            const div = unit === 'years' ? 12 : 1;
+            const unitLabel = unit === 'years' ? 'years' : 'months';
+            const bands = durBandDefs(document.getElementById('durBands').value);
+            const inBand = (p, b) => p.months >= b[1] && p.months < b[2];
+
+            document.getElementById('durEmpty').classList.toggle('hidden', durData.length > 0);
+            const avg = durAvg(durData.map(p => p.months)) / div;
+            const chip = (k, v) => '<span class="px-2.5 py-1 rounded-full bg-indigo-50 text-indigo-700 border border-indigo-100">' + k + ': ' + v + '</span>';
+            document.getElementById('durSummary').innerHTML = durData.length
+                ? chip('Patients', durData.length) + chip('Mean', durRound(avg) + ' ' + unitLabel)
+                    + chip('Min', durRound(Math.min(...durData.map(p => p.months)) / div) + ' ' + unitLabel)
+                    + chip('Max', durRound(Math.max(...durData.map(p => p.months)) / div) + ' ' + unitLabel)
+                : '';
+
+            let labels = [], datasets = [], chartType = type, yTitle = 'Patients', extra = {};
+            if (view === 'band') {
+                labels = bands.map(b => b[0]);
+                datasets = [{ label: 'Patients', data: bands.map(b => durData.filter(p => inBand(p, b)).length), backgroundColor: durPalette[0], borderColor: durPalette[0] }];
+            } else if (view === 'gender') {
+                labels = bands.map(b => b[0]);
+                const genders = [...new Set(durData.map(p => p.gender))];
+                datasets = genders.map((g, i) => ({ label: g, data: bands.map(b => durData.filter(p => p.gender === g && inBand(p, b)).length), backgroundColor: durPalette[i % 8], borderColor: durPalette[i % 8] }));
+                if (type === 'doughnut') chartType = 'bar';
+            } else if (view === 'age') {
+                const ageBands = [['< 30', 0, 30], ['30-45', 30, 46], ['46-60', 46, 61], ['60+', 61, 200]];
+                labels = ageBands.map(b => b[0]);
+                datasets = [{ label: 'Mean duration (' + unitLabel + ')', data: ageBands.map(b => durRound(durAvg(durData.filter(p => p.age !== null && p.age >= b[1] && p.age < b[2]).map(p => p.months)) / div)), backgroundColor: durPalette[1], borderColor: durPalette[1] }];
+                yTitle = 'Mean duration (' + unitLabel + ')';
+            } else if (view === 'hba1c') {
+                labels = bands.map(b => b[0]);
+                datasets = [{ label: 'Mean HbA1c (%)', data: bands.map(b => durRound(durAvg(durData.filter(p => inBand(p, b) && p.hba1c !== null).map(p => p.hba1c)))), backgroundColor: durPalette[3], borderColor: durPalette[3] }];
+                yTitle = 'Mean HbA1c (%)';
+            } else if (view === 'insulin') {
+                labels = bands.map(b => b[0]);
+                datasets = [
+                    { label: 'On insulin', data: bands.map(b => durData.filter(p => inBand(p, b) && p.insulin).length), backgroundColor: durPalette[3], borderColor: durPalette[3] },
+                    { label: 'Not on insulin', data: bands.map(b => durData.filter(p => inBand(p, b) && !p.insulin).length), backgroundColor: durPalette[1], borderColor: durPalette[1] }
+                ];
+                if (type === 'doughnut') chartType = 'bar';
+            } else if (view === 'patient') {
+                const sorted = [...durData].sort((a, b) => b.months - a.months).slice(0, 40);
+                labels = sorted.map(p => p.name);
+                datasets = [{ label: 'Duration (' + unitLabel + ')', data: sorted.map(p => durRound(p.months / div)), backgroundColor: durPalette[0], borderColor: durPalette[0] }];
+                yTitle = 'Duration (' + unitLabel + ')';
+                if (type === 'doughnut') chartType = 'bar';
+            } else if (view === 'scatter') {
+                chartType = 'scatter';
+                datasets = [{ label: 'Patients', data: durData.filter(p => p.hba1c !== null).map(p => ({ x: durRound(p.months / div), y: p.hba1c, name: p.name })), backgroundColor: durPalette[4] }];
+                extra = {
+                    scales: { x: { title: { display: true, text: 'Duration (' + unitLabel + ')' } }, y: { title: { display: true, text: 'HbA1c (%)' } } },
+                    plugins: { tooltip: { callbacks: { label: c => c.raw.name + ': ' + c.raw.x + ' ' + unitLabel + ', HbA1c ' + c.raw.y } } }
+                };
+            }
+
+            // Patients actually plotted, each with the group they fall into on this graph
+            const bandOf = p => (bands.find(b => inBand(p, b)) || [''])[0];
+            const ageBandOf = p => p.age === null ? null : (p.age < 30 ? '< 30' : p.age < 46 ? '30-45' : p.age < 61 ? '46-60' : '60+');
+            let rows = [];
+            if (view === 'band' || view === 'scatter') rows = durData.filter(p => view === 'band' || p.hba1c !== null).map(p => ({ p, group: bandOf(p) }));
+            else if (view === 'gender') rows = durData.map(p => ({ p, group: bandOf(p) + ' | ' + p.gender }));
+            else if (view === 'age') rows = durData.filter(p => p.age !== null).map(p => ({ p, group: ageBandOf(p) }));
+            else if (view === 'hba1c') rows = durData.filter(p => p.hba1c !== null).map(p => ({ p, group: bandOf(p) }));
+            else if (view === 'insulin') rows = durData.map(p => ({ p, group: bandOf(p) + ' | ' + (p.insulin ? 'On insulin' : 'Not on insulin') }));
+            else if (view === 'patient') rows = [...durData].sort((a, b) => b.months - a.months).slice(0, 40).map((p, i) => ({ p, group: '#' + (i + 1) }));
+            const viewSel = document.getElementById('durView'), bandSel = document.getElementById('durBands');
+            durCurrent = {
+                rows: rows.map(r => ({ record_id: r.p.record_id, group: r.group })),
+                labels: view === 'scatter' ? [] : labels,
+                datasets: view === 'scatter' ? [] : datasets.map(d => ({ label: d.label, data: d.data })),
+                viewLabel: viewSel.options[viewSel.selectedIndex].text,
+                bandsLabel: bandSel.options[bandSel.selectedIndex].text,
+                unit: unitLabel,
+                chartType: chartType
+            };
+
+            if (chartType === 'doughnut') {
+                datasets = datasets.map(d => ({ ...d, backgroundColor: labels.map((_, i) => durPalette[i % 8]), borderColor: '#fff', borderWidth: 2 }));
+            }
+            const options = chartType === 'doughnut'
+                ? { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'right' } } }
+                : Object.assign({
+                    responsive: true, maintainAspectRatio: false,
+                    scales: { y: { beginAtZero: true, title: { display: true, text: yTitle } } },
+                    plugins: { legend: { display: datasets.length > 1 } }
+                }, extra);
+
+            if (durChart) durChart.destroy();
+            durChart = new Chart(canvas, { type: chartType, data: { labels, datasets }, options });
+        }
+        function exportDurationChart() {
+            if (!durCurrent || !durCurrent.rows.length) {
+                alert('There are no patients in the current graph to export.');
+                return;
+            }
+            document.getElementById('durExportPayload').value = JSON.stringify(Object.assign({}, durCurrent, {
+                startDate: "{{ $startDate }}",
+                endDate: "{{ $endDate }}"
+            }));
+            document.getElementById('durExportForm').submit();
+        }
+        document.addEventListener('DOMContentLoaded', renderDurationChart);
     </script>
 @endsection
