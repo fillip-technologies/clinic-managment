@@ -811,7 +811,7 @@
                 </div>
                 <button type="button" onclick="exportDurationChart()"
                     class="self-start px-3.5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold flex items-center gap-2 shadow-sm transition whitespace-nowrap">
-                    <i class="fas fa-file-excel"></i> Export this graph
+                    <i class="fas fa-file-csv"></i> Export this graph (CSV)
                 </button>
             </div>
 

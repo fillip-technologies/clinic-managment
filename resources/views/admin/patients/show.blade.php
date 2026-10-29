@@ -206,9 +206,9 @@
                             class="w-full px-4 py-2.5 text-left text-xs font-semibold text-slate-700 hover:bg-slate-50 flex items-center gap-2">
                             <i class="fas fa-file-pdf text-red-500"></i> PDF
                         </button>
-                        <a href="{{ route('patient.export.excel', $patient->id) }}"
+                        <a href="{{ route('patient.export', $patient->id) }}"
                             class="w-full px-4 py-2.5 text-left text-xs font-semibold text-slate-700 hover:bg-slate-50 flex items-center gap-2">
-                            <i class="fas fa-file-excel text-emerald-600"></i> Excel
+                            <i class="fas fa-file-csv text-emerald-600"></i> Excel (CSV)
                         </a>
                     </div>
                 </div>
