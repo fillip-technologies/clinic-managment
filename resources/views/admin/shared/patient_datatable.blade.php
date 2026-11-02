@@ -295,13 +295,55 @@
         </div>
 
         <div class="flex flex-wrap items-center gap-2.5">
-            <!-- Export CSV Button -->
-            <a href="{{ route('analytics.disease.export', ['type' => $exportTypeKey]) }}"
-                class="bg-emerald-600 hover:bg-emerald-700 text-white font-semibold text-xs px-3.5 py-2 rounded-xl transition shadow-md shadow-emerald-600/20 flex items-center gap-1.5"
-                title="Export this dataset as CSV">
-                <i class="fas fa-file-excel"></i>
-                <span>Export CSV</span>
-            </a>
+            <!-- Export CSV Dropdown -->
+            <div class="relative" x-data="{ exportDropdownOpen: false }" @click.outside="exportDropdownOpen = false">
+                <button type="button"
+                    @click="exportDropdownOpen = !exportDropdownOpen"
+                    class="bg-emerald-600 hover:bg-emerald-700 text-white font-semibold text-xs px-3.5 py-2 rounded-xl transition shadow-md shadow-emerald-600/20 flex items-center gap-1.5 focus:outline-none"
+                    title="Export options">
+                    <i class="fas fa-file-excel"></i>
+                    <span>Export CSV</span>
+                    <i class="fas fa-chevron-down text-[10px] ml-0.5 transition-transform duration-200" :class="{ 'rotate-180': exportDropdownOpen }"></i>
+                </button>
+
+                <div x-show="exportDropdownOpen" x-cloak
+                    x-transition:enter="transition ease-out duration-150"
+                    x-transition:enter-start="opacity-0 scale-95 -translate-y-1"
+                    x-transition:enter-end="opacity-100 scale-100 translate-y-0"
+                    x-transition:leave="transition ease-in duration-100"
+                    x-transition:leave-start="opacity-100 scale-100 translate-y-0"
+                    x-transition:leave-end="opacity-0 scale-95 -translate-y-1"
+                    class="absolute right-0 mt-2 w-64 bg-white rounded-xl shadow-xl border border-slate-100 py-1.5 z-50 overflow-hidden text-left">
+                    
+                    <!-- Option 1: Export All Data -->
+                    <a href="{{ route('analytics.disease.export', ['type' => $exportTypeKey, 'scope' => 'all']) }}"
+                        @click="exportDropdownOpen = false"
+                        class="w-full flex items-center gap-2.5 px-3.5 py-2.5 text-xs text-slate-700 hover:bg-emerald-50 hover:text-emerald-800 transition text-left group">
+                        <div class="w-7 h-7 rounded-lg bg-emerald-100 text-emerald-700 flex items-center justify-center flex-shrink-0 group-hover:bg-emerald-600 group-hover:text-white transition-colors">
+                            <i class="fas fa-layer-group text-xs"></i>
+                        </div>
+                        <div>
+                            <div class="font-bold text-slate-800 group-hover:text-emerald-800">Export All Data</div>
+                            <div class="text-[10px] text-slate-400 font-normal">All visits & clinical records</div>
+                        </div>
+                    </a>
+
+                    <div class="my-1 border-t border-slate-100"></div>
+
+                    <!-- Option 2: Export with First Visit -->
+                    <a href="{{ route('analytics.disease.export', ['type' => $exportTypeKey, 'scope' => 'first_visit']) }}"
+                        @click="exportDropdownOpen = false"
+                        class="w-full flex items-center gap-2.5 px-3.5 py-2.5 text-xs text-slate-700 hover:bg-emerald-50 hover:text-emerald-800 transition text-left group">
+                        <div class="w-7 h-7 rounded-lg bg-indigo-100 text-indigo-700 flex items-center justify-center flex-shrink-0 group-hover:bg-indigo-600 group-hover:text-white transition-colors">
+                            <i class="fas fa-user-clock text-xs"></i>
+                        </div>
+                        <div>
+                            <div class="font-bold text-slate-800 group-hover:text-emerald-800">Export with First Visit</div>
+                            <div class="text-[10px] text-slate-400 font-normal">Single first visit record per patient</div>
+                        </div>
+                    </a>
+                </div>
+            </div>
 
             <!-- New Record Button -->
             <a href="{{ route('patient.form') }}" class="btn-add text-xs py-2">

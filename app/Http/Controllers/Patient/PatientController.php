@@ -1633,6 +1633,7 @@ class PatientController extends Controller
     public function exportDiseaseAnalytics(Request $request)
     {
         $type = strtolower($request->get('type', 'all'));
+        $scope = strtolower($request->get('scope', $request->get('visit_scope', 'all')));
         $startDate = $request->get('start_date');
         $endDate = $request->get('end_date');
 
@@ -1645,12 +1646,29 @@ class PatientController extends Controller
             $dateSuffix = '_until_' . $endDate;
         }
 
-        $filename = 'disease_analytics_' . $type . $dateSuffix . '_' . date('Y-m-d_His') . '.csv';
+        $scopeSuffix = ($scope === 'first_visit') ? '_first_visit' : '';
+        $filename = 'disease_analytics_' . $type . $scopeSuffix . $dateSuffix . '_' . date('Y-m-d_His') . '.csv';
 
         $query = PatientClinicalRecord::with(['patient.latestRecord', 'patient.firstRecord', 'patient.clinicalRecords'])
             ->whereNotNull('record_date')
             ->orderBy('record_date', 'desc')
             ->latest('id');
+
+        if ($scope === 'first_visit') {
+            $query->whereIn('id', function ($sub) {
+                $sub->select('id')
+                    ->from('patient_clinical_records as pcr1')
+                    ->whereRaw('pcr1.id = (
+                        SELECT pcr2.id 
+                        FROM patient_clinical_records as pcr2 
+                        WHERE pcr2.patient_id = pcr1.patient_id 
+                          AND pcr2.deleted_at IS NULL 
+                          AND pcr2.record_date IS NOT NULL 
+                        ORDER BY pcr2.record_date ASC, pcr2.id ASC 
+                        LIMIT 1
+                    )');
+            });
+        }
 
         if (!empty($startDate) && !empty($endDate)) {
             $query->whereBetween('record_date', [$startDate, $endDate]);

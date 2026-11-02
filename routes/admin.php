@@ -83,9 +83,13 @@ Route::prefix('admin')->middleware(['admin_or_staff'])->group(function () {
         Route::get('/delete/room-file/{id}/{index}', 'deleteRoomFile')->name('room.file.delete');
     });
 
-    Route::middleware('permission:analytics')->controller(PatientController::class)->group(function () {
-        Route::get('/analytics/disease', 'diseaseAnalytics')->name('analytics.disease');
-        Route::get('/analytics/disease/export', 'exportDiseaseAnalytics')->name('analytics.disease.export');
-        Route::post('/analytics/duration/export', 'exportDurationChart')->name('analytics.duration.export');
+    Route::controller(PatientController::class)->group(function () {
+        Route::middleware('permission:analytics,patients,reports')->group(function () {
+            Route::get('/analytics/disease/export', 'exportDiseaseAnalytics')->name('analytics.disease.export');
+        });
+        Route::middleware('permission:analytics')->group(function () {
+            Route::get('/analytics/disease', 'diseaseAnalytics')->name('analytics.disease');
+            Route::post('/analytics/duration/export', 'exportDurationChart')->name('analytics.duration.export');
+        });
     });
 });
